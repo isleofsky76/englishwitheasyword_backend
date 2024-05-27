@@ -14,6 +14,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 루트 경로 엔드포인트 추가
+app.get('/', (req, res) => {
+  res.send('Welcome to the English With Easy Word Backend!');
+});
 
 // 헬스 체크 엔드포인트 추가
 app.get('/healthz', (req, res) => {
