@@ -118,11 +118,12 @@ app.post('/english-chat', async (req, res) => {
 
 
 
-// Start the server
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
   console.log('Endpoints:');
-  console.log('- English Study: http://localhost:3000/englishstudy');
-  console.log('- Business Advice: http://localhost:3000/business-advice');
-  console.log('- English Chat: http://localhost:3000/english-chat');
+  console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
+  console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
+  console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
 });
