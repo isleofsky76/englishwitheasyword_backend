@@ -133,4 +133,6 @@ app.listen(PORT, () => {
   console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
   console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
   console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
+  console.log(`- Health Check: http://localhost:${PORT}/healthz`);
+  console.log(`- Root: http://localhost:${PORT}/`);
 });
