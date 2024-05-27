@@ -14,6 +14,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+// 헬스 체크 엔드포인트 추가
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
+
+
 // 2.English Study Route
 app.post('/englishstudy', async (req, res) => {
   try {
