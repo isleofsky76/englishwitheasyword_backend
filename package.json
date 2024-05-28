@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "echo 'No build step defined.'"  // 임시로 추가된 빌드 스크립트
+    "build": "echo 'No build step defined.'"  
   },
   "author": "",
   "license": "ISC",
