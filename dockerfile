@@ -25,4 +25,4 @@ ENV NODE_ENV=$NODE_ENV
 ENV OPENAI_API_KEY=$OPENAI_API_KEY
 
 # Command to run the application
-CMD ["npm", "start"]
+CMD ["node", "index.js"]
