@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3  # actions/checkout 최신 버전 사용
 
     - name: Set up Node.js 20
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v3  # actions/setup-node 최신 버전 사용
       with:
         node-version: '20'
 
