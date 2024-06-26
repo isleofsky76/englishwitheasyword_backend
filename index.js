@@ -1,12 +1,17 @@
 import OpenAI from 'openai';
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
+// .env 파일의 환경 변수를 로드합니다.
+dotenv.config();
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
+
+console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
 // Set up the Express app
 const app = express();
@@ -24,12 +29,16 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
-
 // 2.English Study Route
 app.post('/englishstudy', async (req, res) => {
   try {
     const userInput = req.body.inputWord; 
-    // Assigning the value of req.body.inputWord to the variable userInput
+
+    if (!userInput) {
+      throw new Error('No input word provided');
+    }
+    
+    console.log("Input word:", userInput);  // 디버깅을 위해 추가
 
     const completion = await openai.chat.completions.create({
       messages: [
@@ -67,7 +76,6 @@ app.post('/englishstudy', async (req, res) => {
   }
 });
 
-
 // New Business Advisor role
 app.post('/business-advice', async (req, res) => {
   try {
@@ -78,10 +86,14 @@ app.post('/business-advice', async (req, res) => {
      if (!question) {
       return res.status(400).json({ advice: 'Please provide a valid question.' });
   }
+
+     console.log("Question input:", question);  // 디버깅을 위해 추가
+
+
    // Call the OpenAI API to get advice
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: 'system', content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck,","porn", "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You must answer in English. you must lead the conversation by asking follow up questions. you must not forget you are speaking to young students.' },
+        { role: 'system', content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues.  Other than that, You must provide answers to the questions that students ask. You must answer in english. you must not forget you are speaking to young students.' },
         { role: 'user', content: question }
       ],
       model: 'gpt-3.5-turbo',
@@ -99,17 +111,22 @@ app.post('/business-advice', async (req, res) => {
   }
 });
 
-
 // English Chat Route
 app.post('/english-chat', async (req, res) => {
   try {
     // Extract user input from the request body
     const userInput = req.body.inputMessage;
+  
+    if (!userInput) {
+      throw new Error('No input message provided');
+    }
+
+    console.log("Input message:", userInput);  // 디버깅을 위해 추가
 
     // Call the OpenAI API to generate a response
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: 'system', content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck,","porn", "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You must answer in English to English, in Korean to Korean. you must not forget you are speaking to young students.' },
+        { role: 'system', content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck,","porn", "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You answer only in English. you must lead the conversation by asking follow up questions. you must not forget you are speaking to young students.' },
         { role: 'user', content: userInput }
       ],
       model: 'gpt-3.5-turbo',
@@ -129,6 +146,35 @@ app.post('/english-chat', async (req, res) => {
 
 
 
+// New Speaking Practice Route
+app.post('/speaking-practice', async (req, res) => {
+  try {
+    const spokenText = req.body.spokenText;
+
+    if (!spokenText) {
+      throw new Error('No spoken text provided');
+    }
+
+    console.log("Spoken text:", spokenText);  // Debugging
+
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.' },
+        { role: 'user', content: spokenText }
+      ],
+      model: 'gpt-3.5-turbo',
+    });
+
+    const responseContent = completion.choices[0].message['content'];
+    console.log("Sending Speaking Practice response:", responseContent);
+    res.json({ response: responseContent });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -139,4 +185,5 @@ app.listen(PORT, () => {
   console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
   console.log(`- Health Check: http://localhost:${PORT}/healthz`);
   console.log(`- Root: http://localhost:${PORT}/`);
+  console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
 });
