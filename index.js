@@ -2,9 +2,6 @@ import OpenAI from 'openai';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import https from 'https';
-
 
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
@@ -180,21 +177,14 @@ app.post('/speaking-practice', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-
-// Load SSL certificate and key
-const httpsOptions = {
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.cert')
-};
-
-// Start the HTTPS server
-https.createServer(httpsOptions, app).listen(PORT, () => {
-  console.log(`Server is running on https://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
   console.log('Endpoints:');
-  console.log(`- English Study: https://localhost:${PORT}/englishstudy`);
-  console.log(`- Business Advice: https://localhost:${PORT}/business-advice`);
-  console.log(`- English Chat: https://localhost:${PORT}/english-chat`);
-  console.log(`- Health Check: https://localhost:${PORT}/healthz`);
-  console.log(`- Root: https://localhost:${PORT}/`);
-  console.log(`- Speaking Practice: https://localhost:${PORT}/speaking-practice`);
+  console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
+  console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
+  console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
+  console.log(`- Health Check: http://localhost:${PORT}/healthz`);
+  console.log(`- Root: http://localhost:${PORT}/`);
+  console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
 });
+
