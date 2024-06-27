@@ -15,7 +15,10 @@ console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
 // Set up the Express app
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: '*', 
+    methods: ['GET', 'POST']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
