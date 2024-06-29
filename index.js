@@ -326,7 +326,7 @@ app.post('/quiz/check', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for all the sentences in the given quiz question. You must answer simply by saying "Correct", "Incorrect"' },
+        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for all the sentences in the given quiz question.' },
         { role: 'user', content: `Question: ${question}\nAnswer: ${answer}` }
       ],
     });
