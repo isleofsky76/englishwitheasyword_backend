@@ -178,6 +178,36 @@ app.post('/speaking-practice', async (req, res) => {
 });
 
 
+
+// New Speaking Practice Route2
+app.post('/speaking-practice2', async (req, res) => {
+  try {
+    const spokenText = req.body.spokenText;
+
+    if (!spokenText) {
+      throw new Error('No spoken text provided');
+    }
+
+    console.log("Spoken text:", spokenText);  // Debugging
+
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.' },
+        { role: 'user', content: spokenText }
+      ],
+      model: 'gpt-3.5-turbo',
+    });
+
+    const responseContent = completion.choices[0].message['content'];
+    console.log("Sending Speaking Practice response:", responseContent);
+    res.json({ response: responseContent });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -189,5 +219,5 @@ app.listen(PORT, () => {
   console.log(`- Health Check: http://localhost:${PORT}/healthz`);
   console.log(`- Root: http://localhost:${PORT}/`);
   console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
+  console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
 });
-
