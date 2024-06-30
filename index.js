@@ -340,6 +340,33 @@ app.post('/quiz/check', async (req, res) => {
   }
 });
 
+app.post('/quiz/show', async (req, res) => {
+  try {
+    const { question } = req.body;
+
+    if (!question) {
+      throw new Error('Question not provided');
+    }
+
+    console.log("Received question:", question);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are an English teacher. Provide the correct answer for the given quiz question. The answer should be simple and direct.' },
+        { role: 'user', content: `What is the correct answer for the following quiz question?\n${question}` }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    console.log("Sending Show Answer response:", responseContent);
+    res.json({ answer: responseContent });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
 // 20 Questions Hint Route
 app.post('/get-hint', async (req, res) => {
   try {
@@ -390,6 +417,7 @@ app.listen(PORT, () => {
   console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
   console.log(`- Quiz: http://localhost:${PORT}/quiz`);
   console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
+  console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
   console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
   console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
 });
