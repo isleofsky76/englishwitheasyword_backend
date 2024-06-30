@@ -326,7 +326,7 @@ app.post('/quiz/check', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for all the sentences in the given quiz question.' },
+        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for all the sentences in the given quiz question. You must answer simply by saying "Correct", "Incorrect"' },
         { role: 'user', content: `Question: ${question}\nAnswer: ${answer}` }
       ],
     });
@@ -339,6 +339,42 @@ app.post('/quiz/check', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
+
+// 20 Questions Hint Route
+app.post('/get-hint', async (req, res) => {
+  try {
+    const { item, hintIndex } = req.body;
+
+    if (!item || hintIndex === undefined) {
+      throw new Error('Item or hintIndex not provided');
+    }
+
+    console.log(`Item: ${item}, HintIndex: ${hintIndex}`); // Debugging
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant providing hints for a 20 Questions game.You must not provide the same hints twice. You must consider students are middle or high school students. so the level should be considered for students' },
+        { role: 'user', content: `Provide a hint for the word "${item}" suitable for hint number ${hintIndex + 1}.` }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    console.log("Sending Hint response:", responseContent);
+    res.json({ hint: responseContent });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+
+// Route to get a random item for a new quiz
+app.get('/get-random-item', (req, res) => {
+  const item = getRandomWord();
+  res.json({ item });
+});
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -354,4 +390,6 @@ app.listen(PORT, () => {
   console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
   console.log(`- Quiz: http://localhost:${PORT}/quiz`);
   console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
+  console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
+  console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
 });
