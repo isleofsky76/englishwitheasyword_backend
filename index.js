@@ -159,7 +159,7 @@ app.post('/speaking-practice', async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.' },
+        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language.To provide context and instructions for the AI, ensuring that responses are appropriate and focused on language learning' },
         { role: 'user', content: spokenText }
       ],
       model: 'gpt-3.5-turbo',
