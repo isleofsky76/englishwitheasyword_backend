@@ -159,7 +159,7 @@ app.post('/speaking-practice', async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language.To provide context and instructions for the AI, ensuring that responses are appropriate and focused on language learning' },
+        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.' },
         { role: 'user', content: spokenText }
       ],
       model: 'gpt-3.5-turbo',
@@ -409,6 +409,44 @@ app.get('/get-random-item', (req, res) => {
 });
 
 
+// New Route to generate 30 sentences for a selected topic=================
+// New Route to generate 30 sentences for a selected topic
+app.post('/generate-sentences', async (req, res) => {
+  try {
+    const topic = req.body.topic;
+
+    if (!topic) {
+      throw new Error('No topic provided');
+    }
+
+    console.log("Selected topic:", topic);  // Debugging
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: `
+            You are english teach. You must provide 30 example questions that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the selected topic. Focus on questions a traveler might ask or hear during travel. the language level should be very easy and common.
+          `
+        },
+        {
+          role: 'user',
+          content: `Generate 30 example questions for the topic "${topic}". Each example should be formatted to include a direct English translation followed by its Korean translation. The sentences should focus on questions a traveler might ask or hear during travel, such as "Where are you from?", "Do you have any items to declare?", "Where can I collect my luggage?", "Where is the tax-free shop?" etc.`
+        }
+      ],
+      max_tokens: 1500  // 토큰 제한 조정
+    });
+
+    const responseContent = completion.choices[0].message['content'];
+    console.log("Generated sentences:", responseContent);
+    res.json({ sentences: responseContent });
+  } catch (error) {
+    console.error('Error generating sentences:', error.message);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -426,4 +464,5 @@ app.listen(PORT, () => {
   console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
   console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
   console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
+  console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
 });
