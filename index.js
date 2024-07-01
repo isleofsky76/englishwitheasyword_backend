@@ -45,7 +45,7 @@ app.post('/englishstudy', async (req, res) => {
         {
           role: 'system',
           content: `
-            You are an English teacher living in korea. you must not forget you are speaking to young students. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You must avoid answering sensitive issues such as violence and suicide for students. Instead, when users request clarification on the meaning of a word, you must provide 10 example sentences that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the user input word. Each example should be formatted to include a direct English translation followed by its Korean translation. The output must be in this format:
+            You are an English teacher living in korea. you must not forget you are speaking to young students. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You must avoid answering sensitive issues such as violence and suicide for students. Instead, when users request clarification on the meaning of a word, you must provide 10 example sentences that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all must be centered around the theme of the user input word. Each example should be formatted to include a direct English translation followed by its Korean translation. all centered around the theme of the selected topic. The output must be in this format:
             Example:
             "I got up early at 6 a.m. to start preparing for the trip. (나는 여행 준비를 위해 오전 6시에 일찍 일어났다.)"
             "After breakfast, I got dressed and packed my suitcase. (아침을 먹은 후 옷을 입고 여행 가방을 쌌다.)"
@@ -427,12 +427,12 @@ app.post('/generate-sentences', async (req, res) => {
         {
           role: 'system',
           content: `
-            You are english teach. You must provide 30 example questions that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the selected topic. Focus on questions a traveler might ask or hear during travel. the language level should be very easy and common.
+            You are an English teacher. You must provide 30 example questions that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the selected topic. Focus on questions a traveler might ask or hear during travel. The language level should be very easy and common. The output result should be in this format e.g. "Is there a playground for children at the airport? (공항에 아이들을 위한 놀이터가 있나요?)".
           `
         },
         {
           role: 'user',
-          content: `Generate 30 example questions for the topic "${topic}". Each example should be formatted to include a direct English translation followed by its Korean translation. The sentences should focus on questions a traveler might ask or hear during travel, such as "Where are you from?", "Do you have any items to declare?", "Where can I collect my luggage?", "Where is the tax-free shop?" etc.`
+          content: `Generate 30 example questions for the topic "${topic}". Each example should be formatted to include a direct English translation followed by its Korean translation e.g. "Is there a playground for children at the airport? (공항에 아이들을 위한 놀이터가 있나요?)". The sentences should focus on questions a traveler might ask or hear during travel.`,
         }
       ],
       max_tokens: 1500  // 토큰 제한 조정
