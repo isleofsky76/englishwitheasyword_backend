@@ -297,8 +297,14 @@ app.post('/quiz', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. You must provide a quiz with 5 example sentences using the same verb (____) suitable for middle and high school students. The same verb must be used in all the blanks. The answer must not be provided as blanks until the user submit the answer. ' },
-        { role: 'user', content: `Create 5 example sentences using the same verb "${word}". Ensure that the same verb is used in all blanks, indicated by (____). The sentences should be at a middle to high school level.` }
+        { 
+          role: 'system', 
+          content: 'You are an English teacher. You must provide a quiz with 1 example sentence using a word in the (____), suitable for middle and high school students.' 
+        },
+        { 
+          role: 'user', 
+          content: `Create an example sentence using a word "${word}". Ensure that a word is used in the blank indicated by (____). The sentence should be at a middle to high school level.` 
+        }
       ],
     });
 
@@ -326,7 +332,7 @@ app.post('/quiz/check', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for all the sentences in the given quiz question. You must answer simply by saying "Correct", "Incorrect"' },
+        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for the sentence.' },
         { role: 'user', content: `Question: ${question}\nAnswer: ${answer}` }
       ],
     });
@@ -353,7 +359,7 @@ app.post('/quiz/show', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Provide the correct answer for the given quiz question. The answer should be simple and direct.' },
+        { role: 'system', content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect..' },
         { role: 'user', content: `What is the correct answer for the following quiz question?\n${question}` }
       ],
     });
