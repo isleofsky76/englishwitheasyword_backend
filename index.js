@@ -32,15 +32,16 @@ app.get('/healthz', (req, res) => {
 // 2.English Study Route
 app.post('/englishstudy', async (req, res) => {
   try {
-    const userInput = req.body.inputWord; 
+    const userInput = req.body.inputWord;
 
     if (!userInput) {
       throw new Error('No input word provided');
     }
     
-    console.log("Input word:", userInput);  // 디버깅을 위해 추가
+    console.log("Input word:", userInput);
 
     const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -67,11 +68,11 @@ app.post('/englishstudy', async (req, res) => {
       model: 'gpt-3.5-turbo',
     });
 
-    const responseContent = completion.data.choices[0].message.content;
-    console.log("Sending response:", responseContent);
+    const responseContent = completion.choices[0].message.content;
+    console.log("Generated text:", responseContent);
     res.json({ assistant: responseContent });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error.message);
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
