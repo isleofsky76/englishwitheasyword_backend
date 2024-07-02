@@ -117,6 +117,7 @@ app.post('/business-advice', async (req, res) => {
   }
 });
 
+
 // English Chat Route
 app.post('/english-chat', async (req, res) => {
   try {
@@ -163,6 +164,7 @@ app.post('/english-chat', async (req, res) => {
   }
 });
 
+
 // New Speaking Practice Route
 app.post('/speaking-practice', async (req, res) => {
   try {
@@ -197,7 +199,7 @@ app.post('/speaking-practice', async (req, res) => {
   }
 });
 
-// New Speaking Practice Route2 - page14
+// New Speaking Practice Route2
 app.post('/speaking-practice2', async (req, res) => {
   try {
     const spokenText = req.body.spokenText;
@@ -234,6 +236,7 @@ app.post('/speaking-practice2', async (req, res) => {
     res.status(500).json({ message: `Error processing your request: ${error.message}` });
   }
 });
+
 
 const words = [
   'accept', 'achieve', 'add', 'admire', 'admit', 'advise', 'afford', 'agree', 'alert', 'allow',
@@ -416,7 +419,8 @@ app.post('/quiz/show', async (req, res) => {
   }
 });
 
-// 20 Questions Hint Route
+
+// Get Hint Route
 app.post('/get-hint', async (req, res) => {
   try {
     const { item, hintIndex } = req.body;
@@ -425,14 +429,14 @@ app.post('/get-hint', async (req, res) => {
       throw new Error('Item or hintIndex not provided');
     }
 
-    console.log(`Item: ${item}, HintIndex: ${hintIndex}`); // Debugging
+    console.log(`Item: ${item}, HintIndex: ${hintIndex}`);
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant providing hints for a 20 Questions game.You must not provide the same hints twice. You must consider students are middle or high school students. so the level should be considered for students'
+          content: 'You are a helpful assistant providing hints for a 20 Questions game. You must not provide the same hints twice. You must consider students are middle or high school students, so the level should be appropriate for students.'
         },
         {
           role: 'user',
@@ -441,57 +445,35 @@ app.post('/get-hint', async (req, res) => {
       ],
     });
 
-    const responseContent = completion.data.choices[0].message.content;
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    const responseContent = completion.choices[0].message.content.trim();
     console.log("Sending Hint response:", responseContent);
     res.json({ hint: responseContent });
+  } catch (error) {
+    console.error('Error:', error);
+    if (error.response) {
+      console.error('OpenAI API Error:', error.response.data);
+      res.status(error.response.status).json({ error: error.response.data });
+    } else {
+      res.status(500).send(`Error processing your request: ${error.message}`);
+    }
+  }
+});
+
+// Get Random Item Route
+app.get('/get-random-item', (req, res) => {
+  try {
+    const randomItem = getRandomWord();
+    console.log(`Random item selected: ${randomItem}`);
+    res.json({ item: randomItem });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
-
-// New Route to generate 30 sentences for a selected topic
-app.post('/generate-sentences', async (req, res) => {
-  try {
-    const topic = req.body.topic;
-
-    if (!topic) {
-      throw new Error('No topic provided');
-    }
-
-    console.log("Selected topic:", topic);  // Debugging
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: `
-            You are an English teacher. You are an English teacher living in korea. you must not forget you are speaking to young students. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You must avoid answering sensitive issues such as violence and suicide for students. You must provide 30 example questions that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the selected topic. Focus on questions a traveler might ask or hear during travel. The language level should be very easy and common. The output result should be in this format e.g. "Is there a playground for children at the airport? (공항에 아이들을 위한 놀이터가 있나요?)".
-          `
-        },
-        {
-          role: 'user',
-          content: `Generate 30 example questions for the topic "${topic}". Each example should be formatted to include a direct English translation followed by its Korean translation e.g. "Is there a playground for children at the airport? (공항에 아이들을 위한 놀이터가 있나요?)". The sentences should focus on questions a traveler might ask or hear during travel.`,
-        }
-      ],
-      max_tokens: 1500  // 토큰 제한 조정
-    });
-
-    if (completion && completion.choices && completion.choices[0]) {
-      const responseContent = completion.choices[0].message.content;
-      console.log("Generated sentences:", responseContent);
-      res.json({ sentences: responseContent });
-    } else {
-      throw new Error('Invalid response from OpenAI API');
-    }
-  } catch (error) {
-    console.error('Error generating sentences:', error.message);
-    res.status(500).send(`Error processing your request: ${error.message}`);
-  }
-});
-
-
 
 
 // New Route to generate short text   page21=================================
@@ -612,8 +594,8 @@ app.post('/get-translation-explanation', async (req, res) => {
   }
 });
 
+//=========================
 
-// Add more robust error handling and logging
 
 const PORT = process.env.PORT || 3000;
 
@@ -636,3 +618,4 @@ app.listen(PORT, () => {
   console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
 });
+
