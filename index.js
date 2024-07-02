@@ -122,7 +122,7 @@ app.post('/english-chat', async (req, res) => {
   try {
     // Extract user input from the request body
     const userInput = req.body.inputMessage;
-  
+
     if (!userInput) {
       throw new Error('No input message provided');
     }
@@ -135,7 +135,7 @@ app.post('/english-chat', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck,","porn", "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You answer only in English. you must lead the conversation by asking follow up questions. you must not forget you are speaking to young students.'
+          content: 'You are an English teacher living in Korea. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "porn," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You also must not encourage people to do illegal or unethical things such as violence, suicide. You must avoid sensitive issues. Other than that, you must provide answers to the questions that students ask. You answer only in English. You must lead the conversation by asking follow-up questions. You must not forget you are speaking to young students.'
         },
         {
           role: 'user',
@@ -145,14 +145,21 @@ app.post('/english-chat', async (req, res) => {
     });
 
     // Extract the response content
-    const responseContent = completion.data.choices[0].message.content;
+    const responseContent = completion.choices[0].message.content;
     console.log("Sending English Chat response:", responseContent);
 
     // Send back the response as JSON
     res.json({ response: responseContent });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).send(`Error processing your request: ${error.message}`);
+
+    // 보다 상세한 오류 메시지 출력
+    if (error.response) {
+      console.error('OpenAI API Error:', error.response.data);
+      res.status(error.response.status).json({ error: error.response.data });
+    } else {
+      res.status(500).send(`Error processing your request: ${error.message}`);
+    }
   }
 });
 
