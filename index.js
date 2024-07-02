@@ -40,7 +40,7 @@ app.post('/englishstudy', async (req, res) => {
     
     console.log("Input word:", userInput);  // 디버깅을 위해 추가
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       messages: [
         {
           role: 'system',
@@ -58,16 +58,16 @@ app.post('/englishstudy', async (req, res) => {
             "I got directions to the hotel from the airport information desk. (공항 안내 데스크에서 호텔까지 가는 길을 물어보았다.)"
             "Once I reached the hotel, I got my room key and settled in for a restful night. (호텔에 도착하자마자 방 열쇠를 받고 편안한 밤을 보냈다.)"
         `
-    },
-        
-        {role: 'user', 
-          content: userInput}
+        },
+        {
+          role: 'user',
+          content: userInput
+        }
       ],
-
       model: 'gpt-3.5-turbo',
     });
 
-    const responseContent = completion.choices[0].message['content'];
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending response:", responseContent);
     res.json({ assistant: responseContent });
   } catch (error) {
@@ -80,30 +80,35 @@ app.post('/englishstudy', async (req, res) => {
 app.post('/business-advice', async (req, res) => {
   try {
     // Extract the question from the request body
-     const question = req.body.questionInput;
+    const question = req.body.questionInput;
 
-     // Verify that the question exists
-     if (!question) {
+    // Verify that the question exists
+    if (!question) {
       return res.status(400).json({ advice: 'Please provide a valid question.' });
-  }
+    }
 
-     console.log("Question input:", question);  // 디버깅을 위해 추가
+    console.log("Question input:", question);  // 디버깅을 위해 추가
 
-
-   // Call the OpenAI API to get advice
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues.  Other than that, You must provide answers to the questions that students ask. You must answer in english. you must not forget you are speaking to young students.' },
-        { role: 'user', content: question }
-      ],
+    // Call the OpenAI API to get advice
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You must answer in english. you must not forget you are speaking to young students.'
+        },
+        {
+          role: 'user',
+          content: question
+        }
+      ],
     });
 
-     // Extract the first response content
-    const responseContent = completion.choices[0].message['content'];
+    // Extract the first response content
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Business Advice response:", responseContent);
 
-     // Send back the advice as JSON
+    // Send back the advice as JSON
     res.json({ advice: responseContent });
   } catch (error) {
     console.error('Error:', error);
@@ -124,16 +129,22 @@ app.post('/english-chat', async (req, res) => {
     console.log("Input message:", userInput);  // 디버깅을 위해 추가
 
     // Call the OpenAI API to generate a response
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck,","porn", "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You answer only in English. you must lead the conversation by asking follow up questions. you must not forget you are speaking to young students.' },
-        { role: 'user', content: userInput }
-      ],
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an English teacher living in korea.You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck,","porn", "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny. You also must not encourage people to do illegal or unethical things such as violence, suicide. you must avoid sensitive issues. Other than that, You must provide answers to the questions that students ask. You answer only in English. you must lead the conversation by asking follow up questions. you must not forget you are speaking to young students.'
+        },
+        {
+          role: 'user',
+          content: userInput
+        }
+      ],
     });
 
     // Extract the response content
-    const responseContent = completion.choices[0].message['content'];
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending English Chat response:", responseContent);
 
     // Send back the response as JSON
@@ -143,8 +154,6 @@ app.post('/english-chat', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
-
-
 
 // New Speaking Practice Route
 app.post('/speaking-practice', async (req, res) => {
@@ -157,15 +166,21 @@ app.post('/speaking-practice', async (req, res) => {
 
     console.log("Spoken text:", spokenText);  // Debugging
 
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.' },
-        { role: 'user', content: spokenText }
-      ],
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.'
+        },
+        {
+          role: 'user',
+          content: spokenText
+        }
+      ],
     });
 
-    const responseContent = completion.choices[0].message['content'];
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Speaking Practice response:", responseContent);
     res.json({ response: responseContent });
   } catch (error) {
@@ -173,8 +188,6 @@ app.post('/speaking-practice', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
-
-
 
 // New Speaking Practice Route2
 app.post('/speaking-practice2', async (req, res) => {
@@ -187,15 +200,21 @@ app.post('/speaking-practice2', async (req, res) => {
 
     console.log("Spoken text:", spokenText);  // Debugging
 
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.' },
-        { role: 'user', content: spokenText }
-      ],
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an English teacher living in Korea. Avoid inappropriate, sexual, or offensive language. Provide conversational responses and ask follow-up questions.'
+        },
+        {
+          role: 'user',
+          content: spokenText
+        }
+      ],
     });
 
-    const responseContent = completion.choices[0].message['content'];
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Speaking Practice response:", responseContent);
     res.json({ response: responseContent });
   } catch (error) {
@@ -294,21 +313,21 @@ app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord();
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
-        { 
-          role: 'system', 
-          content: 'You are an English teacher. You must provide a quiz with 1 example sentence using a word in the (____), suitable for middle and high school students.' 
+        {
+          role: 'system',
+          content: 'You are an English teacher. You must provide a quiz with 1 example sentence using a word in the (____), suitable for middle and high school students.'
         },
-        { 
-          role: 'user', 
-          content: `Create an example sentence using a word "${word}". Ensure that a word is used in the blank indicated by (____). The sentence should be at a middle to high school level.` 
+        {
+          role: 'user',
+          content: `Create an example sentence using a word "${word}". Ensure that a word is used in the blank indicated by (____). The sentence should be at a middle to high school level.`
         }
       ],
     });
 
-    const responseContent = completion.choices[0].message.content;
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Quiz response:", responseContent);
     res.json({ quiz: responseContent });
   } catch (error) {
@@ -329,15 +348,21 @@ app.post('/quiz/check', async (req, res) => {
     console.log("Question:", question);
     console.log("Answer:", answer);
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Check if the student\'s answer is correct for the sentence.' },
-        { role: 'user', content: `Question: ${question}\nAnswer: ${answer}` }
+        {
+          role: 'system',
+          content: 'You are an English teacher. Check if the student\'s answer is correct for the sentence.'
+        },
+        {
+          role: 'user',
+          content: `Question: ${question}\nAnswer: ${answer}`
+        }
       ],
     });
 
-    const responseContent = completion.choices[0].message.content;
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Check response:", responseContent);
     res.json({ result: responseContent });
   } catch (error) {
@@ -356,15 +381,21 @@ app.post('/quiz/show', async (req, res) => {
 
     console.log("Received question:", question);
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect..' },
-        { role: 'user', content: `What is the correct answer for the following quiz question?\n${question}` }
+        {
+          role: 'system',
+          content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect..'
+        },
+        {
+          role: 'user',
+          content: `What is the correct answer for the following quiz question?\n${question}`
+        }
       ],
     });
 
-    const responseContent = completion.choices[0].message.content;
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Show Answer response:", responseContent);
     res.json({ answer: responseContent });
   } catch (error) {
@@ -384,15 +415,21 @@ app.post('/get-hint', async (req, res) => {
 
     console.log(`Item: ${item}, HintIndex: ${hintIndex}`); // Debugging
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are a helpful assistant providing hints for a 20 Questions game.You must not provide the same hints twice. You must consider students are middle or high school students. so the level should be considered for students' },
-        { role: 'user', content: `Provide a hint for the word "${item}" suitable for hint number ${hintIndex + 1}.` }
+        {
+          role: 'system',
+          content: 'You are a helpful assistant providing hints for a 20 Questions game.You must not provide the same hints twice. You must consider students are middle or high school students. so the level should be considered for students'
+        },
+        {
+          role: 'user',
+          content: `Provide a hint for the word "${item}" suitable for hint number ${hintIndex + 1}.`
+        }
       ],
     });
 
-    const responseContent = completion.choices[0].message.content;
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Sending Hint response:", responseContent);
     res.json({ hint: responseContent });
   } catch (error) {
@@ -401,15 +438,6 @@ app.post('/get-hint', async (req, res) => {
   }
 });
 
-
-// Route to get a random item for a new quiz
-app.get('/get-random-item', (req, res) => {
-  const item = getRandomWord();
-  res.json({ item });
-});
-
-
-// New Route to generate 30 sentences for a selected topic=================
 // New Route to generate 30 sentences for a selected topic
 app.post('/generate-sentences', async (req, res) => {
   try {
@@ -421,7 +449,7 @@ app.post('/generate-sentences', async (req, res) => {
 
     console.log("Selected topic:", topic);  // Debugging
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -438,7 +466,7 @@ app.post('/generate-sentences', async (req, res) => {
       max_tokens: 1500  // 토큰 제한 조정
     });
 
-    const responseContent = completion.choices[0].message['content'];
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Generated sentences:", responseContent);
     res.json({ sentences: responseContent });
   } catch (error) {
@@ -446,7 +474,6 @@ app.post('/generate-sentences', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
-
 
 // New Route to generate short text
 app.post('/generate-short-text', async (req, res) => {
@@ -534,7 +561,7 @@ app.post('/get-translation-explanation', async (req, res) => {
           content: `Provide a translation for the following text: "${shortText}". The translation must be in Korean.`
         }
       ],
-      max_tokens: 300
+      max_tokens: 3000
     });
 
     const responseContent = completion.data.choices[0].message.content;
@@ -548,10 +575,6 @@ app.post('/get-translation-explanation', async (req, res) => {
 });
 
 // Add more robust error handling and logging
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
 
 const PORT = process.env.PORT || 3000;
 
