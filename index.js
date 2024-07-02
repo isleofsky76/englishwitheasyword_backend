@@ -189,7 +189,7 @@ app.post('/speaking-practice', async (req, res) => {
   }
 });
 
-// New Speaking Practice Route2
+// New Speaking Practice Route2 - page14
 app.post('/speaking-practice2', async (req, res) => {
   try {
     const spokenText = req.body.spokenText;
@@ -214,12 +214,16 @@ app.post('/speaking-practice2', async (req, res) => {
       ],
     });
 
-    const responseContent = completion.data.choices[0].message.content;
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    const responseContent = completion.choices[0].message.content;
     console.log("Sending Speaking Practice response:", responseContent);
     res.json({ response: responseContent });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).send(`Error processing your request: ${error.message}`);
+    console.error('Error:', error.message, error.stack);
+    res.status(500).json({ message: `Error processing your request: ${error.message}` });
   }
 });
 
