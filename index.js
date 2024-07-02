@@ -457,37 +457,37 @@ app.post('/generate-short-text', async (req, res) => {
       throw new Error('No topic provided');
     }
 
-    console.log("Selected topic:", topic);  // Debugging
+    console.log("Selected topic:", topic);
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
           content: `
-            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." Avoid answering sensitive issues such as violence and suicide for students. Provide a long academic text (1000 characters) related to the selected topic. The text should be simple, easy to understand, easily found in textbooks at schools, and suitable for young students.
+            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.
           `
         },
         {
           role: 'user',
-          content: `Generate a long text (about 1000 characters) for the topic "${topic}". The text should be about 1000 characters long and completed.`
+          content: `Generate a long text for the topic "${topic}". The text should be about 1000 characters long.`
         }
       ],
-      max_tokens: 512 // Increased token limit to allow longer responses
+      max_tokens: 512
     });
 
-    const responseContent = completion.choices[0].message['content'];
+    let responseContent = completion.data.choices[0].message.content;
     console.log("Generated short text:", responseContent);
 
-    // Ensure text is close to 3000 characters
-    if (responseContent.length < 1500) {
-      const additionalCompletion = await openai.chat.completions.create({
+    // Ensure text is close to 1000 characters
+    while (responseContent.length < 900) { // Set a lower threshold for minimum length
+      const additionalCompletion = await openai.createChatCompletion({
         model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
             content: `
-              You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." Avoid answering sensitive issues such as violence and suicide for students. Provide a long academic text (1000 characters) related to the selected topic. The text should be simple, easy to understand, easily found in textbooks at schools, and suitable for young students.
+              You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.
             `
           },
           {
@@ -498,7 +498,7 @@ app.post('/generate-short-text', async (req, res) => {
         max_tokens: 512
       });
 
-      const additionalContent = additionalCompletion.choices[0].message['content'];
+      const additionalContent = additionalCompletion.data.choices[0].message.content;
       responseContent += " " + additionalContent;
       console.log("Extended short text:", additionalContent);
     }
@@ -520,24 +520,24 @@ app.post('/get-translation-explanation', async (req, res) => {
 
     console.log("Short text:", shortText);
 
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
           content: `
-            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." Avoid answering sensitive issues such as violence and suicide for students. Provide the korean translation in korean. you must provide only translation of the text. nothing will be required than the korean translations.
+            You are an English teacher living in Korea. Provide the Korean translation for the following text.
           `
         },
         {
           role: 'user',
-          content: `Provide a translation for the following text: "${shortText}". The translation must be in Korean. Do not forget the explanation must be provided only in korean.`
+          content: `Provide a translation for the following text: "${shortText}". The translation must be in Korean.`
         }
       ],
-      max_tokens: 3000
+      max_tokens: 300
     });
 
-    const responseContent = completion.choices[0].message['content'];
+    const responseContent = completion.data.choices[0].message.content;
     console.log("Translation and explanation:", responseContent);
 
     res.json({ translationExplanation: responseContent });
@@ -545,6 +545,12 @@ app.post('/get-translation-explanation', async (req, res) => {
     console.error('Error getting translation and explanation:', error.message);
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
+});
+
+// Add more robust error handling and logging
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
 });
 
 const PORT = process.env.PORT || 3000;
