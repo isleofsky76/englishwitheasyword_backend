@@ -484,7 +484,9 @@ app.post('/generate-sentences', async (req, res) => {
 });
 
 
-// New Route to generate short text
+
+
+// New Route to generate short text   page21=================================
 app.post('/generate-short-text', async (req, res) => {
   try {
     const topic = req.body.topic;
@@ -512,7 +514,13 @@ app.post('/generate-short-text', async (req, res) => {
       max_tokens: 512
     });
 
-    let responseContent = completion.data.choices[0].message.content;
+    console.log("Completion response:", JSON.stringify(completion, null, 2));
+
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    let responseContent = completion.choices[0].message.content;
     console.log("Generated short text:", responseContent);
 
     // Ensure text is close to 1000 characters
@@ -534,7 +542,13 @@ app.post('/generate-short-text', async (req, res) => {
         max_tokens: 512
       });
 
-      const additionalContent = additionalCompletion.data.choices[0].message.content;
+      console.log("Additional completion response:", JSON.stringify(additionalCompletion, null, 2));
+
+      if (!additionalCompletion.choices || additionalCompletion.choices.length === 0) {
+        throw new Error('No choices in the additional completion response');
+      }
+
+      const additionalContent = additionalCompletion.choices[0].message.content;
       responseContent += " " + additionalContent;
       console.log("Extended short text:", additionalContent);
     }
@@ -545,6 +559,7 @@ app.post('/generate-short-text', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
+
 
 app.post('/get-translation-explanation', async (req, res) => {
   try {
@@ -573,7 +588,13 @@ app.post('/get-translation-explanation', async (req, res) => {
       max_tokens: 3000
     });
 
-    const responseContent = completion.data.choices[0].message.content;
+    console.log("Completion response:", JSON.stringify(completion, null, 2));
+
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    const responseContent = completion.choices[0].message.content;
     console.log("Translation and explanation:", responseContent);
 
     res.json({ translationExplanation: responseContent });
@@ -582,6 +603,7 @@ app.post('/get-translation-explanation', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
+
 
 // Add more robust error handling and logging
 
