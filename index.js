@@ -40,7 +40,7 @@ app.post('/englishstudy', async (req, res) => {
     
     console.log("Input word:", userInput);  // 디버깅을 위해 추가
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       messages: [
         {
           role: 'system',
@@ -90,7 +90,7 @@ app.post('/business-advice', async (req, res) => {
     console.log("Question input:", question);  // 디버깅을 위해 추가
 
     // Call the OpenAI API to get advice
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -129,7 +129,7 @@ app.post('/english-chat', async (req, res) => {
     console.log("Input message:", userInput);  // 디버깅을 위해 추가
 
     // Call the OpenAI API to generate a response
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -166,7 +166,7 @@ app.post('/speaking-practice', async (req, res) => {
 
     console.log("Spoken text:", spokenText);  // Debugging
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -200,7 +200,7 @@ app.post('/speaking-practice2', async (req, res) => {
 
     console.log("Spoken text:", spokenText);  // Debugging
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -313,7 +313,7 @@ app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord();
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -348,7 +348,7 @@ app.post('/quiz/check', async (req, res) => {
     console.log("Question:", question);
     console.log("Answer:", answer);
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -381,7 +381,7 @@ app.post('/quiz/show', async (req, res) => {
 
     console.log("Received question:", question);
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -415,7 +415,7 @@ app.post('/get-hint', async (req, res) => {
 
     console.log(`Item: ${item}, HintIndex: ${hintIndex}`); // Debugging
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -449,7 +449,7 @@ app.post('/generate-sentences', async (req, res) => {
 
     console.log("Selected topic:", topic);  // Debugging
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -466,14 +466,19 @@ app.post('/generate-sentences', async (req, res) => {
       max_tokens: 1500  // 토큰 제한 조정
     });
 
-    const responseContent = completion.data.choices[0].message.content;
-    console.log("Generated sentences:", responseContent);
-    res.json({ sentences: responseContent });
+    if (completion && completion.choices && completion.choices[0]) {
+      const responseContent = completion.choices[0].message.content;
+      console.log("Generated sentences:", responseContent);
+      res.json({ sentences: responseContent });
+    } else {
+      throw new Error('Invalid response from OpenAI API');
+    }
   } catch (error) {
     console.error('Error generating sentences:', error.message);
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
+
 
 // New Route to generate short text
 app.post('/generate-short-text', async (req, res) => {
@@ -486,7 +491,7 @@ app.post('/generate-short-text', async (req, res) => {
 
     console.log("Selected topic:", topic);
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -508,7 +513,7 @@ app.post('/generate-short-text', async (req, res) => {
 
     // Ensure text is close to 1000 characters
     while (responseContent.length < 900) { // Set a lower threshold for minimum length
-      const additionalCompletion = await openai.createChatCompletion({
+      const additionalCompletion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
           {
@@ -547,7 +552,7 @@ app.post('/get-translation-explanation', async (req, res) => {
 
     console.log("Short text:", shortText);
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
