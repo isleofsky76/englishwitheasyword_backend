@@ -427,7 +427,7 @@ app.post('/generate-sentences', async (req, res) => {
         {
           role: 'system',
           content: `
-            You are an English teacher. You must provide 30 example questions that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the selected topic. Focus on questions a traveler might ask or hear during travel. The language level should be very easy and common. The output result should be in this format e.g. "Is there a playground for children at the airport? (공항에 아이들을 위한 놀이터가 있나요?)".
+            You are an English teacher. You are an English teacher living in korea. you must not forget you are speaking to young students. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You must avoid answering sensitive issues such as violence and suicide for students. You must provide 30 example questions that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all centered around the theme of the selected topic. Focus on questions a traveler might ask or hear during travel. The language level should be very easy and common. The output result should be in this format e.g. "Is there a playground for children at the airport? (공항에 아이들을 위한 놀이터가 있나요?)".
           `
         },
         {
@@ -443,6 +443,106 @@ app.post('/generate-sentences', async (req, res) => {
     res.json({ sentences: responseContent });
   } catch (error) {
     console.error('Error generating sentences:', error.message);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+
+// New Route to generate short text
+app.post('/generate-short-text', async (req, res) => {
+  try {
+    const topic = req.body.topic;
+
+    if (!topic) {
+      throw new Error('No topic provided');
+    }
+
+    console.log("Selected topic:", topic);  // Debugging
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: `
+            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." Avoid answering sensitive issues such as violence and suicide for students. Provide a long academic text (1000 characters) related to the selected topic. The text should be simple, easy to understand, easily found in textbooks at schools, and suitable for young students.
+          `
+        },
+        {
+          role: 'user',
+          content: `Generate a long text (about 1000 characters) for the topic "${topic}". The text should be about 1000 characters long and completed.`
+        }
+      ],
+      max_tokens: 512 // Increased token limit to allow longer responses
+    });
+
+    const responseContent = completion.choices[0].message['content'];
+    console.log("Generated short text:", responseContent);
+
+    // Ensure text is close to 3000 characters
+    if (responseContent.length < 1500) {
+      const additionalCompletion = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `
+              You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." Avoid answering sensitive issues such as violence and suicide for students. Provide a long academic text (1000 characters) related to the selected topic. The text should be simple, easy to understand, easily found in textbooks at schools, and suitable for young students.
+            `
+          },
+          {
+            role: 'user',
+            content: `Continue the text for the topic "${topic}". Ensure the total length is about 1000 characters.`
+          }
+        ],
+        max_tokens: 512
+      });
+
+      const additionalContent = additionalCompletion.choices[0].message['content'];
+      responseContent += " " + additionalContent;
+      console.log("Extended short text:", additionalContent);
+    }
+
+    res.json({ shortText: responseContent });
+  } catch (error) {
+    console.error('Error generating short text:', error.message);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+app.post('/get-translation-explanation', async (req, res) => {
+  try {
+    const shortText = req.body.shortText;
+
+    if (!shortText) {
+      throw new Error('No short text provided');
+    }
+
+    console.log("Short text:", shortText);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: `
+            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." Avoid answering sensitive issues such as violence and suicide for students. Provide the korean translation in korean. you must provide only translation of the text. nothing will be required than the korean translations.
+          `
+        },
+        {
+          role: 'user',
+          content: `Provide a translation for the following text: "${shortText}". The translation must be in Korean. Do not forget the explanation must be provided only in korean.`
+        }
+      ],
+      max_tokens: 3000
+    });
+
+    const responseContent = completion.choices[0].message['content'];
+    console.log("Translation and explanation:", responseContent);
+
+    res.json({ translationExplanation: responseContent });
+  } catch (error) {
+    console.error('Error getting translation and explanation:', error.message);
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
@@ -465,4 +565,6 @@ app.listen(PORT, () => {
   console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
   console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
+  console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
 });
