@@ -324,10 +324,47 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
+//=================page16html
+// Function to get a random word (renamed to getRandomWord2)
+function getRandomWord2() {
+  const words = [
+    'be', 'have', 'do', 'say', 'make', 'go', 'take', 'come', 'see', 'know',
+    'get', 'give', 'think', 'tell', 'work', 'call', 'try', 'ask', 'need', 'feel',
+    'become', 'leave', 'put', 'mean', 'keep', 'let', 'begin', 'seem', 'help', 'talk',
+    'turn', 'start', 'show', 'hear', 'play', 'run', 'move', 'like', 'live', 'believe',
+    'hold', 'bring', 'happen', 'write', 'provide', 'sit', 'stand', 'lose', 'pay', 'meet',
+    'include', 'continue', 'set', 'learn', 'change', 'lead', 'understand', 'watch', 'follow', 'stop',
+    'create', 'speak', 'read', 'allow', 'add', 'spend', 'grow', 'open', 'walk', 'win',
+    'offer', 'remember', 'love', 'consider', 'buy', 'wait', 'serve', 'die', 'send', 'expect',
+    'build', 'stay', 'fall', 'cut', 'reach', 'kill', 'remain', 'suggest', 'raise', 'pass',
+    'sell', 'require', 'report', 'decide', 'pull', 'return', 'explain', 'hope', 'develop', 'carry',
+    'break', 'receive', 'agree', 'support', 'hit', 'produce', 'eat', 'cover', 'catch', 'draw',
+    'choose', 'refer', 'appear', 'open', 'close', 'push', 'save', 'thank', 'try', 'use',
+    'want', 'work', 'find', 'give', 'show', 'tell', 'call', 'ask', 'need', 'feel',
+    'help', 'like', 'live', 'play', 'run', 'move', 'believe', 'bring', 'happen', 'write',
+    'sit', 'stand', 'lose', 'pay', 'meet', 'include', 'set', 'learn', 'change', 'watch',
+    'follow', 'stop', 'create', 'speak', 'read', 'allow', 'spend', 'grow', 'offer', 'remember',
+    'love', 'consider', 'buy', 'wait', 'die', 'send', 'expect', 'build', 'stay', 'fall',
+    'cut', 'reach', 'kill', 'remain', 'suggest', 'raise', 'pass', 'sell', 'require', 'report',
+    'decide', 'pull', 'return', 'hope', 'develop', 'carry', 'break', 'receive', 'agree', 'support',
+    'hit', 'produce', 'eat', 'cover', 'catch', 'draw', 'choose', 'refer', 'appear', 'open',
+    'close', 'push', 'thank', 'use', 'want', 'work', 'find', 'give', 'show', 'tell',
+    'call', 'ask', 'need', 'feel', 'help', 'like', 'live', 'play', 'run', 'move',
+    'believe', 'bring', 'happen', 'write', 'sit', 'stand', 'lose', 'pay', 'meet', 'include',
+    'set', 'learn', 'change', 'watch', 'follow', 'stop', 'create', 'speak', 'read', 'allow',
+    'spend', 'grow', 'offer', 'remember', 'love', 'consider', 'buy', 'wait', 'die', 'send',
+    'expect', 'build', 'stay', 'fall', 'cut', 'reach', 'kill', 'remain', 'suggest', 'raise',
+    'pass', 'sell', 'require', 'report', 'decide', 'pull', 'return', 'hope', 'develop', 'carry',
+    'break', 'receive', 'agree', 'support', 'hit', 'produce', 'eat', 'cover', 'catch', 'draw',
+    'choose', 'refer', 'appear'
+];
+  return words[Math.floor(Math.random() * words.length)];
+}
 
+// Quiz Route
 app.post('/quiz', async (req, res) => {
   try {
-    const word = getRandomWord();
+    const word = getRandomWord2();
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -338,12 +375,12 @@ app.post('/quiz', async (req, res) => {
         },
         {
           role: 'user',
-          content: `Create an example sentence using a word "${word}". Ensure that a word is used in the blank indicated by (____). The sentence should be at a middle to high school level.`
+          content: `Create an example sentence using the word "${word}". Ensure that the word is used in the blank indicated by (____). The sentence should be at a middle to high school level.`
         }
       ],
     });
 
-    const responseContent = completion.data.choices[0].message.content;
+    const responseContent = completion.choices[0].message.content;
     console.log("Sending Quiz response:", responseContent);
     res.json({ quiz: responseContent });
   } catch (error) {
@@ -378,7 +415,7 @@ app.post('/quiz/check', async (req, res) => {
       ],
     });
 
-    const responseContent = completion.data.choices[0].message.content;
+    const responseContent = completion.choices[0].message.content;
     console.log("Sending Check response:", responseContent);
     res.json({ result: responseContent });
   } catch (error) {
@@ -387,6 +424,7 @@ app.post('/quiz/check', async (req, res) => {
   }
 });
 
+// Show Answer Route
 app.post('/quiz/show', async (req, res) => {
   try {
     const { question } = req.body;
@@ -402,7 +440,7 @@ app.post('/quiz/show', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect..'
+          content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect.'
         },
         {
           role: 'user',
@@ -411,7 +449,7 @@ app.post('/quiz/show', async (req, res) => {
       ],
     });
 
-    const responseContent = completion.data.choices[0].message.content;
+    const responseContent = completion.choices[0].message.content;
     console.log("Sending Show Answer response:", responseContent);
     res.json({ answer: responseContent });
   } catch (error) {
@@ -421,7 +459,9 @@ app.post('/quiz/show', async (req, res) => {
 });
 
 
-// Get Hint Route
+
+
+//page================ Get Hint Route
 app.post('/get-hint', async (req, res) => {
   try {
     const { item, hintIndex } = req.body;
@@ -491,8 +531,16 @@ app.post('/generate-short-text', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for tourists. Each sentence must be in English followed by the Korean translation in parentheses. The format should be: "Please keep your belongings close to you at all times. (소지품을 항상 가까이에 보관해주세요.)"'},
-        { role: 'user', content: `Generate useful expressions in english and korean for tourists related to the "${topic}".` }
+        {
+          role: 'system',
+          content: `
+            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.
+          `
+        },
+        {
+          role: 'user',
+          content: `Generate a long text for the topic "${topic}". The text should be about 1000 characters long.`
+        }
       ],
       max_tokens: 512
     });
@@ -646,4 +694,5 @@ app.listen(PORT, () => {
   console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
 });
+
 
