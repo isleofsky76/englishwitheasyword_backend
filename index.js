@@ -673,6 +673,35 @@ app.post('/generate-sentences', async (req, res) => {
 
 
 //================================================================================page22.html
+
+//===============================================================================
+app.post('/get-synonyms', async (req, res) => {
+  try {
+    const { word } = req.body;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant. Provide synonyms and related example sentences followed by the Korean translation in parentheses. the format must be "Apart - We sat apart from each other during the meeting. (우리는 회의 중에 서로 떨어져 앉았다.)".'
+        },
+        {
+          role: 'user',
+          content: `Give me synonyms and related simple and useful expressions as much as you can, followed by the Korean translation in parentheses for the word "${word}".`
+        }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    res.json({ synonyms: responseContent });
+  } catch (error) {
+    console.error('Error fetching synonyms:', error);
+    res.status(500).send('Error fetching synonyms.');
+  }
+});
+
+//================================================================================page22.html
 app.post('/ask-question', async (req, res) => {
   try {
     const { question } = req.body;
