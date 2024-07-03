@@ -609,8 +609,8 @@ app.post('/generate-sentences', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for tourists.' },
-        { role: 'user', content: `Generate useful expressions while traveling related to the "${topic}".` }
+        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for tourists. You must write english and korean translation together' },
+        { role: 'user', content: `Generate useful expressions in english and korean for tourists related to the "${topic}".` }
       ],
       max_tokens: 512
     });
