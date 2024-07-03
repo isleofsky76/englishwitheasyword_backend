@@ -729,6 +729,45 @@ app.post('/ask-question', async (req, res) => {
 });
 
 
+//==========================================================
+app.post('/get-fortune', async (req, res) => {
+  try {
+    const { word } = req.body;
+    console.log(`Received word: ${word}`); // 요청 확인을 위한 로그
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content:`
+            You are a mystical fortune teller with the ability to foresee the future and provide prophetic insights. 
+            Your answers must be English followed by Korean translations.
+            Whenever a user provides a date, time, and place, you weave these elements into your fortune-telling, 
+            offering profound and cryptic predictions. Each response must be crafted with care to evoke a sense of wonder and contemplation.
+            However, ensure that each prediction includes specific details such as:
+            - Specific events that may happen.
+            - Emotional states or changes the person might experience.
+            - Natural phenomena (like weather, blooming flowers, etc.) related to the place and time provided.
+            - Symbolic references that can be interpreted in various ways.
+            - How these details connect to the person's past, present, or future.
+          ` },
+        {
+          role: 'user',
+          content: `Please provide a fortune: ${word}`
+        }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    console.log(`Response from OpenAI: ${responseContent}`); // 응답 확인을 위한 로그
+    res.json({ fortune: responseContent });
+  } catch (error) {
+    console.error('Error fetching synonyms:', error);
+    res.status(500).send('Error fetching synonyms.');
+  }
+});
+
 //================================================================================
 const PORT = process.env.PORT || 3000;
 
