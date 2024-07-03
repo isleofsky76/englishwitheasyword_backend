@@ -491,16 +491,8 @@ app.post('/generate-short-text', async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        {
-          role: 'system',
-          content: `
-            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.
-          `
-        },
-        {
-          role: 'user',
-          content: `Generate a long text for the topic "${topic}". The text should be about 1000 characters long.`
-        }
+        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for tourists. Each sentence must be in English followed by the Korean translation in parentheses. The format should be: "Please keep your belongings close to you at all times. (소지품을 항상 가까이에 보관해주세요.)"'},
+        { role: 'user', content: `Generate useful expressions in english and korean for tourists related to the "${topic}".` }
       ],
       max_tokens: 512
     });
