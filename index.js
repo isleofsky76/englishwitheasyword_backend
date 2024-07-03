@@ -672,6 +672,34 @@ app.post('/generate-sentences', async (req, res) => {
 });
 
 
+//================================================================================page22.html
+app.post('/ask-question', async (req, res) => {
+  try {
+    const { question } = req.body;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant. Answer the user\'s question based on the provided synonyms and example sentences. You must use the same language that users enter. korean to korean, english to english.'
+        },
+        {
+          role: 'user',
+          content: question
+        }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    res.json({ response: responseContent });
+  } catch (error) {
+    console.error('Error asking question:', error);
+    res.status(500).send('Error asking question.');
+  }
+});
+
+
 //================================================================================
 const PORT = process.env.PORT || 3000;
 
@@ -693,6 +721,8 @@ app.listen(PORT, () => {
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
   console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
 });
 
 
