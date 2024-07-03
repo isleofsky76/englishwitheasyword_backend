@@ -324,6 +324,7 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
+
 app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord();
@@ -594,9 +595,44 @@ app.post('/get-translation-explanation', async (req, res) => {
   }
 });
 
-//=========================
+//generated sentences=======================================
+app.post('/generate-sentences', async (req, res) => {
+  try {
+    const { topic } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ advice: 'Please provide a valid topic.' });
+    }
+
+    console.log("Selected topic:", topic);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for tourists.' },
+        { role: 'user', content: `Generate useful expressions while traveling related to the "${topic}".` }
+      ],
+      max_tokens: 512
+    });
+
+    console.log("Completion response:", JSON.stringify(completion, null, 2));
+
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    const responseContent = completion.choices[0].message.content;
+
+    res.json({ sentences: responseContent });
+  } catch (error) {
+    console.error('Error:', error.message);
+    console.error('Error details:', error.response ? error.response.data : 'No additional error details');
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
 
 
+//================================================================================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
