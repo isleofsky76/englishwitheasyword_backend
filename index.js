@@ -768,6 +768,110 @@ app.post('/get-fortune', async (req, res) => {
   }
 });
 
+//generated sentences=======================================page25
+app.post('/generate-sentences2', async (req, res) => {
+  try {
+    const { topic } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ advice: 'Please provide a valid topic.' });
+    }
+
+    console.log("Selected topic:", topic);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for students. Each sentence must be in English followed by the Korean translation in parentheses. The format should be: "Please keep your belongings close to you at all times. (소지품을 항상 가까이에 보관해주세요.)"'},
+        { role: 'user', content: `Generate useful expressions in english and korean for students related to the "${topic}".` }
+      ],
+      max_tokens: 1000
+    });
+
+    console.log("Completion response:", JSON.stringify(completion, null, 2));
+
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    const responseContent = completion.choices[0].message.content;
+
+    res.json({ sentences: responseContent });
+  } catch (error) {
+    console.error('Error:', error.message);
+    console.error('Error details:', error.response ? error.response.data : 'No additional error details');
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+//===============================================================================
+
+//generated sentences=======================================page25
+app.post('/generate-sentences-routines', async (req, res) => {
+  try {
+    const { topic } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ advice: 'Please provide a valid topic.' });
+    }
+
+    console.log("Selected topic:", topic);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are an English teacher. Provide 10 useful sentences for students. Each sentence must be in English followed by the Korean translation in parentheses. The format should be: "Please keep your belongings close to you at all times. (소지품을 항상 가까이에 보관해주세요.)"'},
+        { role: 'user', content: `Generate useful expressions in english and korean for students related to the "${topic}".` }
+      ],
+      max_tokens: 1000
+    });
+
+    console.log("Completion response:", JSON.stringify(completion, null, 2));
+
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No choices in the completion response');
+    }
+
+    const responseContent = completion.choices[0].message.content;
+
+    res.json({ sentences: responseContent });
+  } catch (error) {
+    console.error('Error:', error.message);
+    console.error('Error details:', error.response ? error.response.data : 'No additional error details');
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
+});
+
+//==================
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log('Endpoints:');
+  console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
+  console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
+  console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
+  console.log(`- Health Check: http://localhost:${PORT}/healthz`);
+  console.log(`- Root: http://localhost:${PORT}/`);
+  console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
+  console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
+  console.log(`- Quiz: http://localhost:${PORT}/quiz`);
+  console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
+  console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
+  console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
+  console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
+  console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
+  console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms-korean`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question-korean`);
+  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
+  console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
+});
+
+
 //================================================================================
 const PORT = process.env.PORT || 3000;
 
