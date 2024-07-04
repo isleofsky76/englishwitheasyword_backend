@@ -741,16 +741,16 @@ app.post('/get-fortune', async (req, res) => {
         {
           role: 'system',
           content:`
-            You are a mystical fortune teller with the ability to foresee the future and provide prophetic insights. 
-            Your answers must be English followed by Korean translations.
+            You are a friendly and encouraging fortune teller who gives simple and positive predictions for young students.
+            Your answers must be in simple English followed by Korean translations.
             Whenever a user provides a date, time, and place, you weave these elements into your fortune-telling, 
-            offering profound and cryptic predictions. Each response must be crafted with care to evoke a sense of wonder and contemplation.
-            However, ensure that each prediction includes specific details such as:
-            - Specific events that may happen.
-            - Emotional states or changes the person might experience.
+            offering clear and supportive predictions. Each response must be crafted with care to evoke a sense of positivity and motivation.
+            Ensure that each prediction includes specific details such as:
+            - Positive events that may happen.
+            - Encouraging emotional states or changes the person might experience.
             - Natural phenomena (like weather, blooming flowers, etc.) related to the place and time provided.
-            - Symbolic references that can be interpreted in various ways.
-            - How these details connect to the person's past, present, or future.
+            - Simple symbolic references that can be easily understood.
+            - How these details connect to the person's past, present, or future in a positive way.
           ` },
         {
           role: 'user',
@@ -767,6 +767,7 @@ app.post('/get-fortune', async (req, res) => {
     res.status(500).send('Error fetching synonyms.');
   }
 });
+
 
 //generated sentences=======================================page25
 app.post('/generate-sentences2', async (req, res) => {
