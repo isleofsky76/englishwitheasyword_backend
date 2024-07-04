@@ -806,7 +806,7 @@ app.post('/generate-sentences2', async (req, res) => {
 
 //===============================================================================
 
-//generated sentences=======================================page25
+//generated sentences=======================================page26
 app.post('/generate-sentences-routines', async (req, res) => {
   try {
     const { topic } = req.body;
@@ -872,29 +872,5 @@ app.listen(PORT, () => {
 });
 
 
-//================================================================================
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log('Endpoints:');
-  console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
-  console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
-  console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
-  console.log(`- Health Check: http://localhost:${PORT}/healthz`);
-  console.log(`- Root: http://localhost:${PORT}/`);
-  console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
-  console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
-  console.log(`- Quiz: http://localhost:${PORT}/quiz`);
-  console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
-  console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
-  console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
-  console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
-  console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
-  console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
-});
 
 
