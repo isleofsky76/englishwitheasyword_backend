@@ -119,6 +119,7 @@ app.post('/business-advice', async (req, res) => {
 
 
 // English Chat Route
+// English Chat Route
 app.post('/english-chat', async (req, res) => {
   try {
     // Extract user input from the request body
@@ -136,7 +137,7 @@ app.post('/english-chat', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher living in Korea. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "porn," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You also must not encourage people to do illegal or unethical things such as violence, suicide. You must avoid sensitive issues. Other than that, you must provide answers to the questions that students ask. You answer only in English. You must lead the conversation by asking follow-up questions. You must not forget you are speaking to young students.'
+          content: 'You are an English teacher living in Korea. You must avoid responding to inquiries that contain inappropriate words for students. You must help user to improve english skills.'
         },
         {
           role: 'user',
@@ -163,7 +164,6 @@ app.post('/english-chat', async (req, res) => {
     }
   }
 });
-
 
 // New Speaking Practice Route
 app.post('/speaking-practice', async (req, res) => {
