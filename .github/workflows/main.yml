@@ -28,7 +28,7 @@ jobs:
         -H "Authorization: Bearer $CLOUDTYPE_API_KEY" \
         -H "Content-Type: application/json" \
         -d '{
-              "repository": "https://github.com/your_username/your_repo.git",
+              "repository": "https://github.com/isleofsky76/your_repo.git",
               "branch": "main",
               "commands": [
                 "cd backend",
