@@ -16,3 +16,4 @@ services:
       - "3000:3000"
     command: >
       sh -c "npm install && npm run build && npm start"
+ 
