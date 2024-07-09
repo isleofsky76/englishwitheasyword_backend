@@ -40,3 +40,4 @@ jobs:
                 "ADMIN_PASSWORD": "$ADMIN_PASSWORD"
               }
             }'
+
