@@ -17,13 +17,20 @@ const openai = new OpenAI({
 
 console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
+
 // Set up the Express app
 const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// 정적 파일 제공 경로 설정
-app.use(express.static('public'));
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(cors({
+    origin: 'https://englisheasystudy.com', // 실제 도메인으로 변경
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  }));
+} else {
+  app.use(cors()); // 모든 도메인 접근 허용 (개발 환경)
+}
+
 
 
 // 환경 변수에서 MongoDB URI 읽기
