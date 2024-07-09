@@ -2,6 +2,10 @@ import OpenAI from 'openai';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+import bcrypt from 'bcrypt';
+
 
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
@@ -18,6 +22,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// 정적 파일 제공 경로 설정
+app.use(express.static('public'));
+
+
+// 환경 변수에서 MongoDB URI 읽기
+const uri = process.env.MONGO_URI;
+
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log('MongoDB 연결 성공');
+})
+.catch((error) => {
+  console.error('MongoDB 연결 실패:', error);
+});
+
+
+const guestbookEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 }
+});
+
+const GuestbookEntry = mongoose.model('GuestbookEntry', guestbookEntrySchema);
+
+
+app.use(bodyParser.json());
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
 
 // 루트 경로 엔드포인트 추가
 app.get('/', (req, res) => {
@@ -119,7 +158,6 @@ app.post('/business-advice', async (req, res) => {
 
 
 // English Chat Route
-// English Chat Route
 app.post('/english-chat', async (req, res) => {
   try {
     // Extract user input from the request body
@@ -164,6 +202,7 @@ app.post('/english-chat', async (req, res) => {
     }
   }
 });
+
 
 // New Speaking Practice Route
 app.post('/speaking-practice', async (req, res) => {
@@ -671,9 +710,6 @@ app.post('/generate-sentences', async (req, res) => {
   }
 });
 
-
-//================================================================================page22.html
-
 //===============================================================================
 app.post('/get-synonyms', async (req, res) => {
   try {
@@ -721,13 +757,68 @@ app.post('/ask-question', async (req, res) => {
     });
 
     const responseContent = completion.choices[0].message.content;
-    res.json({ response: responseContent });
+    res.json({ synonyms: responseContent });
   } catch (error) {
-    console.error('Error asking question:', error);
-    res.status(500).send('Error asking question.');
+    console.error('Error fetching synonyms:', error);
+    res.status(500).send('Error fetching synonyms.');
   }
 });
 
+
+//================================================이 코드 보류page23
+app.post('/get-synonyms-korean', async (req, res) => {
+  try {
+    const { word } = req.body;
+    console.log(`Received word: ${word}`); // 요청 확인을 위한 로그
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant. Provide synonyms and related example sentences followed by the Korean translation in parentheses. The format must be "Apart - We sat apart from each other during the meeting. (우리는 회의 중에 서로 떨어져 앉았다.)".'
+        },
+        {
+          role: 'user',
+          content: `Give me synonyms and related simple and useful expressions as much as you can, followed by the Korean translation in parentheses for the word "${word}".`
+        }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    res.json({ synonyms: responseContent });
+  } catch (error) {
+    console.error('Error fetching synonyms:', error);
+    res.status(500).send('Error fetching synonyms.');
+  }
+});
+
+app.post('/ask-question-korean', async (req, res) => {
+  try {
+    const { question } = req.body;
+    console.log(`Received question: ${question}`); // 요청 확인을 위한 로그
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant. Answer the user\'s question based on the provided synonyms and example sentences. You must use the same language that users enter. Korean to Korean, English to English.'
+        },
+        {
+          role: 'user',
+          content: question
+        }
+      ],
+    });
+
+    const responseContent = completion.choices[0].message.content;
+    res.json({ synonyms: responseContent });
+  } catch (error) {
+    console.error('Error fetching synonyms:', error);
+    res.status(500).send('Error fetching synonyms.');
+  }
+});
 
 //==========================================================
 app.post('/get-fortune', async (req, res) => {
@@ -807,7 +898,7 @@ app.post('/generate-sentences2', async (req, res) => {
 
 //===============================================================================
 
-//generated sentences=======================================page26
+//generated sentences=======================================page25
 app.post('/generate-sentences-routines', async (req, res) => {
   try {
     const { topic } = req.body;
@@ -843,7 +934,121 @@ app.post('/generate-sentences-routines', async (req, res) => {
   }
 });
 
-//==================
+
+//==================================guestbook.
+
+
+// New entry 생성 시 비밀번호 해시 처리
+app.get('/guestbook', async (req, res) => {
+  try {
+    const entries = await GuestbookEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving guestbook entries' });
+  }
+});
+
+app.post('/guestbook', async (req, res) => {
+  const { title, message, nickname, password } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new GuestbookEntry({ title, message, nickname, password: hashedPassword });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving guestbook entry' });
+  }
+});
+
+app.post('/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await GuestbookEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await GuestbookEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await GuestbookEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting guestbook entry' });
+  }
+});
+///=============
+const adminPassword = process.env.ADMIN_PASSWORD;
+
+app.post('/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await GuestbookEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    await GuestbookEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await GuestbookEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await bcrypt.compare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+//==============================================================================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -870,8 +1075,7 @@ app.listen(PORT, () => {
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question-korean`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
+  console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
+
 });
-
-
-
 
