@@ -10,6 +10,8 @@ services:
       - /usr/src/app/node_modules
     environment:
       - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     ports:
       - "3000:3000"
     command: >
