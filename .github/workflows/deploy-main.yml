@@ -1,44 +1,43 @@
-name: Deploy to cloudtype
+name: Deploy to Cloudtype
+
 on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Connect deploy key
-        uses: cloudtype-github-actions/connect@v1
-        with:
-          token: ${{ secrets.CLOUDTYPE_TOKEN }}
-          ghtoken: ${{ secrets.GHP_TOKEN }}
-      - name: Deploy
-        uses: cloudtype-github-actions/deploy@v1
-        with:
-          token: ${{ secrets.CLOUDTYPE_TOKEN }}
-          project: isleofsky76/englishwitheasyword-backend
-          stage: main
-          yaml: |
-            name: englishwitheasyword-backend
-            app: node@20
-            options:
-              env:
-                - name: NODE_ENV
-                  value: production
-                - name: OPENAI_API_KEY
-                  secret: OPENAI_API_KEY
-                - name: ADMIN_PASSWORD
-                  secret: ADMIN_PASSWORD
-                - name: MONGO_URI
-                  secret: MONGO_URI
-              ports: 3000
-              start: node index.js
-              install: npm ci --production
-              healthz: /healthz
-              buildenv: []
-            context:
-              git:
-                url: git@github.com:${{ github.repository }}.git
-                ref: ${{ github.ref }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Deploy to Cloudtype
+      env:
+        CLOUDTYPE_API_KEY: ${{ secrets.CLOUDTYPE_API_KEY }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      run: |
+        curl -X POST "https://api.cloudtype.io/deploy" \
+        -H "Authorization: Bearer $CLOUDTYPE_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d '{
+              "repository": "https://github.com/isleofsky76/englishwitheasyword_backend.git",
+              "branch": "main",
+              "commands": [
+                "cd backend",
+                "docker-compose down",
+                "docker-compose up -d"
+              ],
+              "environment": {
+                "MONGO_URI": "$MONGO_URI",
+                "ADMIN_PASSWORD": "$ADMIN_PASSWORD"
+              }
+            }'
+
