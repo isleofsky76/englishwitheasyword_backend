@@ -47,8 +47,9 @@ const guestbookEntrySchema = new mongoose.Schema({
   nickname: String,
   password: String,
   date: { type: Date, default: Date.now },
-  views: { type: Number, default: 0 }
-});
+  views: { type: Number, default: 0 },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'guestbook' });
 
 const GuestbookEntry = mongoose.model('GuestbookEntry', guestbookEntrySchema);
 
@@ -1076,5 +1077,6 @@ app.listen(PORT, () => {
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
   console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
+
 });
 
