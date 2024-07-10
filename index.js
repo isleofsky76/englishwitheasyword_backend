@@ -19,16 +19,12 @@ console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
 // Set up the Express app
 const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// 정적 파일 제공 경로 설정
+app.use(express.static('public'));
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(cors({
-    origin: 'https://englisheasystudy.com', // 실제 도메인으로 변경
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-  }));
-} else {
-  app.use(cors()); // 모든 도메인 접근 허용 (개발 환경)
-}
 
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
@@ -948,7 +944,6 @@ app.get('/guestbook', async (req, res) => {
     const entries = await GuestbookEntry.find();
     res.status(200).json({ entries });
   } catch (error) {
-    console.error('Error retrieving guestbook entries:', error.message);
     res.status(500).json({ error: 'Error retrieving guestbook entries' });
   }
 });
@@ -960,14 +955,13 @@ app.post('/guestbook', async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newEntry = new GuestbookEntry({ title, message, nickname, password: hashedPassword });
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new GuestbookEntry({ title, message, nickname, password: hashedPassword });
 
+  try {
     await newEntry.save();
     res.status(201).json({ entry: newEntry });
   } catch (error) {
-    console.error('Error saving guestbook entry:', error.message);
     res.status(500).json({ error: 'Error saving guestbook entry' });
   }
 });
@@ -1082,6 +1076,5 @@ app.listen(PORT, () => {
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
   console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
-
 });
 
