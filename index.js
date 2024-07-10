@@ -6,32 +6,24 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
 
-
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
 
-// Initialize the OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
-
-// Set up the Express app
+// Initialize the Express app
 const app = express();
+
+// CORS 설정
+const corsOptions = {
+  origin: 'https://englisheasystudy.com', // 허용할 도메인
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // 정적 파일 제공 경로 설정
 app.use(express.static('public'));
 
-// CORS 설정 추가
-const corsOptions = {
-  origin: 'https://englisheasystudy.com', // 허용할 도메인
-  optionsSuccessStatus: 200 // 일부 브라우저에서 204 상태 코드를 반환하는 대신 200 상태 코드 사용
-};
-
-app.use(cors());
 
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
