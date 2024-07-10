@@ -17,7 +17,6 @@ const openai = new OpenAI({
 
 console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
-
 // Set up the Express app
 const app = express();
 
@@ -30,8 +29,6 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   app.use(cors()); // 모든 도메인 접근 허용 (개발 환경)
 }
-
-
 
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
@@ -951,6 +948,7 @@ app.get('/guestbook', async (req, res) => {
     const entries = await GuestbookEntry.find();
     res.status(200).json({ entries });
   } catch (error) {
+    console.error('Error retrieving guestbook entries:', error.message);
     res.status(500).json({ error: 'Error retrieving guestbook entries' });
   }
 });
@@ -962,13 +960,14 @@ app.post('/guestbook', async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newEntry = new GuestbookEntry({ title, message, nickname, password: hashedPassword });
-
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newEntry = new GuestbookEntry({ title, message, nickname, password: hashedPassword });
+
     await newEntry.save();
     res.status(201).json({ entry: newEntry });
   } catch (error) {
+    console.error('Error saving guestbook entry:', error.message);
     res.status(500).json({ error: 'Error saving guestbook entry' });
   }
 });
