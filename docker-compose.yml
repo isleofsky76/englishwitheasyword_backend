@@ -3,17 +3,21 @@ version: '3.8'
 services:
   backend:
     container_name: backend
-    image: node:20
+    build:
+      context: .
+      dockerfile: Dockerfile
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - MONGO_URI=${MONGO_URI}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     ports:
       - "3000:3000"
     command: >
-      sh -c "npm install && npm run build && npm start"
- 
+      sh -c "npm ci --production && npm run build && npm start"
+    env_file:
+      - .env
