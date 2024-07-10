@@ -1085,6 +1085,8 @@ app.listen(PORT, () => {
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
   console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
+  console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
+  console.log(`- Sitemap.xml: http://localhost:${PORT}/sitemap.xml`);
 
 });
 
