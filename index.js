@@ -9,6 +9,14 @@ import bcrypt from 'bcrypt';
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
 
+// Initialize the OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
+
+
 // Initialize the Express app
 const app = express();
 
