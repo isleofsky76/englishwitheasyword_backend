@@ -14,8 +14,9 @@ const app = express();
 
 // CORS 설정
 const corsOptions = {
-  origin: 'https://englisheasystudy.com', // 허용할 도메인
-  optionsSuccessStatus: 200
+  origin: 'https://englisheasystudy.com',
+  optionsSuccessStatus: 200,
+  credentials: true
 };
 app.use(cors(corsOptions));
 
