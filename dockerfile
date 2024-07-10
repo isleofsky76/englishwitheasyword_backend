@@ -16,8 +16,8 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Define environment variables
-ARG NODE_ENV
+# Define build arguments
+ARG NODE_ENV=production
 ARG OPENAI_API_KEY
 ARG MONGO_URI
 ARG ADMIN_PASSWORD
