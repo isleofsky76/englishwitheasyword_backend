@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
+import RSS from 'rss'; // RSS 모듈 추가
 
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
@@ -1057,7 +1058,42 @@ app.post('/updatepost', async (req, res) => {
     res.status(500).json({ error: 'Error updating post' });
   }
 });
+
 //==============================================================================
+// RSS 피드 엔드포인트 추가
+app.get('/rss', async (req, res) => {
+  try {
+    // 데이터베이스에서 최신 포스트를 가져옵니다.
+    const entries = await GuestbookEntry.find().sort({ date: -1 }).limit(20);
+
+    // RSS 피드 생성
+    const feed = new RSS({
+      title: 'free english study',
+      description: 'English Happy Learning',
+      feed_url: 'https://englisheasystudy.com/rss',
+      site_url: 'https://englisheasystudy.com/',
+      language: 'en'
+    });
+
+    // 포스트 데이터를 RSS 피드에 추가
+    entries.forEach(entry => {
+      feed.item({
+        title: entry.title,
+        description: entry.message,
+        url: `https://englisheasystudy.com/${entry.url}`,
+        date: entry.date
+      });
+    });
+
+    // RSS 피드를 XML 형식으로 응답
+    res.type('application/rss+xml');
+    res.send(feed.xml());
+  } catch (error) {
+    console.error('Error generating RSS feed:', error);
+    res.status(500).send('Error generating RSS feed.');
+  }
+});
+//===============================================================================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
