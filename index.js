@@ -1116,8 +1116,8 @@ app.listen(PORT, () => {
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms-korean`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question-korean`);
+  // console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms-korean`);
+  // console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question-korean`);
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
   console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
