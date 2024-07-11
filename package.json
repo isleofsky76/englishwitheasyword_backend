@@ -18,7 +18,7 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.0",
     "openai": "^4.52.3"
-    "rss": "^1.2.2"
+    "rss": "^1.2.2",
   },
   "keywords": [],
   "description": ""
