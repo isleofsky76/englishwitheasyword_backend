@@ -23,6 +23,9 @@ jobs:
         CLOUDTYPE_API_KEY: ${{ secrets.CLOUDTYPE_API_KEY }}
         MONGO_URI: ${{ secrets.MONGO_URI }}
         ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
       run: |
         curl -X POST "https://api.cloudtype.io/deploy" \
         -H "Authorization: Bearer $CLOUDTYPE_API_KEY" \
@@ -36,8 +39,10 @@ jobs:
                 "docker-compose up -d"
               ],
               "environment": {
-                "MONGO_URI": "$MONGO_URI",
-                "ADMIN_PASSWORD": "$ADMIN_PASSWORD"
+                "MONGO_URI": "${{ secrets.MONGO_URI }}",
+                "ADMIN_PASSWORD": "${{ secrets.ADMIN_PASSWORD }}",
+                "GOOGLE_CLIENT_ID": "${{ secrets.GOOGLE_CLIENT_ID }}",
+                "GOOGLE_CLIENT_SECRET": "${{ secrets.GOOGLE_CLIENT_SECRET }}",
+                "GOOGLE_API_KEY": "${{ secrets.GOOGLE_API_KEY }}"
               }
             }'
-
