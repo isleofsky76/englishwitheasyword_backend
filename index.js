@@ -13,10 +13,12 @@ import { promisify } from 'util';
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
 
-//google api 
 const client = new textToSpeech.TextToSpeechClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-})
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  }
+});
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
