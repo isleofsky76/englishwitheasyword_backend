@@ -1184,5 +1184,4 @@ app.listen(PORT, () => {
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
 
-});
 
