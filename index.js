@@ -20,6 +20,9 @@ const client = new textToSpeech.TextToSpeechClient({
   }
 });
 
+console.log("Google Client Email:", process.env.GOOGLE_CLIENT_EMAIL);
+console.log("Google Private Key:", process.env.GOOGLE_PRIVATE_KEY ? "Exists" : "Doesn't exist");
+
 // Initialize the OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -1183,5 +1186,3 @@ app.listen(PORT, () => {
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
-
-
