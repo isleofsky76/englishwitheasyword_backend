@@ -6,9 +6,17 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
 import RSS from 'rss'; // RSS 모듈 추가
+import textToSpeech from '@google-cloud/text-to-speech';
+import fs from 'fs';
+import { promisify } from 'util';
 
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
+
+//google api 
+const client = new textToSpeech.TextToSpeechClient({
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
+})
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
@@ -18,14 +26,32 @@ const openai = new OpenAI({
 console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
 
+//=============================라이브환경용.
 // Initialize the Express app
+// const app = express();
+
+// CORS 설정
+// const corsOptions = {
+//   origin: 'https://englisheasystudy.com',
+//   optionsSuccessStatus: 200,
+//   credentials: true
+// };
+// app.use(cors(corsOptions));
+
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// // 정적 파일 제공 경로 설정
+// app.use(express.static('public'));
+
+//=============================
+
+// Initialize the Express app 로컬용.
 const app = express();
 
 // CORS 설정
 const corsOptions = {
-  origin: 'https://englisheasystudy.com',
-  optionsSuccessStatus: 200,
-  credentials: true
+  origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://englisheasystudy.com'], // 허용할 도메인 추가
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 
@@ -34,6 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 // 정적 파일 제공 경로 설정
 app.use(express.static('public'));
 
+//========================================
 
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
@@ -1058,7 +1085,6 @@ app.post('/updatepost', async (req, res) => {
     res.status(500).json({ error: 'Error updating post' });
   }
 });
-
 //==============================================================================
 // RSS 피드 엔드포인트 추가
 app.get('/rss', async (req, res) => {
@@ -1093,6 +1119,37 @@ app.get('/rss', async (req, res) => {
     res.status(500).send('Error generating RSS feed.');
   }
 });
+
+// 음성 생성 엔드포인트 추가////////////////
+app.get('/generate-audio', async (req, res) => {
+  const { text, language } = req.query;
+  const languageCode = language;
+  const voiceName = language === 'ko-KR' ? 'ko-KR-Wavenet-A' : 'en-GB-Wavenet-D';
+
+  const request = {
+    input: { text },
+    voice: {
+      languageCode,
+      name: voiceName,
+      ssmlGender: 'NEUTRAL'
+    },
+    audioConfig: {
+      audioEncoding: 'MP3',
+      speakingRate: 1.0,
+      pitch: 0.0
+    },
+  };
+
+  try {
+    const [response] = await client.synthesizeSpeech(request);
+    res.set('Content-Type', 'audio/mpeg');
+    res.send(response.audioContent);
+  } catch (error) {
+    console.error('Error generating audio:', error.message);
+    res.status(500).json({ error: 'Error generating audio' });
+  }
+});
+
 //===============================================================================
 const PORT = process.env.PORT || 3000;
 
@@ -1122,7 +1179,8 @@ app.listen(PORT, () => {
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
   console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
-  console.log(`- Sitemap.xml: http://localhost:${PORT}/sitemap.xml`);
+  console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
+});
 
 });
 
