@@ -1125,35 +1125,92 @@ app.get('/rss', async (req, res) => {
   }
 });
 
-// 음성 생성 엔드포인트 추가////////////////
-app.get('/generate-audio', async (req, res) => {
-  const { text, language } = req.query;
-  const languageCode = language;
-  const voiceName = language === 'ko-KR' ? 'ko-KR-Wavenet-A' : 'en-GB-Wavenet-D';
+// 1음성 생성 엔드포인트 추가////////////////
 
+app.get('/generate-audio', async (req, res) => {
+  const { text, language, voice } = req.query;
+  const languageCode = language || 'en-US'; // 기본값을 미국 영어로 변경
+
+  // 기본 음성 설정
+  const defaultVoiceMap = {
+    'en-AU': ['en-AU-Neural2-B', 'en-AU-Neural2-C'], // 호주 남성, 여성
+    'en-IN': ['en-IN-Journey-D', 'en-IN-Wavenet-A'], // 인도 남성, 여성
+    'en-GB': ['en-GB-News-I'], // 영국 영어 여성, 남성
+    'en-US': ['en-US-News-N', 'en-US-Neural2-C', 'en-US-Neural2-D', 'en-US-Neural2-J', 'en-US-Wavenet-D'], // 미국 영어 남성, 여성
+    'ko-KR': ['ko-KR-Wavenet-C'] // 한국어 남성 음성
+  };
+
+  // 음성 선택 (voice가 없으면 기본 음성 사용)
+  const voiceName = voice || defaultVoiceMap[language]?.[0] || 'en-US-News-N';
+
+  console.log(`🟢 Requested Text: ${text}`);
+  console.log(`🟢 Requested Language: ${language}`);
+  console.log(`🟢 Requested Voice: ${voice}`);
+  console.log(`🟢 Selected Voice: ${voiceName}`);
+
+  // 올바른 음성 설정이 없으면 에러 반환
+  if (!voiceName) {
+    console.error('🔴 Invalid language or voice specified.');
+    return res.status(400).json({ error: 'Invalid language or voice specified.' });
+  }
+
+  // 음성 생성 요청 설정
   const request = {
     input: { text },
     voice: {
       languageCode,
-      name: voiceName,
-      ssmlGender: 'NEUTRAL'
+      name: voiceName
     },
     audioConfig: {
       audioEncoding: 'MP3',
       speakingRate: 1.0,
       pitch: 0.0
-    },
+    }
   };
 
   try {
-    const [response] = await client.synthesizeSpeech(request);
+    const [response] = await textToSpeechClient.synthesizeSpeech(request);
+
+    // 오류 확인을 위해 로그 추가
+    console.log('🟢 Audio response received successfully!');
+
     res.set('Content-Type', 'audio/mpeg');
     res.send(response.audioContent);
   } catch (error) {
-    console.error('Error generating audio:', error.message);
-    res.status(500).json({ error: 'Error generating audio' });
+    console.error('🔴 Error generating audio:', error.message);
+    res.status(500).json({ error: `Error generating audio: ${error.message}` });
   }
 });
+
+//////////////////////////////////////////2222222222222222222 audio////////////////////////////////////////////
+// app.get('/generate-audio', async (req, res) => {
+//   const { text, language } = req.query;
+//   const languageCode = language;
+//   const voiceName = language === 'ko-KR' ? 'ko-KR-Wavenet-A' : 'en-GB-Wavenet-D';
+
+//   const request = {
+//     input: { text },
+//     voice: {
+//       languageCode,
+//       name: voiceName,
+//       ssmlGender: 'NEUTRAL'
+//     },
+//     audioConfig: {
+//       audioEncoding: 'MP3',
+//       speakingRate: 1.0,
+//       pitch: 0.0
+//     },
+//   };
+
+//   try {
+//     const [response] = await client.synthesizeSpeech(request);
+//     res.set('Content-Type', 'audio/mpeg');
+//     res.send(response.audioContent);
+//   } catch (error) {
+//     console.error('Error generating audio:', error.message);
+//     res.status(500).json({ error: 'Error generating audio' });
+//   }
+// });
 
 //===============================================================================
 const PORT = process.env.PORT || 3000;
