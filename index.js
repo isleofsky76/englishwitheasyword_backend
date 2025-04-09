@@ -443,6 +443,7 @@ function getRandomWord2() {
 }
 
 // Quiz Route
+// Quiz Route=======================================================================================
 app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord2();
@@ -452,11 +453,11 @@ app.post('/quiz', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher. You must provide a quiz with 1 example sentence using a word in the (____), suitable for middle and high school students.'
+          content: 'You are an English teacher. Create a vocabulary quiz for beginner to early middle school students. The sentence should be very short and simple, with a blank (____) where a word is missing. After the sentence, provide 4 multiple-choice options in this exact format:\n\n1. word\n2. word\n3. word\n4. word\n\nDo not include any hints or Korean translations.'
         },
         {
           role: 'user',
-          content: `Create an example sentence using the word "${word}". Ensure that the word is used in the blank indicated by (____). The sentence should be at a middle to high school level.`
+          content: `Create a quiz using the word "${word}". Write a simple sentence with a blank (____), then give 4 answer options numbered 1 to 4.`
         }
       ],
     });
@@ -487,11 +488,11 @@ app.post('/quiz/check', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher. Check if the student\'s answer is correct for the sentence.'
+          content: 'You are an English teacher. A student answered a vocabulary quiz. Based on the sentence and selected answer, return the result using the following exact format :\n\nAnswer : <correct word>\nSentence : <the complete sentence with the correct word filled in>\nTranslation : <polite Korean translation of the sentence>\nExplanation : <brief explanation in English of why the word is correct>'
         },
         {
           role: 'user',
-          content: `Question: ${question}\nAnswer: ${answer}`
+          content: `Sentence : ${question}\nSelected answer : ${answer}\n\nPlease respond exactly in this format :\nAnswer : word\nSentence : full sentence\nTranslation : polite Korean\nExplanation : short reason why the word is correct`
         }
       ],
     });
