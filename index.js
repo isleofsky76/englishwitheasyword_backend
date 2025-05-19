@@ -443,7 +443,9 @@ function getRandomWord2() {
 }
 
 // Quiz Route
-// Quiz Route=======================================================================================
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정
+// Quiz Route
 app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord2();
@@ -539,6 +541,105 @@ app.post('/quiz/show', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정
+// Quiz Route=======================================================================================기존코드 2024년 12월
+// app.post('/quiz', async (req, res) => {
+//   try {
+//     const word = getRandomWord2();
+
+//     const completion = await openai.chat.completions.create({
+//       model: 'gpt-3.5-turbo',
+//       messages: [
+//         {
+//           role: 'system',
+//           content: 'You are an English teacher. Create a vocabulary quiz for beginner to early middle school students. The sentence should be very short and simple, with a blank (____) where a word is missing. After the sentence, provide 4 multiple-choice options in this exact format:\n\n1. word\n2. word\n3. word\n4. word\n\nDo not include any hints or Korean translations.'
+//         },
+//         {
+//           role: 'user',
+//           content: `Create a quiz using the word "${word}". Write a simple sentence with a blank (____), then give 4 answer options numbered 1 to 4.`
+//         }
+//       ],
+//     });
+
+//     const responseContent = completion.choices[0].message.content;
+//     console.log("Sending Quiz response:", responseContent);
+//     res.json({ quiz: responseContent });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).send(`Error processing your request: ${error.message}`);
+//   }
+// });
+
+// // Check Answer Route
+// app.post('/quiz/check', async (req, res) => {
+//   try {
+//     const { question, answer } = req.body;
+
+//     if (!question || !answer) {
+//       throw new Error('Question or answer not provided');
+//     }
+
+//     console.log("Question:", question);
+//     console.log("Answer:", answer);
+
+//     const completion = await openai.chat.completions.create({
+//       model: 'gpt-3.5-turbo',
+//       messages: [
+//         {
+//           role: 'system',
+//           content: 'You are an English teacher. A student answered a vocabulary quiz. Based on the sentence and selected answer, return the result using the following exact format :\n\nAnswer : <correct word>\nSentence : <the complete sentence with the correct word filled in>\nTranslation : <polite Korean translation of the sentence>\nExplanation : <brief explanation in English of why the word is correct>'
+//         },
+//         {
+//           role: 'user',
+//           content: `Sentence : ${question}\nSelected answer : ${answer}\n\nPlease respond exactly in this format :\nAnswer : word\nSentence : full sentence\nTranslation : polite Korean\nExplanation : short reason why the word is correct`
+//         }
+//       ],
+//     });
+
+//     const responseContent = completion.choices[0].message.content;
+//     console.log("Sending Check response:", responseContent);
+//     res.json({ result: responseContent });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).send(`Error processing your request: ${error.message}`);
+//   }
+// });
+
+// // Show Answer Route
+// app.post('/quiz/show', async (req, res) => {
+//   try {
+//     const { question } = req.body;
+
+//     if (!question) {
+//       throw new Error('Question not provided');
+//     }
+
+//     console.log("Received question:", question);
+
+//     const completion = await openai.chat.completions.create({
+//       model: 'gpt-3.5-turbo',
+//       messages: [
+//         {
+//           role: 'system',
+//           content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect.'
+//         },
+//         {
+//           role: 'user',
+//           content: `What is the correct answer for the following quiz question?\n${question}`
+//         }
+//       ],
+//     });
+
+//     const responseContent = completion.choices[0].message.content;
+//     console.log("Sending Show Answer response:", responseContent);
+//     res.json({ answer: responseContent });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).send(`Error processing your request: ${error.message}`);
+//   }
+// });
 
 
 
