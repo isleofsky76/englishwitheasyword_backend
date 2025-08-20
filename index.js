@@ -470,14 +470,14 @@ function getRandomWord2() {
 
 // Quiz Route
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정
+/////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정/ 08-20 2차 수정.
 // Quiz Route
 app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord2();
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -512,7 +512,7 @@ app.post('/quiz/check', async (req, res) => {
     console.log("Answer:", answer);
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -546,15 +546,15 @@ app.post('/quiz/show', async (req, res) => {
     console.log("Received question:", question);
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect.'
+          content: 'You are an English teacher. Choose the correct answer from the numbered options. Provide the answer in this EXACT format:\n\nAnswer: [number]. [word]\n\nexplanation: [One short sentence only]\n\nSimilar: [word1, word2]'
         },
         {
           role: 'user',
-          content: `What is the correct answer for the following quiz question?\n${question}`
+          content: `Choose the correct answer from the numbered options:\n\n${question}\n\nIMPORTANT: Be very brief. Summary should be ONE sentence only.`
         }
       ],
     });
@@ -567,6 +567,7 @@ app.post('/quiz/show', async (req, res) => {
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정
@@ -1371,5 +1372,6 @@ app.listen(PORT, () => {
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
+
 
 
