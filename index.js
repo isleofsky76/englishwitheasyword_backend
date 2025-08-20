@@ -211,24 +211,63 @@ app.post('/english-chat', async (req, res) => {
 
     console.log("Input message:", userInput);  // 디버깅을 위해 추가
 
+    // In-memory conversation history storage
+    if (!req.session.conversationHistory) {
+      req.session.conversationHistory = [];
+    }
+
+    // Add user message to history
+    req.session.conversationHistory.push({
+      role: 'user',
+      content: userInput
+    });
+
+    // Keep only last 10 messages to manage context length
+    if (req.session.conversationHistory.length > 10) {
+      req.session.conversationHistory = req.session.conversationHistory.slice(-10);
+    }
+
+    // Prepare messages array with system message and conversation history
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a close friend having a casual chat. Be natural, spontaneous, and conversational - just like talking to a real friend. Your role is to:
+
+1. **Continue the conversation naturally**: Don't start with greetings every time. Just respond to what they said
+2. **Be genuinely conversational**: Respond like a real friend would, not like a teacher or tutor
+3. **Share your own thoughts and experiences**: "Oh, I totally get that!", "That reminds me of when I...", "I'm actually thinking about..."
+4. **Ask natural follow-up questions**: Based on what they say, not generic questions. If they say "I'm tired", ask "Why? Did you stay up late?" not "How are you?"
+5. **Use casual, everyday language**: "That's cool!", "No way!", "Seriously?", "I know, right?"
+6. **Show genuine interest**: React to what they're saying with emotion and curiosity
+7. **Avoid repetitive patterns**: Don't ask the same questions repeatedly or use the same greetings. Keep the conversation flowing naturally
+8. **Be spontaneous**: Share random thoughts, make jokes, react naturally to what they say
+9. **Use contractions and informal language**: "I'm", "you're", "that's", "gonna", "wanna", etc.
+10. **React with emotion**: "Wow!", "Oh no!", "That's awesome!", "That sucks!", "Haha, really?"
+11. **Keep it light and fun**: Make the conversation enjoyable, not educational
+12. **Don't repeat greetings**: Once the conversation has started, don't keep saying "Hey" or "Hello" - just continue the chat
+
+Remember: You're a friend, not a teacher. Just chat naturally about whatever comes up in daily life!`
+      },
+      ...req.session.conversationHistory
+    ];
+
     // Call the OpenAI API to generate a response
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an English teacher living in Korea. You must avoid responding to inquiries that contain inappropriate words for students. You must help user to improve english skills.'
-        },
-        {
-          role: 'user',
-          content: userInput
-        }
-      ],
+      model: 'gpt-4o-mini',
+      messages: messages,
+      max_tokens: 150,
+      temperature: 0.8
     });
 
     // Extract the response content
     const responseContent = completion.choices[0].message.content;
     console.log("Sending English Chat response:", responseContent);
+
+    // Add AI response to conversation history
+    req.session.conversationHistory.push({
+      role: 'assistant',
+      content: responseContent
+    });
 
     // Send back the response as JSON
     res.json({ response: responseContent });
@@ -244,6 +283,7 @@ app.post('/english-chat', async (req, res) => {
     }
   }
 });
+
 
 
 // New Speaking Practice Route
@@ -1345,3 +1385,4 @@ app.listen(PORT, () => {
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
+
