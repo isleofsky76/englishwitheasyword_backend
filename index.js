@@ -199,7 +199,7 @@ app.post('/business-advice', async (req, res) => {
 });
 
 
-// English Chat Route
+// English Chat Route//////////////////////////////////////////////////////////////////////////////////////
 app.post('/english-chat', async (req, res) => {
   try {
     // Extract user input from the request body
@@ -211,23 +211,7 @@ app.post('/english-chat', async (req, res) => {
 
     console.log("Input message:", userInput);  // 디버깅을 위해 추가
 
-    // In-memory conversation history storage
-    if (!req.session.conversationHistory) {
-      req.session.conversationHistory = [];
-    }
-
-    // Add user message to history
-    req.session.conversationHistory.push({
-      role: 'user',
-      content: userInput
-    });
-
-    // Keep only last 10 messages to manage context length
-    if (req.session.conversationHistory.length > 10) {
-      req.session.conversationHistory = req.session.conversationHistory.slice(-10);
-    }
-
-    // Prepare messages array with system message and conversation history
+    // Simple conversation history (no session dependency)
     const messages = [
       {
         role: 'system',
@@ -248,7 +232,10 @@ app.post('/english-chat', async (req, res) => {
 
 Remember: You're a friend, not a teacher. Just chat naturally about whatever comes up in daily life!`
       },
-      ...req.session.conversationHistory
+      {
+        role: 'user',
+        content: userInput
+      }
     ];
 
     // Call the OpenAI API to generate a response
@@ -263,11 +250,7 @@ Remember: You're a friend, not a teacher. Just chat naturally about whatever com
     const responseContent = completion.choices[0].message.content;
     console.log("Sending English Chat response:", responseContent);
 
-    // Add AI response to conversation history
-    req.session.conversationHistory.push({
-      role: 'assistant',
-      content: responseContent
-    });
+    // No session dependency - simple response
 
     // Send back the response as JSON
     res.json({ response: responseContent });
@@ -285,6 +268,9 @@ Remember: You're a friend, not a teacher. Just chat naturally about whatever com
 });
 
 
+
+
+////////////////////////////////////////////////////////
 
 // New Speaking Practice Route
 app.post('/speaking-practice', async (req, res) => {
@@ -1385,4 +1371,5 @@ app.listen(PORT, () => {
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
+
 
