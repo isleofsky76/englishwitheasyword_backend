@@ -94,6 +94,20 @@ const guestbookEntrySchema = new mongoose.Schema({
 
 const GuestbookEntry = mongoose.model('GuestbookEntry', guestbookEntrySchema);
 
+//==================================Vocabulary 스키마 추가 (vocabularies 컬렉션 사용)==================================
+// Vocabulary 스키마 (vocabularies 컬렉션 사용)
+const vocabularyEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'vocabularies' });
+
+const VocabularyEntry = mongoose.model('VocabularyEntry', vocabularyEntrySchema);
+//==================================Vocabulary 스키마 추가 끝================================
 
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
@@ -1219,6 +1233,190 @@ app.post('/updatepost', async (req, res) => {
     res.status(500).json({ error: 'Error updating post' });
   }
 });
+
+
+//==================================Vocabulary API 엔드포인트 추가 (vocabularies 컬렉션)==================================
+//==================================vocabulary API (vocabularies 컬렉션)
+
+// Vocabulary entries 조회
+app.get('/vocabulary', async (req, res) => {
+  try {
+    // MongoDB 연결 상태 확인
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ 
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
+    const entries = await VocabularyEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Vocabulary entries 오류:', error);
+    res.status(500).json({ 
+      error: 'Error retrieving vocabulary entries',
+      details: error.message,
+      entries: []
+    });
+  }
+});
+
+// Vocabulary entry 생성
+app.post('/vocabulary', async (req, res) => {
+  const { title, message, nickname, password, isSecret } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new VocabularyEntry({ 
+    title, 
+    message, 
+    nickname, 
+    password: hashedPassword,
+    isSecret: isSecret || false
+  });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving vocabulary entry' });
+  }
+});
+
+// Vocabulary 조회수 증가 엔드포인트
+const vocabularyViewTracker = new Map();
+
+app.post('/vocabulary/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    
+    const viewKey = `${clientIp}_${id}`;
+    const lastViewTime = vocabularyViewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await VocabularyEntry.findById(id);
+      return res.json({ 
+        entry, 
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)' 
+      });
+    }
+    
+    const entry = await VocabularyEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
+    vocabularyViewTracker.set(viewKey, now);
+    setTimeout(() => {
+      vocabularyViewTracker.delete(viewKey);
+    }, oneHour);
+    
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('조회수 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+// Vocabulary entry 조회 (비밀번호 확인)
+app.post('/vocabulary/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await VocabularyEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+// Vocabulary entry 삭제
+app.post('/vocabulary/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await VocabularyEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await VocabularyEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting vocabulary entry' });
+  }
+});
+
+// Vocabulary entry 관리자 삭제
+app.post('/vocabulary/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await VocabularyEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    await VocabularyEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+// Vocabulary entry 수정
+app.post('/vocabulary/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await VocabularyEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await bcrypt.compare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+//==================================Vocabulary API 엔드포인트 추가 끝==================================
+
+//=======================================================================
+//==============================================================================
 //==============================================================================
 // RSS 피드 엔드포인트 추가
 app.get('/rss', async (req, res) => {
@@ -1372,6 +1570,7 @@ app.listen(PORT, () => {
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
+
 
 
 
