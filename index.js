@@ -202,7 +202,9 @@ if (uri) {
   console.log('MongoDB URI가 설정되지 않아 데이터베이스 연결을 건너뜁니다.');
 }
 
+// mydatabase 아래 컬렉션 3개: newsvoca, synonyms, popularvoca
 
+// News Voca (page30_guestbook.html) → 컬렉션 newsvoca
 const guestbookEntrySchema = new mongoose.Schema({
   title: String,
   message: String,
@@ -211,11 +213,11 @@ const guestbookEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   isSecret: { type: Boolean, default: false }
-}, { collection: 'guestbook' });
+}, { collection: 'newsvoca' });
 
 const GuestbookEntry = mongoose.model('GuestbookEntry', guestbookEntrySchema);
 
-// Vocabulary 스키마 (vocabularies 컬렉션 사용)
+// Synonyms (guestbook_v.html) → 컬렉션 synonyms
 const vocabularyEntrySchema = new mongoose.Schema({
   title: String,
   message: String,
@@ -224,11 +226,11 @@ const vocabularyEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   isSecret: { type: Boolean, default: false }
-}, { collection: 'vocabularies' });
+}, { collection: 'synonyms' });
 
 const VocabularyEntry = mongoose.model('VocabularyEntry', vocabularyEntrySchema);
 
-// Easy Voca 스키마 (easyvocabularies 컬렉션 사용)
+// Popular Voca (guestbook_v_easy.html) → 컬렉션 popularvoca
 const easyVocaEntrySchema = new mongoose.Schema({
   title: String,
   message: String,
@@ -237,7 +239,7 @@ const easyVocaEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   isSecret: { type: Boolean, default: false }
-}, { collection: 'easyvocabularies' });
+}, { collection: 'popularvoca' });
 
 const EasyVocaEntry = mongoose.model('EasyVocaEntry', easyVocaEntrySchema);
 
@@ -1144,7 +1146,7 @@ app.post('/generate-sentences-routines', async (req, res) => {
 });
 
 
-//==================================guestbook.
+//================================== News Voca API (newsvoca 컬렉션) – /guestbook
 
 
 // New entry 생성 시 비밀번호 해시 처리
@@ -1325,7 +1327,7 @@ app.post('/updatepost', async (req, res) => {
   }
 });
 
-//==================================vocabulary API (vocabularies 컬렉션)
+//================================== Vocabulary API – Synonyms (synonyms 컬렉션)
 
 // Vocabulary entries 조회
 app.get('/vocabulary', async (req, res) => {
@@ -1503,7 +1505,7 @@ app.post('/vocabulary/updatepost', async (req, res) => {
   }
 });
 
-//================================== Easy Voca API (easyvocabularies 컬렉션)
+//================================== Popular Voca API (popularvoca 컬렉션)
 
 app.get('/easy-voca', async (req, res) => {
   try {
@@ -1706,6 +1708,7 @@ app.get('/rss', async (req, res) => {
   }
 });
 
+// 백엔드 포트: .env의 PORT 없으면 3000 사용 (프론트엔드가 http://127.0.0.1:3000 으로 API 호출)
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -1731,10 +1734,8 @@ app.listen(PORT, () => {
   console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
   console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
   console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
+  console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
+  console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
   console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
   console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
 });
-
-
-
-
