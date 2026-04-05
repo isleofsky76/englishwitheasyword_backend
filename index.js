@@ -82,8 +82,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
-
 // 음성 생성 엔드포인트
 app.get('/generate-audio', async (req, res) => {
   const { text, language, voice, speakrate } = req.query;
