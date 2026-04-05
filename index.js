@@ -3011,6 +3011,31 @@ app.post('/guestbook/:id/view', async (req, res) => {
   }
 });
 
+// app.post('/viewpost', async (req, res) => {
+//   const { id, password } = req.body;
+//   const entry = await GuestbookEntry.findById(id);
+
+//   // if (!entry) {
+//   //   return res.status(404).json({ error: 'Post not found' });
+//   // }
+
+//   // const isMatch = await safeBcryptCompare(password, entry.password);
+//   // if (!isMatch) {
+//   //   return res.status(403).json({ error: 'Invalid password' });
+//   // }
+
+//   if (lastViewTime && (now - lastViewTime) < oneHour) {
+//   const entry = await VocabularyEntry.findById(id);
+//   if (!entry) {
+//     return res.status(404).json({ error: 'Post not found' });
+//   }
+//   return res.json({
+//     entry,
+//     views: entry.views,
+//     message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+//   });
+// }
+
 app.post('/viewpost', async (req, res) => {
   const { id, password } = req.body;
   const entry = await GuestbookEntry.findById(id);
@@ -3023,6 +3048,11 @@ app.post('/viewpost', async (req, res) => {
   if (!isMatch) {
     return res.status(403).json({ error: 'Invalid password' });
   }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
 
   entry.views += 1;
   await entry.save();
