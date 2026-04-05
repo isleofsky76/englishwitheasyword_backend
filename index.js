@@ -207,10 +207,10 @@ app.get('/generate-audio', async (req, res) => {
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
 
-// 서버는 MongoDB 연결 후(또는 URI 없을 때는 즉시) listen
+// HTTP 서버는 먼저 listen — K8s/Cloudtype readiness probe(/healthz)가 Mongo보다 먼저 와도 응답 가능
 function startServer() {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
     console.log('Endpoints:');
     console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
@@ -238,30 +238,6 @@ function startServer() {
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
   });
-}
-
-if (uri) {
-  mongoose.connect(uri)
-    .then(async () => {
-      console.log('MongoDB 연결 성공');
-      const db = mongoose.connection.db;
-      if (db) {
-        try {
-          await db.createCollection('wordofday');
-          console.log('wordofday 컬렉션 생성됨');
-        } catch (e) {
-          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('wordofday 컬렉션:', e.message);
-        }
-      }
-      startServer();
-    })
-    .catch((error) => {
-      console.error('MongoDB 연결 실패:', error);
-      startServer(); // DB 없이도 서버는 띄움
-    });
-} else {
-  console.log('MongoDB URI가 설정되지 않아 데이터베이스 연결을 건너뜁니다.');
-  startServer();
 }
 
 // mydatabase 아래 컬렉션 3개: newsvoca, synonyms, popularvoca
@@ -1920,5 +1896,29 @@ app.get('/rss', async (req, res) => {
   }
 });
 
-// 백엔드 포트는 startServer() 내부에서 process.env.PORT || 3000 사용
+// 모든 라우트·미들웨어 등록 후 listen (이전에 listen이 먼저면 /healthz 미등록 → readiness probe EOF)
+// Mongo 연결은 비동기로 진행 — 프로브는 DB 없이도 OK 응답 가능
+startServer();
+
+if (uri) {
+  mongoose
+    .connect(uri, { serverSelectionTimeoutMS: 20000 })
+    .then(async () => {
+      console.log('MongoDB 연결 성공');
+      const db = mongoose.connection.db;
+      if (db) {
+        try {
+          await db.createCollection('wordofday');
+          console.log('wordofday 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('wordofday 컬렉션:', e.message);
+        }
+      }
+    })
+    .catch((error) => {
+      console.error('MongoDB 연결 실패:', error);
+    });
+} else {
+  console.log('MongoDB URI가 설정되지 않아 데이터베이스 연결을 건너뜁니다.');
+}
 
