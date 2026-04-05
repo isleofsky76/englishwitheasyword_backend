@@ -5,23 +5,77 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
+
+async function safeBcryptCompare(plain, hash) {
+  if (plain == null || typeof plain !== 'string' || hash == null || typeof hash !== 'string') return false;
+  return bcrypt.compare(plain, hash);
+}
 import RSS from 'rss'; // RSS 모듈 추가
 import textToSpeech from '@google-cloud/text-to-speech';
 import fs from 'fs';
 import { promisify } from 'util';
+import session from 'express-session';
 
 // .env 파일의 환경 변수를 로드합니다.
 dotenv.config();
 
-const client = new textToSpeech.TextToSpeechClient({
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
-  }
-});
+// Initialize the Express app 로컬용.
+const app = express();
 
-console.log("Google Client Email:", process.env.GOOGLE_CLIENT_EMAIL);
-console.log("Google Private Key:", process.env.GOOGLE_PRIVATE_KEY ? "Exists" : "Doesn't exist");
+// Trust proxy 설정 (IP 주소를 올바르게 가져오기 위해)
+app.set('trust proxy', true);
+
+// CORS 설정 — 브라우저에서 프론트(다른 origin)가 이 API를 호출할 때 허용할 주소
+const CORS_ALLOWED_ORIGINS = [
+  'http://127.0.0.1:5500', 'http://localhost:5500',
+  'http://127.0.0.1:5511', 'http://localhost:5511',
+  'http://127.0.0.1:5502', 'http://localhost:5502',
+  'http://127.0.0.1:5503', 'http://localhost:5503',
+  'https://englisheasystudy.com',
+  'https://www.englisheasystudy.com'
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || CORS_ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(null, false);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+  credentials: false,
+  optionsSuccessStatus: 200
+}));
+
+// Body parser 설정 (이미지 업로드를 위한 크기 제한 증가)
+app.use(express.json({ limit: '10mb' })); // JSON 본문 크기 제한: 10MB
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // URL 인코딩 본문 크기 제한: 10MB
+
+// Session middleware for conversation history
+app.use(session({
+  secret: 'your-secret-key-here',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
+
+// 정적 파일 제공 경로 설정
+app.use(express.static('public'));
+
+// Google Cloud Text-to-Speech 클라이언트 초기화
+let client = null;
+
+try {
+  // JSON 파일에서 직접 인증 정보 로드
+  const credentials = JSON.parse(fs.readFileSync('./youtubespeech-430112-5a2ce6dffa5c.json', 'utf8'));
+  client = new textToSpeech.TextToSpeechClient({
+    credentials: credentials
+  });
+  console.log("✅ Google Cloud TTS client initialized successfully");
+} catch (error) {
+  console.log("⚠️ Google Cloud credentials not found, using fallback TTS");
+  console.error("Error loading credentials:", error.message);
+}
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
@@ -30,58 +84,189 @@ const openai = new OpenAI({
 
 console.log(`API Key: ${process.env.OPENAI_API_KEY}`);
 
+// 음성 생성 엔드포인트
+app.get('/generate-audio', async (req, res) => {
+  const { text, language, voice, speakrate } = req.query;
+  // 기본 음성 설정
+  // ... existing code ...
+  const defaultVoiceMap = {
+    'en-US': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (기본)
+    'en-US-Wavenet-J': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Wavenet-J 대체)
+    'en-US-Wavenet-D': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Wavenet-D 대체)
+    'en-US-Chirp3-HD-Zubenelgenubi': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Chirp3-HD-Zubenelgenubi 대체)
+    'en-US-Chirp-HD-D': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (직접 매핑)
+    'en-US-Chirp-HD-F': ['en-US-Chirp-HD-F'], // 미국 영어 Chirp-HD-F 음성
+    'en-US-News-N': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (News-N 대체)
+    'en-GB-Chirp-HD-D': ['en-GB-Neural2-B'], // 영국 영어 Neural2-B 음성 직접 매핑
+    'en-US-Studio-O': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Studio-O 대체)
+    'en-GB': ['en-GB-Neural2-B'], // 영국 영어 Neural2-B 음성
+    'en-GB-Neural2-A': ['en-GB-Neural2-A'], // 영국 영어 Neural2-A 음성 직접 매핑
+    'en-GB-Neural2-B': ['en-GB-Neural2-B'], // 영국 영어 Neural2-B 음성 직접 매핑
+    'en-GB-Wavenet-N': ['en-GB-Wavenet-N'], // 영국 영어 Wavenet-N (여성)
+    'ko-KR': ['ko-KR-Neural2-C'], // 한국어 Neural2-C 음성 (기본)
+    'ko-KR-Chirp3-HD-Achird': ['ko-KR-Chirp3-HD-Achird'], // 한국어 Chirp3 HD Achird
+    'ko-KR-Chirp3-HD-Achernar': ['ko-KR-Chirp3-HD-Achernar'] // 한국어 Chirp3 HD Achernar
+  };
 
-//=============================라이브환경용.
-// Initialize the Express app
-// const app = express();
+  // 음성 선택 (voice가 없으면 기본 음성 사용)
+  let voiceName;
+  if (voice) {
+    voiceName = voice;
+  } else if (language && defaultVoiceMap[language]) {
+    voiceName = defaultVoiceMap[language][0];
+  } else if (typeof language === 'string' && /^(en|ko)-[A-Z]{2}-(Neural2|Wavenet|Chirp)/.test(language)) {
+    // Allow direct voice-name input from frontend (e.g., en-GB-Neural2-A)
+    voiceName = language;
+  } else {
+    voiceName = 'en-US-Chirp-HD-D';
+  }
 
-// CORS 설정
-// const corsOptions = {
-//   origin: 'https://englisheasystudy.com',
-//   optionsSuccessStatus: 200,
-//   credentials: true
-// };
-// app.use(cors(corsOptions));
+  // 언어 코드 설정 (음성에 따라 언어 코드 결정)
+  let actualLanguageCode;
+  if (voiceName.includes('en-GB')) {
+    actualLanguageCode = 'en-GB';
+  } else if (voiceName.includes('ko-KR')) {
+    actualLanguageCode = 'ko-KR';
+  } else if (voiceName.includes('en-US')) {
+    actualLanguageCode = 'en-US';
+  } else {
+    actualLanguageCode = language || 'en-GB';
+  }
 
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// // 정적 파일 제공 경로 설정
-// app.use(express.static('public'));
+  console.log(`🟢 Requested Text: ${text}`);
+  console.log(`🟢 Requested Language: ${language}`);
+  console.log(`🟢 Requested Voice: ${voice}`);
+  console.log(`🟢 Requested Speakrate: ${speakrate}`);
+  console.log(`🟢 Selected Voice: ${voiceName}`);
 
-//=============================
+  // 올바른 음성 설정이 없으면 에러 반환
+  if (!voiceName) {
+    console.error('🔴 Invalid language or voice specified.');
+    return res.status(400).json({ error: 'Invalid language or voice specified.' });
+  }
 
-// Initialize the Express app 로컬용.
-const app = express();
+  // 언어별 속도 설정
+  let speakingRate = 1.0; // 기본 속도
+  
+  // 쿼리 파라미터로 speakrate가 지정된 경우 우선 적용
+  if (speakrate) {
+    speakingRate = parseFloat(speakrate);
+  } else {
+    // 한국어인 경우 기본 속도 조정
+    if (language === 'ko-KR' || language === 'ko' || (typeof language === 'string' && /^ko-KR/i.test(language))) {
+      speakingRate = 1.0; // 한국어 속도 (Neural2-C / Chirp3 HD 등 공통)
+    } else if (typeof language === 'string' && /^en-/i.test(language)) {
+      speakingRate = 1.0; // 영어(en-US / en-GB / Wavenet-N 등) 공통
+    }
+  }
 
-// CORS 설정
-const corsOptions = {
-  origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://englisheasystudy.com'], // 허용할 도메인 추가
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+  console.log(`🟢 Final Speaking Rate: ${speakingRate}`);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// 정적 파일 제공 경로 설정
-app.use(express.static('public'));
+  // AI 발음: 한국어는 "에이아이"로 치환, 영어는 단어로 치환 (문장 쉼은 프론트에서 문장 단위 분할 재생)
+  let textForInput = String(text || '');
+  const hasAI = /\bAI\b/i.test(textForInput);
 
-//========================================
+  if (hasAI) {
+    if (actualLanguageCode === 'ko-KR' || (language && /^ko/i.test(language))) {
+      textForInput = textForInput.replace(/\bAI\b/gi, '에이아이');
+    } else {
+      // 영어: AI → artificial intelligence 로 읽히게
+      textForInput = textForInput.replace(/\bAI\b/gi, 'artificial intelligence');
+    }
+  }
+
+  // the U.S.'s / U.S.'s → United States's 로 읽히게 (US즈 발음)
+  textForInput = textForInput.replace(/\bthe U\.S\.'s\b/gi, 'the United States\'s');
+  textForInput = textForInput.replace(/\bU\.S\.'s\b/g, 'United States\'s');
+
+  const request = {
+    input: { text: textForInput },
+    voice: { languageCode: actualLanguageCode, name: voiceName },
+    audioConfig: { audioEncoding: 'MP3', speakingRate: speakingRate, pitch: 0.0 }
+  };
+
+  try {
+    if (!client) {
+      console.log('⚠️ Google Cloud TTS not available, returning error');
+      return res.status(503).json({ error: 'Text-to-Speech service not available. Please configure Google Cloud credentials.' });
+    }
+
+    const [response] = await client.synthesizeSpeech(request);
+
+    console.log('🟢 Audio response received successfully!');
+
+    res.set('Content-Type', 'audio/mpeg');
+    res.send(response.audioContent);
+  } catch (error) {
+    console.error('🔴 Error generating audio:', error.message);
+    if (error?.details) console.error('🔴 Details:', error.details);
+    res.status(500).json({ error: `Error generating audio: ${error.message}` });
+  }
+});
 
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
 
-mongoose.connect(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('MongoDB 연결 성공');
-})
-.catch((error) => {
-  console.error('MongoDB 연결 실패:', error);
-});
+// 서버는 MongoDB 연결 후(또는 URI 없을 때는 즉시) listen
+function startServer() {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log('Endpoints:');
+    console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
+    console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
+    console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
+    console.log(`- Health Check: http://localhost:${PORT}/healthz`);
+    console.log(`- Root: http://localhost:${PORT}/`);
+    console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
+    console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
+    console.log(`- Quiz: http://localhost:${PORT}/quiz`);
+    console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
+    console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
+    console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
+    console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
+    console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
+    console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
+    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
+    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
+    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
+    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
+    console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
+    console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
+    console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
+    console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
+    console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
+    console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
+  });
+}
 
+if (uri) {
+  mongoose.connect(uri)
+    .then(async () => {
+      console.log('MongoDB 연결 성공');
+      const db = mongoose.connection.db;
+      if (db) {
+        try {
+          await db.createCollection('wordofday');
+          console.log('wordofday 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('wordofday 컬렉션:', e.message);
+        }
+      }
+      startServer();
+    })
+    .catch((error) => {
+      console.error('MongoDB 연결 실패:', error);
+      startServer(); // DB 없이도 서버는 띄움
+    });
+} else {
+  console.log('MongoDB URI가 설정되지 않아 데이터베이스 연결을 건너뜁니다.');
+  startServer();
+}
 
+// mydatabase 아래 컬렉션 3개: newsvoca, synonyms, popularvoca
+
+// News Voca (page30_guestbook.html) → 컬렉션 newsvoca
 const guestbookEntrySchema = new mongoose.Schema({
   title: String,
   message: String,
@@ -90,12 +275,11 @@ const guestbookEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   isSecret: { type: Boolean, default: false }
-}, { collection: 'guestbook' });
+}, { collection: 'newsvoca' });
 
 const GuestbookEntry = mongoose.model('GuestbookEntry', guestbookEntrySchema);
 
-//==================================Vocabulary 스키마 추가 (vocabularies 컬렉션 사용)==================================
-// Vocabulary 스키마 (vocabularies 컬렉션 사용)
+// Synonyms (guestbook_v.html) → 컬렉션 synonyms
 const vocabularyEntrySchema = new mongoose.Schema({
   title: String,
   message: String,
@@ -104,12 +288,36 @@ const vocabularyEntrySchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   isSecret: { type: Boolean, default: false }
-}, { collection: 'vocabularies' });
+}, { collection: 'synonyms' });
 
 const VocabularyEntry = mongoose.model('VocabularyEntry', vocabularyEntrySchema);
-//==================================Vocabulary 스키마 추가 끝================================
 
-app.use(bodyParser.json());
+// Popular Voca (guestbook_v_easy.html) → 컬렉션 popularvoca
+const easyVocaEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'popularvoca' });
+
+const EasyVocaEntry = mongoose.model('EasyVocaEntry', easyVocaEntrySchema);
+
+// Word of the Day (page30_guestbook_wordofday.html) → 컬렉션 wordofday
+const wordOfDayEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'wordofday' });
+
+const WordOfDayEntry = mongoose.model('WordOfDayEntry', wordOfDayEntrySchema);
+
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
@@ -140,8 +348,7 @@ app.post('/englishstudy', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `
-            You are an English teacher living in korea. you must not forget you are speaking to young students. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You must avoid answering sensitive issues such as violence and suicide for students. Instead, when users request clarification on the meaning of a word, you must provide 10 example sentences that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all must be centered around the theme of the user input word. Each example should be formatted to include a direct English translation followed by its Korean translation. all centered around the theme of the selected topic. The output must be in this format:
+          content: `You are an English teacher living in korea. you must not forget you are speaking to young students. You must avoid responding to inquiries that contain inappropriate, sexual, or offensive language, including explicit terms such as "fuck," "sex," "cock," "pussy," "dick," "tits," "retard," "fag," "cunt," "asshole," "bitch," "whore," and "tranny." You must avoid answering sensitive issues such as violence and suicide for students. Instead, when users request clarification on the meaning of a word, you must provide 10 example sentences that use key phrases and idiomatic expressions, providing a series of sentences that follow a logical sequence, all must be centered around the theme of the user input word. Each example should be formatted to include a direct English translation followed by its Korean translation. all centered around the theme of the selected topic. The output must be in this format:
             Example:
             "I got up early at 6 a.m. to start preparing for the trip. (나는 여행 준비를 위해 오전 6시에 일찍 일어났다.)"
             "After breakfast, I got dressed and packed my suitcase. (아침을 먹은 후 옷을 입고 여행 가방을 쌌다.)"
@@ -152,8 +359,7 @@ app.post('/englishstudy', async (req, res) => {
             "On the flight, I got a comfortable seat by the window. (비행기에서는 창가에 편안한 자리를 얻었다.)"
             "After landing, I got my luggage from the baggage carousel. (착륙 후 수하물 컨베이어 벨트에서 내 짐을 찾았다.)"
             "I got directions to the hotel from the airport information desk. (공항 안내 데스크에서 호텔까지 가는 길을 물어보았다.)"
-            "Once I reached the hotel, I got my room key and settled in for a restful night. (호텔에 도착하자마자 방 열쇠를 받고 편안한 밤을 보냈다.)"
-        `
+            "Once I reached the hotel, I got my room key and settled in for a restful night. (호텔에 도착하자마자 방 열쇠를 받고 편안한 밤을 보냈다.)"`
         },
         {
           role: 'user',
@@ -201,7 +407,7 @@ app.post('/business-advice', async (req, res) => {
     });
 
     // Extract the first response content
-    const responseContent = completion.data.choices[0].message.content;
+    const responseContent = completion.choices[0].message.content;
     console.log("Sending Business Advice response:", responseContent);
 
     // Send back the advice as JSON
@@ -213,7 +419,7 @@ app.post('/business-advice', async (req, res) => {
 });
 
 
-// English Chat Route//////////////////////////////////////////////////////////////////////////////////////
+// English Chat Route/////////////////////////////////////
 app.post('/english-chat', async (req, res) => {
   try {
     // Extract user input from the request body
@@ -284,7 +490,9 @@ Remember: You're a friend, not a teacher. Just chat naturally about whatever com
 
 
 
-////////////////////////////////////////////////////////
+
+
+
 
 // New Speaking Practice Route
 app.post('/speaking-practice', async (req, res) => {
@@ -483,9 +691,6 @@ function getRandomWord2() {
 }
 
 // Quiz Route
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정/ 08-20 2차 수정.
-// Quiz Route
 app.post('/quiz', async (req, res) => {
   try {
     const word = getRandomWord2();
@@ -584,106 +789,6 @@ app.post('/quiz/show', async (req, res) => {
 
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////2025 05 19 수정
-// Quiz Route=======================================================================================기존코드 2024년 12월
-// app.post('/quiz', async (req, res) => {
-//   try {
-//     const word = getRandomWord2();
-
-//     const completion = await openai.chat.completions.create({
-//       model: 'gpt-3.5-turbo',
-//       messages: [
-//         {
-//           role: 'system',
-//           content: 'You are an English teacher. Create a vocabulary quiz for beginner to early middle school students. The sentence should be very short and simple, with a blank (____) where a word is missing. After the sentence, provide 4 multiple-choice options in this exact format:\n\n1. word\n2. word\n3. word\n4. word\n\nDo not include any hints or Korean translations.'
-//         },
-//         {
-//           role: 'user',
-//           content: `Create a quiz using the word "${word}". Write a simple sentence with a blank (____), then give 4 answer options numbered 1 to 4.`
-//         }
-//       ],
-//     });
-
-//     const responseContent = completion.choices[0].message.content;
-//     console.log("Sending Quiz response:", responseContent);
-//     res.json({ quiz: responseContent });
-//   } catch (error) {
-//     console.error('Error:', error);
-//     res.status(500).send(`Error processing your request: ${error.message}`);
-//   }
-// });
-
-// // Check Answer Route
-// app.post('/quiz/check', async (req, res) => {
-//   try {
-//     const { question, answer } = req.body;
-
-//     if (!question || !answer) {
-//       throw new Error('Question or answer not provided');
-//     }
-
-//     console.log("Question:", question);
-//     console.log("Answer:", answer);
-
-//     const completion = await openai.chat.completions.create({
-//       model: 'gpt-3.5-turbo',
-//       messages: [
-//         {
-//           role: 'system',
-//           content: 'You are an English teacher. A student answered a vocabulary quiz. Based on the sentence and selected answer, return the result using the following exact format :\n\nAnswer : <correct word>\nSentence : <the complete sentence with the correct word filled in>\nTranslation : <polite Korean translation of the sentence>\nExplanation : <brief explanation in English of why the word is correct>'
-//         },
-//         {
-//           role: 'user',
-//           content: `Sentence : ${question}\nSelected answer : ${answer}\n\nPlease respond exactly in this format :\nAnswer : word\nSentence : full sentence\nTranslation : polite Korean\nExplanation : short reason why the word is correct`
-//         }
-//       ],
-//     });
-
-//     const responseContent = completion.choices[0].message.content;
-//     console.log("Sending Check response:", responseContent);
-//     res.json({ result: responseContent });
-//   } catch (error) {
-//     console.error('Error:', error);
-//     res.status(500).send(`Error processing your request: ${error.message}`);
-//   }
-// });
-
-// // Show Answer Route
-// app.post('/quiz/show', async (req, res) => {
-//   try {
-//     const { question } = req.body;
-
-//     if (!question) {
-//       throw new Error('Question not provided');
-//     }
-
-//     console.log("Received question:", question);
-
-//     const completion = await openai.chat.completions.create({
-//       model: 'gpt-3.5-turbo',
-//       messages: [
-//         {
-//           role: 'system',
-//           content: 'You are an English teacher. You must provide all the possible similar words close to the answer that the user entered in the blank and provide explanations why the expression is correct or incorrect.'
-//         },
-//         {
-//           role: 'user',
-//           content: `What is the correct answer for the following quiz question?\n${question}`
-//         }
-//       ],
-//     });
-
-//     const responseContent = completion.choices[0].message.content;
-//     console.log("Sending Show Answer response:", responseContent);
-//     res.json({ answer: responseContent });
-//   } catch (error) {
-//     console.error('Error:', error);
-//     res.status(500).send(`Error processing your request: ${error.message}`);
-//   }
-// });
-
-
-
 
 //page================ Get Hint Route
 app.post('/get-hint', async (req, res) => {
@@ -757,9 +862,7 @@ app.post('/generate-short-text', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `
-            You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.
-          `
+          content: `You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.`
         },
         {
           role: 'user',
@@ -785,9 +888,7 @@ app.post('/generate-short-text', async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: `
-              You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.
-            `
+            content: `You are an English teacher living in Korea. You must not forget you are speaking to young students. Avoid responding to inquiries that contain inappropriate, sexual, or offensive language. Provide a long academic text (about 1000 characters) related to the selected topic. The text should be simple, easy to understand, and suitable for young students.`
           },
           {
             role: 'user',
@@ -831,9 +932,7 @@ app.post('/get-translation-explanation', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `
-            You are an English teacher living in Korea. Provide the Korean translation for the following text.
-          `
+          content: `You are an English teacher living in Korea. Provide the Korean translation for the following text.`
         },
         {
           role: 'user',
@@ -899,6 +998,7 @@ app.post('/generate-sentences', async (req, res) => {
 app.post('/get-synonyms', async (req, res) => {
   try {
     const { word } = req.body;
+    console.log(`Received word: ${word}`);
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -917,7 +1017,7 @@ app.post('/get-synonyms', async (req, res) => {
     const responseContent = completion.choices[0].message.content;
     res.json({ synonyms: responseContent });
   } catch (error) {
-    console.error('Error fetching synonyms:', error);
+    console.error('Error:', error);
     res.status(500).send('Error fetching synonyms.');
   }
 });
@@ -973,8 +1073,8 @@ app.post('/get-synonyms-korean', async (req, res) => {
     const responseContent = completion.choices[0].message.content;
     res.json({ synonyms: responseContent });
   } catch (error) {
-    console.error('Error fetching synonyms:', error);
-    res.status(500).send('Error fetching synonyms.');
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
 
@@ -1000,8 +1100,8 @@ app.post('/ask-question-korean', async (req, res) => {
     const responseContent = completion.choices[0].message.content;
     res.json({ synonyms: responseContent });
   } catch (error) {
-    console.error('Error fetching synonyms:', error);
-    res.status(500).send('Error fetching synonyms.');
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
 
@@ -1016,8 +1116,7 @@ app.post('/get-fortune', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content:`
-            You are a friendly and encouraging fortune teller who gives simple and positive predictions for young students.
+          content: `You are a friendly and encouraging fortune teller who gives simple and positive predictions for young students.
             Your answers must be in simple English followed by Korean translations.
             Whenever a user provides a date, time, and place, you weave these elements into your fortune-telling, 
             offering clear and supportive predictions. Each response must be crafted with care to evoke a sense of positivity and motivation.
@@ -1026,8 +1125,8 @@ app.post('/get-fortune', async (req, res) => {
             - Encouraging emotional states or changes the person might experience.
             - Natural phenomena (like weather, blooming flowers, etc.) related to the place and time provided.
             - Simple symbolic references that can be easily understood.
-            - How these details connect to the person's past, present, or future in a positive way.
-          ` },
+            - How these details connect to the person's past, present, or future in a positive way.`
+        },
         {
           role: 'user',
           content: `Please provide a fortune: ${word}`
@@ -1036,11 +1135,11 @@ app.post('/get-fortune', async (req, res) => {
     });
 
     const responseContent = completion.choices[0].message.content;
-    console.log(`Response from OpenAI: ${responseContent}`); // 응답 확인을 위한 로그
+    console.log(`Response from OpenAI: ${responseContent}`);
     res.json({ fortune: responseContent });
   } catch (error) {
-    console.error('Error fetching synonyms:', error);
-    res.status(500).send('Error fetching synonyms.');
+    console.error('Error:', error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
   }
 });
 
@@ -1120,34 +1219,104 @@ app.post('/generate-sentences-routines', async (req, res) => {
 });
 
 
-//==================================guestbook.
+//================================== News Voca API (newsvoca 컬렉션) – /guestbook
 
 
 // New entry 생성 시 비밀번호 해시 처리
 app.get('/guestbook', async (req, res) => {
   try {
+    // MongoDB 연결 상태 확인
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ 
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
     const entries = await GuestbookEntry.find();
     res.status(200).json({ entries });
   } catch (error) {
-    res.status(500).json({ error: 'Error retrieving guestbook entries' });
+    console.error('Guestbook entries 오류:', error);
+    res.status(500).json({ 
+      error: 'Error retrieving guestbook entries',
+      details: error.message,
+      entries: []
+    });
   }
 });
 
 app.post('/guestbook', async (req, res) => {
-  const { title, message, nickname, password } = req.body;
+  const { title, message, nickname, password, isSecret } = req.body;
 
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newEntry = new GuestbookEntry({ title, message, nickname, password: hashedPassword });
+  // date는 스키마의 default: Date.now로 자동 설정됨
+  const newEntry = new GuestbookEntry({ 
+    title, 
+    message, 
+    nickname, 
+    password: hashedPassword,
+    isSecret: isSecret || false
+  });
 
   try {
     await newEntry.save();
     res.status(201).json({ entry: newEntry });
   } catch (error) {
     res.status(500).json({ error: 'Error saving guestbook entry' });
+  }
+});
+
+// 조회수 증가 엔드포인트 (동일 IP 체크 포함)
+const viewTracker = new Map(); // IP와 게시글 ID를 추적하는 맵
+
+app.post('/guestbook/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    
+    // 동일 IP에서 같은 게시글을 1시간 내에 조회한 경우 조회수 증가하지 않음
+    const viewKey = `${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000; // 1시간 (밀리초)
+    
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      // 1시간 내에 이미 조회한 경우 조회수 증가하지 않음
+      const entry = await GuestbookEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+      });
+    }
+    
+    // 조회수 증가
+    const entry = await GuestbookEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
+    // 조회 기록 저장 (1시간 후 자동 삭제)
+    viewTracker.set(viewKey, now);
+    setTimeout(() => {
+      viewTracker.delete(viewKey);
+    }, oneHour);
+    
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('조회수 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
   }
 });
 
@@ -1159,7 +1328,7 @@ app.post('/viewpost', async (req, res) => {
     return res.status(404).json({ error: 'Post not found' });
   }
 
-  const isMatch = await bcrypt.compare(password, entry.password);
+  const isMatch = await safeBcryptCompare(password, entry.password);
   if (!isMatch) {
     return res.status(403).json({ error: 'Invalid password' });
   }
@@ -1177,7 +1346,7 @@ app.post('/deletepost', async (req, res) => {
     return res.status(404).json({ error: 'Post not found' });
   }
 
-  const isMatch = await bcrypt.compare(password, entry.password);
+  const isMatch = await safeBcryptCompare(password, entry.password);
   if (!isMatch) {
     return res.status(403).json({ error: 'Invalid password' });
   }
@@ -1219,7 +1388,7 @@ app.post('/updatepost', async (req, res) => {
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
     }
-    const isMatch = await bcrypt.compare(password, entry.password);
+    const isMatch = await safeBcryptCompare(password, entry.password);
     if (!isMatch) {
       return res.status(403).json({ error: 'Invalid password' });
     }
@@ -1234,9 +1403,130 @@ app.post('/updatepost', async (req, res) => {
   }
 });
 
+//================================== Word of the Day API (wordofday 컬렉션)
+app.get('/wordofday', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await WordOfDayEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Word of Day entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving word of day entries', entries: [] });
+  }
+});
 
-//==================================Vocabulary API 엔드포인트 추가 (vocabularies 컬렉션)==================================
-//==================================vocabulary API (vocabularies 컬렉션)
+app.post('/wordofday', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new WordOfDayEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Word of Day save 오류:', error);
+    res.status(500).json({ error: 'Error saving word of day entry', detail: error.message });
+  }
+});
+
+app.post('/wordofday/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `wod_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await WordOfDayEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await WordOfDayEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Word of day view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/wordofday-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await WordOfDayEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/wordofday-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await WordOfDayEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/wordofday-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await WordOfDayEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await WordOfDayEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting guestbook entry' });
+  }
+});
+
+app.post('/wordofday-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await WordOfDayEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await WordOfDayEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+//================================== Vocabulary API – Synonyms (synonyms 컬렉션)
 
 // Vocabulary entries 조회
 app.get('/vocabulary', async (req, res) => {
@@ -1300,13 +1590,16 @@ app.post('/vocabulary/:id/view', async (req, res) => {
     
     if (lastViewTime && (now - lastViewTime) < oneHour) {
       const entry = await VocabularyEntry.findById(id);
-      return res.json({ 
-        entry, 
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
         views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)' 
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
       });
     }
-    
+
     const entry = await VocabularyEntry.findByIdAndUpdate(
       id,
       { $inc: { views: 1 } },
@@ -1338,7 +1631,7 @@ app.post('/vocabulary/viewpost', async (req, res) => {
     return res.status(404).json({ error: 'Post not found' });
   }
 
-  const isMatch = await bcrypt.compare(password, entry.password);
+  const isMatch = await safeBcryptCompare(password, entry.password);
   if (!isMatch) {
     return res.status(403).json({ error: 'Invalid password' });
   }
@@ -1357,7 +1650,7 @@ app.post('/vocabulary/deletepost', async (req, res) => {
     return res.status(404).json({ error: 'Post not found' });
   }
 
-  const isMatch = await bcrypt.compare(password, entry.password);
+  const isMatch = await safeBcryptCompare(password, entry.password);
   if (!isMatch) {
     return res.status(403).json({ error: 'Invalid password' });
   }
@@ -1399,7 +1692,7 @@ app.post('/vocabulary/updatepost', async (req, res) => {
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
     }
-    const isMatch = await bcrypt.compare(password, entry.password);
+    const isMatch = await safeBcryptCompare(password, entry.password);
     if (!isMatch) {
       return res.status(403).json({ error: 'Invalid password' });
     }
@@ -1413,10 +1706,185 @@ app.post('/vocabulary/updatepost', async (req, res) => {
     res.status(500).json({ error: 'Error updating post' });
   }
 });
-//==================================Vocabulary API 엔드포인트 추가 끝==================================
 
-//=======================================================================
-//==============================================================================
+//================================== Popular Voca API (popularvoca 컬렉션)
+
+app.get('/easy-voca', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
+    const entries = await EasyVocaEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Easy Voca entries 오류:', error);
+    res.status(500).json({
+      error: 'Error retrieving easy voca entries',
+      details: error.message,
+      entries: []
+    });
+  }
+});
+
+app.post('/easy-voca', async (req, res) => {
+  const { title, message, nickname, password, isSecret } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new EasyVocaEntry({
+    title,
+    message,
+    nickname,
+    password: hashedPassword,
+    isSecret: isSecret || false
+  });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving easy voca entry' });
+  }
+});
+
+const easyVocaViewTracker = new Map();
+
+app.post('/easy-voca/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `${clientIp}_${id}`;
+    const lastViewTime = easyVocaViewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await EasyVocaEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+      });
+    }
+
+    const entry = await EasyVocaEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    easyVocaViewTracker.set(viewKey, now);
+    setTimeout(() => {
+      easyVocaViewTracker.delete(viewKey);
+    }, oneHour);
+
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Easy Voca 조회수 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/easy-voca/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await EasyVocaEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/easy-voca/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await EasyVocaEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Password required' });
+  }
+  if (!entry.password) {
+    return res.status(400).json({ error: 'Post has no stored password' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await EasyVocaEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting easy voca entry' });
+  }
+});
+
+app.post('/easy-voca/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await EasyVocaEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    await EasyVocaEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/easy-voca/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await EasyVocaEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
 //==============================================================================
 // RSS 피드 엔드포인트 추가
 app.get('/rss', async (req, res) => {
@@ -1452,123 +1920,5 @@ app.get('/rss', async (req, res) => {
   }
 });
 
-// 1음성 생성 엔드포인트 추가////////////////
-
-app.get('/generate-audio', async (req, res) => {
-  const { text, language, voice } = req.query;
-  const languageCode = language || 'en-US'; // 기본값을 미국 영어로 변경
-
-  // 기본 음성 설정
-  const defaultVoiceMap = {
-    'en-AU': ['en-AU-Neural2-B', 'en-AU-Neural2-C'], // 호주 남성, 여성
-    'en-IN': ['en-IN-Journey-D', 'en-IN-Wavenet-A'], // 인도 남성, 여성
-    'en-GB': ['en-GB-News-I'], // 영국 영어 여성, 남성
-    'en-US': ['en-US-News-N', 'en-US-Neural2-C', 'en-US-Neural2-D', 'en-US-Neural2-J', 'en-US-Wavenet-D'], // 미국 영어 남성, 여성
-    'ko-KR': ['ko-KR-Wavenet-C'] // 한국어 남성 음성
-  };
-
-  // 음성 선택 (voice가 없으면 기본 음성 사용)
-  const voiceName = voice || defaultVoiceMap[language]?.[0] || 'en-US-News-N';
-
-  console.log(`🟢 Requested Text: ${text}`);
-  console.log(`🟢 Requested Language: ${language}`);
-  console.log(`🟢 Requested Voice: ${voice}`);
-  console.log(`🟢 Selected Voice: ${voiceName}`);
-
-  // 올바른 음성 설정이 없으면 에러 반환
-  if (!voiceName) {
-    console.error('🔴 Invalid language or voice specified.');
-    return res.status(400).json({ error: 'Invalid language or voice specified.' });
-  }
-
-  // 음성 생성 요청 설정
-  const request = {
-    input: { text },
-    voice: {
-      languageCode,
-      name: voiceName
-    },
-    audioConfig: {
-      audioEncoding: 'MP3',
-      speakingRate: 1.0,
-      pitch: 0.0
-    }
-  };
-
-  try {
-    const [response] = await textToSpeechClient.synthesizeSpeech(request);
-
-    // 오류 확인을 위해 로그 추가
-    console.log('🟢 Audio response received successfully!');
-
-    res.set('Content-Type', 'audio/mpeg');
-    res.send(response.audioContent);
-  } catch (error) {
-    console.error('🔴 Error generating audio:', error.message);
-    res.status(500).json({ error: `Error generating audio: ${error.message}` });
-  }
-});
-
-//////////////////////////////////////////2222222222222222222 audio////////////////////////////////////////////
-// app.get('/generate-audio', async (req, res) => {
-//   const { text, language } = req.query;
-//   const languageCode = language;
-//   const voiceName = language === 'ko-KR' ? 'ko-KR-Wavenet-A' : 'en-GB-Wavenet-D';
-
-//   const request = {
-//     input: { text },
-//     voice: {
-//       languageCode,
-//       name: voiceName,
-//       ssmlGender: 'NEUTRAL'
-//     },
-//     audioConfig: {
-//       audioEncoding: 'MP3',
-//       speakingRate: 1.0,
-//       pitch: 0.0
-//     },
-//   };
-
-//   try {
-//     const [response] = await client.synthesizeSpeech(request);
-//     res.set('Content-Type', 'audio/mpeg');
-//     res.send(response.audioContent);
-//   } catch (error) {
-//     console.error('Error generating audio:', error.message);
-//     res.status(500).json({ error: 'Error generating audio' });
-//   }
-// });
-
-//===============================================================================
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log('Endpoints:');
-  console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
-  console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
-  console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
-  console.log(`- Health Check: http://localhost:${PORT}/healthz`);
-  console.log(`- Root: http://localhost:${PORT}/`);
-  console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
-  console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
-  console.log(`- Quiz: http://localhost:${PORT}/quiz`);
-  console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
-  console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
-  console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
-  console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
-  console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
-  console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
-  // console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms-korean`);
-  // console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question-korean`);
-  console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
-  console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
-  console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
-  console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
-  console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
-});
-
+// 백엔드 포트는 startServer() 내부에서 process.env.PORT || 3000 사용
 
