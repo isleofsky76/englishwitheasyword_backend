@@ -39,6 +39,10 @@ app.use(cors({
     if (!origin || CORS_ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
+    // 로컬 개발: Live Server 등 localhost/127.0.0.1 임의 포트 허용
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
     callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -84,7 +88,9 @@ const openai = new OpenAI({
 
 // 음성 생성 엔드포인트
 app.get('/generate-audio', async (req, res) => {
-  const { text, language, voice, speakrate } = req.query;
+  const { text, language, speakrate } = req.query;
+  let voice = req.query.voice;
+  if (Array.isArray(voice)) voice = voice[0];
   // 기본 음성 설정
   // ... existing code ...
   const defaultVoiceMap = {
@@ -94,16 +100,25 @@ app.get('/generate-audio', async (req, res) => {
     'en-US-Chirp3-HD-Zubenelgenubi': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Chirp3-HD-Zubenelgenubi 대체)
     'en-US-Chirp-HD-D': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (직접 매핑)
     'en-US-Chirp-HD-F': ['en-US-Chirp-HD-F'], // 미국 영어 Chirp-HD-F 음성
-    'en-US-News-N': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (News-N 대체)
+    'en-US-News-N': ['en-US-News-N'], // 미국 News-N
     'en-GB-Chirp-HD-D': ['en-GB-Neural2-B'], // 영국 영어 Neural2-B 음성 직접 매핑
     'en-US-Studio-O': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Studio-O 대체)
     'en-GB': ['en-GB-Neural2-B'], // 영국 영어 Neural2-B 음성
     'en-GB-Neural2-A': ['en-GB-Neural2-A'], // 영국 영어 Neural2-A 음성 직접 매핑
     'en-GB-Neural2-B': ['en-GB-Neural2-B'], // 영국 영어 Neural2-B 음성 직접 매핑
-    'en-GB-Wavenet-N': ['en-GB-Wavenet-N'], // 영국 영어 Wavenet-N (여성)
+    'en-GB-News-H': ['en-GB-News-H'], // 영국 News-H
+    'en-GB-News-M': ['en-GB-News-M'], // 영국 News-M
+    'en-GB-Chirp3-HD-Zubenelgenubi': ['en-GB-Chirp3-HD-Zubenelgenubi'], // 영국 Chirp3 HD Zubenelgenubi
+    'en-GB-Wavenet-N': ['en-GB-Wavenet-N'], // 영국 영어 Wavenet-N (여성) — 구버전 프론트 호환
+    'en-GB-News-I': ['en-GB-News-I'], // 영국 영어 News-I
+    'en-AU-News-G': ['en-AU-News-G'], // 호주 News-G
     'ko-KR': ['ko-KR-Neural2-C'], // 한국어 Neural2-C 음성 (기본)
-    'ko-KR-Chirp3-HD-Achird': ['ko-KR-Chirp3-HD-Achird'], // 한국어 Chirp3 HD Achird
-    'ko-KR-Chirp3-HD-Achernar': ['ko-KR-Chirp3-HD-Achernar'] // 한국어 Chirp3 HD Achernar
+    'ko-KR-Chirp3-HD-Achird': ['ko-KR-Chirp3-HD-Achird'],
+    'ko-KR-Chirp3-HD-Achernar': ['ko-KR-Chirp3-HD-Achernar'],
+    'ko-KR-Chirp3-HD-Zephyr': ['ko-KR-Chirp3-HD-Zephyr'],
+    'ko-KR-Chirp3-HD-Vindemiatrix': ['ko-KR-Chirp3-HD-Vindemiatrix'],
+    'ko-KR-Chirp3-HD-Zubenelgenubi': ['ko-KR-Chirp3-HD-Zubenelgenubi'],
+    'ko-KR-Chirp3-HD-Charon': ['ko-KR-Chirp3-HD-Charon']
   };
 
   // 음성 선택 (voice가 없으면 기본 음성 사용)
@@ -112,7 +127,7 @@ app.get('/generate-audio', async (req, res) => {
     voiceName = voice;
   } else if (language && defaultVoiceMap[language]) {
     voiceName = defaultVoiceMap[language][0];
-  } else if (typeof language === 'string' && /^(en|ko)-[A-Z]{2}-(Neural2|Wavenet|Chirp)/.test(language)) {
+  } else if (typeof language === 'string' && /^(en|ko)-[A-Z]{2}-(Neural2|Wavenet|Chirp|News)/.test(language)) {
     // Allow direct voice-name input from frontend (e.g., en-GB-Neural2-A)
     voiceName = language;
   } else {
@@ -123,6 +138,8 @@ app.get('/generate-audio', async (req, res) => {
   let actualLanguageCode;
   if (voiceName.includes('en-GB')) {
     actualLanguageCode = 'en-GB';
+  } else if (voiceName.includes('en-AU')) {
+    actualLanguageCode = 'en-AU';
   } else if (voiceName.includes('ko-KR')) {
     actualLanguageCode = 'ko-KR';
   } else if (voiceName.includes('en-US')) {
@@ -194,6 +211,8 @@ app.get('/generate-audio', async (req, res) => {
     console.log('🟢 Audio response received successfully!');
 
     res.set('Content-Type', 'audio/mpeg');
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
     res.send(response.audioContent);
   } catch (error) {
     console.error('🔴 Error generating audio:', error.message);
@@ -248,6 +267,8 @@ const guestbookEntrySchema = new mongoose.Schema({
   password: String,
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
   isSecret: { type: Boolean, default: false }
 }, { collection: 'newsvoca' });
 
@@ -261,6 +282,8 @@ const vocabularyEntrySchema = new mongoose.Schema({
   password: String,
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
   isSecret: { type: Boolean, default: false }
 }, { collection: 'synonyms' });
 
@@ -274,6 +297,8 @@ const easyVocaEntrySchema = new mongoose.Schema({
   password: String,
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
   isSecret: { type: Boolean, default: false }
 }, { collection: 'popularvoca' });
 
@@ -287,6 +312,8 @@ const wordOfDayEntrySchema = new mongoose.Schema({
   password: String,
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
   isSecret: { type: Boolean, default: false }
 }, { collection: 'wordofday' });
 
@@ -1246,6 +1273,37 @@ app.post('/guestbook', async (req, res) => {
 // 조회수 증가 엔드포인트 (동일 IP 체크 포함)
 const viewTracker = new Map(); // IP와 게시글 ID를 추적하는 맵
 
+function getClientIp(req) {
+  const xff = req.headers['x-forwarded-for'];
+  if (xff) return String(xff).split(',')[0].trim();
+  return req.ip || req.connection?.remoteAddress || 'unknown';
+}
+
+async function incrementEntryLike(req, res, Model) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid post id' });
+    }
+    const fingerprint = getClientIp(req);
+    const entry = await Model.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const prints = entry.likedFingerprints || [];
+    if (prints.includes(fingerprint)) {
+      return res.json({ likes: entry.likes || 0, alreadyLiked: true });
+    }
+    entry.likes = (entry.likes || 0) + 1;
+    entry.likedFingerprints = [...prints, fingerprint];
+    await entry.save();
+    res.json({ likes: entry.likes, alreadyLiked: false });
+  } catch (error) {
+    console.error('좋아요 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing like count' });
+  }
+}
+
 app.post('/guestbook/:id/view', async (req, res) => {
   try {
     const { id } = req.params;
@@ -1293,6 +1351,8 @@ app.post('/guestbook/:id/view', async (req, res) => {
     res.status(500).json({ error: 'Error incrementing view count' });
   }
 });
+
+app.post('/guestbook/:id/like', (req, res) => incrementEntryLike(req, res, GuestbookEntry));
 
 app.post('/viewpost', async (req, res) => {
   const { id, password } = req.body;
@@ -1441,6 +1501,8 @@ app.post('/wordofday/:id/view', async (req, res) => {
     res.status(500).json({ error: 'Error incrementing view count' });
   }
 });
+
+app.post('/wordofday/:id/like', (req, res) => incrementEntryLike(req, res, WordOfDayEntry));
 
 app.post('/wordofday-viewpost', async (req, res) => {
   const { id, password } = req.body;
@@ -1595,6 +1657,8 @@ app.post('/vocabulary/:id/view', async (req, res) => {
     res.status(500).json({ error: 'Error incrementing view count' });
   }
 });
+
+app.post('/vocabulary/:id/like', (req, res) => incrementEntryLike(req, res, VocabularyEntry));
 
 // Vocabulary entry 조회 (비밀번호 확인)
 app.post('/vocabulary/viewpost', async (req, res) => {
@@ -1772,6 +1836,8 @@ app.post('/easy-voca/:id/view', async (req, res) => {
   }
 });
 
+app.post('/easy-voca/:id/like', (req, res) => incrementEntryLike(req, res, EasyVocaEntry));
+
 app.post('/easy-voca/viewpost', async (req, res) => {
   const { id, password } = req.body;
   const entry = await EasyVocaEntry.findById(id);
@@ -1919,4 +1985,3 @@ if (uri) {
 } else {
   console.log('MongoDB URI가 설정되지 않아 데이터베이스 연결을 건너뜁니다.');
 }
-
