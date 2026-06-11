@@ -249,9 +249,11 @@ function startServer() {
     console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
     console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
     console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
+    console.log(`- Weather: http://localhost:${PORT}/weather`);
     console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
     console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
     console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
+    console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
   });
@@ -304,6 +306,21 @@ const easyVocaEntrySchema = new mongoose.Schema({
 
 const EasyVocaEntry = mongoose.model('EasyVocaEntry', easyVocaEntrySchema);
 
+// Pros & Cons (pros-cons-list.html) → 컬렉션 proscons
+const prosConsEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'proscons' });
+
+const ProsConsEntry = mongoose.model('ProsConsEntry', prosConsEntrySchema);
+
 // Word of the Day (page30_guestbook_wordofday.html) → 컬렉션 wordofday
 const wordOfDayEntrySchema = new mongoose.Schema({
   title: String,
@@ -332,6 +349,200 @@ app.get('/', (req, res) => {
 app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
+
+// Open-Meteo 날씨 프록시 (브라우저 CORS 회피)
+const weatherCache = new Map();
+const WEATHER_CACHE_MS = 30 * 60 * 1000;
+const WEATHER_FETCH_TIMEOUT_MS = 15000;
+const WEATHER_FETCH_RETRIES = 2;
+
+function weatherCacheKey(lat, lon) {
+  return Math.round(lat * 10) + ':' + Math.round(lon * 10);
+}
+
+function mapWttrCodeToWmo(code) {
+  const c = parseInt(code, 10);
+  if (c === 113) return 0;
+  if (c === 116) return 2;
+  if (c === 119 || c === 122) return 3;
+  if (c === 143 || c === 248 || c === 260) return 45;
+  if (c >= 263 && c <= 284) return 51;
+  if (c === 176 || (c >= 293 && c <= 308) || (c >= 353 && c <= 359)) return 61;
+  if (c >= 227 && c <= 230) return 71;
+  if (c >= 323 && c <= 338) return 71;
+  if (c === 200 || (c >= 386 && c <= 395)) return 95;
+  return 3;
+}
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchOpenMeteo(lat, lon) {
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
+    '&longitude=' + lon +
+    '&current=temperature_2m,apparent_temperature,weathercode&timezone=auto';
+
+  let lastError;
+  for (let attempt = 0; attempt <= WEATHER_FETCH_RETRIES; attempt++) {
+    try {
+      const response = await fetchWithTimeout(url, {}, WEATHER_FETCH_TIMEOUT_MS);
+      if (!response.ok) {
+        throw new Error('Open-Meteo HTTP ' + response.status);
+      }
+      const data = await response.json();
+      const cur = data && data.current;
+      if (!cur || cur.temperature_2m == null) {
+        throw new Error('Open-Meteo returned no current data');
+      }
+      return {
+        temperature: cur.temperature_2m,
+        apparentTemperature: cur.apparent_temperature,
+        weathercode: cur.weathercode,
+        resolvedLabel: null
+      };
+    } catch (err) {
+      lastError = err;
+      if (attempt < WEATHER_FETCH_RETRIES) {
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
+async function fetchWttrIn(lat, lon) {
+  const url = 'https://wttr.in/' + lat + ',' + lon + '?format=j1';
+  const response = await fetchWithTimeout(url, {
+    headers: { 'User-Agent': 'EnglishEasyStudy-Weather/1.0 (contact: englisheasystudy.com)' }
+  }, WEATHER_FETCH_TIMEOUT_MS);
+  if (!response.ok) {
+    throw new Error('wttr.in HTTP ' + response.status);
+  }
+  const data = await response.json();
+  const cur = data && data.current_condition && data.current_condition[0];
+  if (!cur || cur.temp_C == null) {
+    throw new Error('wttr.in returned no current data');
+  }
+  const area = data.nearest_area && data.nearest_area[0];
+  const areaName = area && area.areaName && area.areaName[0] && area.areaName[0].value;
+  return {
+    temperature: parseFloat(cur.temp_C),
+    apparentTemperature: parseFloat(cur.FeelsLikeC),
+    weathercode: mapWttrCodeToWmo(cur.weatherCode),
+    resolvedLabel: areaName || null
+  };
+}
+
+async function fetchWeatherData(lat, lon) {
+  try {
+    return await fetchOpenMeteo(lat, lon);
+  } catch (openMeteoErr) {
+    console.warn('Open-Meteo failed, using wttr.in fallback:', openMeteoErr.message);
+    return await fetchWttrIn(lat, lon);
+  }
+}
+
+function formatAreaLabel(address) {
+  if (!address || typeof address !== 'object') return null;
+
+  const shortenCity = (name) => {
+    if (!name) return '';
+    return name
+      .replace(/특별시$/, '')
+      .replace(/광역시$/, '')
+      .replace(/특별자치시$/, '')
+      .replace(/특별자치도$/, '')
+      .trim();
+  };
+
+  const city = shortenCity(
+    address.city || address.town || address.county || address.province || address.state
+  );
+  const district = address.borough || address.city_district || address.district || address.county;
+  const neighborhood =
+    address.suburb || address.quarter || address.neighbourhood || address.village || address.hamlet;
+
+  const parts = [];
+  if (city) parts.push(city);
+  if (district && district !== city) parts.push(district);
+  if (neighborhood && neighborhood !== district && neighborhood !== city) parts.push(neighborhood);
+
+  return parts.length ? parts.join(' ') : null;
+}
+
+async function resolveAreaLabel(lat, lon) {
+  const url =
+    'https://nominatim.openstreetmap.org/reverse?lat=' + lat +
+    '&lon=' + lon +
+    '&format=json&accept-language=ko&addressdetails=1&zoom=14';
+
+  try {
+    const response = await fetchWithTimeout(url, {
+      headers: { 'User-Agent': 'EnglishEasyStudy-Weather/1.0 (https://englisheasystudy.com)' }
+    }, 8000);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return formatAreaLabel(data && data.address);
+  } catch {
+    return null;
+  }
+}
+
+app.get('/weather', async (req, res) => {
+  const lat = parseFloat(req.query.lat);
+  const lon = parseFloat(req.query.lon);
+  const label = typeof req.query.label === 'string' ? req.query.label.slice(0, 40) : '서울';
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return res.status(400).json({ error: 'Invalid coordinates' });
+  }
+
+  const key = weatherCacheKey(lat, lon);
+  const cached = weatherCache.get(key);
+  if (cached && Date.now() - cached.ts < WEATHER_CACHE_MS) {
+    return res.json({ ...cached.payload, stale: false });
+  }
+
+  try {
+    const [cur, areaLabel] = await Promise.all([
+      fetchWeatherData(lat, lon),
+      resolveAreaLabel(lat, lon)
+    ]);
+    const resolvedLabel = areaLabel || cur.resolvedLabel || label;
+    const payload = {
+      label: resolvedLabel,
+      temperature: cur.temperature,
+      apparentTemperature: cur.apparentTemperature,
+      weathercode: cur.weathercode,
+      stale: false
+    };
+    weatherCache.set(key, { ts: Date.now(), payload });
+    res.json(payload);
+  } catch (err) {
+    const cause = err && err.cause ? String(err.cause) : '';
+    console.error('Weather proxy error:', err.message, cause);
+    if (cached) {
+      return res.json({ ...cached.payload, stale: true });
+    }
+    res.status(502).json({ error: 'Failed to fetch weather' });
+  }
+});
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    return String(forwarded).split(',')[0].trim();
+  }
+  const ip = req.ip || req.socket?.remoteAddress || '';
+  return ip.replace(/^::ffff:/, '');
+}
 
 // 2.English Study Route
 app.post('/englishstudy', async (req, res) => {
@@ -1273,12 +1484,6 @@ app.post('/guestbook', async (req, res) => {
 // 조회수 증가 엔드포인트 (동일 IP 체크 포함)
 const viewTracker = new Map(); // IP와 게시글 ID를 추적하는 맵
 
-function getClientIp(req) {
-  const xff = req.headers['x-forwarded-for'];
-  if (xff) return String(xff).split(',')[0].trim();
-  return req.ip || req.connection?.remoteAddress || 'unknown';
-}
-
 async function incrementEntryLike(req, res, Model) {
   try {
     const { id } = req.params;
@@ -1907,6 +2112,186 @@ app.post('/easy-voca/updatepost', async (req, res) => {
   try {
     const { id, password, title, message, nickname, isSecret } = req.body;
     const entry = await EasyVocaEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+//================================== Pros & Cons API (proscons 컬렉션)
+
+app.get('/pros-cons', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
+    const entries = await ProsConsEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Pros & Cons entries 오류:', error);
+    res.status(500).json({
+      error: 'Error retrieving pros & cons entries',
+      details: error.message,
+      entries: []
+    });
+  }
+});
+
+app.post('/pros-cons', async (req, res) => {
+  const { title, message, nickname, password, isSecret } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new ProsConsEntry({
+    title,
+    message,
+    nickname,
+    password: hashedPassword,
+    isSecret: isSecret || false
+  });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving pros & cons entry' });
+  }
+});
+
+const prosConsViewTracker = new Map();
+
+app.post('/pros-cons/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `${clientIp}_${id}`;
+    const lastViewTime = prosConsViewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await ProsConsEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+      });
+    }
+
+    const entry = await ProsConsEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    prosConsViewTracker.set(viewKey, now);
+    setTimeout(() => {
+      prosConsViewTracker.delete(viewKey);
+    }, oneHour);
+
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Pros & Cons 조회수 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/pros-cons/:id/like', (req, res) => incrementEntryLike(req, res, ProsConsEntry));
+
+app.post('/pros-cons/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await ProsConsEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/pros-cons/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await ProsConsEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Password required' });
+  }
+  if (!entry.password) {
+    return res.status(400).json({ error: 'Post has no stored password' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await ProsConsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting pros & cons entry' });
+  }
+});
+
+app.post('/pros-cons/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await ProsConsEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    await ProsConsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/pros-cons/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await ProsConsEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
     }
