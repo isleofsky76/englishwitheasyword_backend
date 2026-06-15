@@ -177,7 +177,7 @@ app.get('/generate-audio', async (req, res) => {
 
   console.log(`🟢 Final Speaking Rate: ${speakingRate}`);
 
-  // AI 발음: 한국어는 "에이아이"로 치환, 영어는 단어로 치환 (문장 쉼은 프론트에서 문장 단위 분할 재생)
+  // AI 발음: 한국어·영어 모두 에이아이(글자 A I)로 읽기 — OpenAI 등 단어 안 AI는 \b 경계로 제외
   let textForInput = String(text || '');
   const hasAI = /\bAI\b/i.test(textForInput);
 
@@ -185,10 +185,18 @@ app.get('/generate-audio', async (req, res) => {
     if (actualLanguageCode === 'ko-KR' || (language && /^ko/i.test(language))) {
       textForInput = textForInput.replace(/\bAI\b/gi, '에이아이');
     } else {
-      // 영어: AI → artificial intelligence 로 읽히게
-      textForInput = textForInput.replace(/\bAI\b/gi, 'artificial intelligence');
+      textForInput = textForInput.replace(/\bAI\b/gi, 'A I');
     }
   }
+
+  // B.C./A.D. moment → BC AD-moment (연대 확장·AD↔moment 사이 끊김 방지)
+  textForInput = textForInput
+    .replace(/\bB\.C\.\s*\/\s*A\.D\.\s+moment\b/gi, 'BC AD-moment')
+    .replace(/\bB\.C\.\s*\/\s*A\.D\./gi, 'BC AD')
+    .replace(/\bB\.C\./gi, 'BC')
+    .replace(/\bA\.D\.\s+moment\b/gi, 'AD-moment')
+    .replace(/\bA\.D\./gi, 'AD')
+    .replace(/\bBC\s+AD\s+moment\b/gi, 'BC AD-moment');
 
   // the U.S.'s / U.S.'s → United States's 로 읽히게 (US즈 발음)
   textForInput = textForInput.replace(/\bthe U\.S\.'s\b/gi, 'the United States\'s');
@@ -254,6 +262,7 @@ function startServer() {
     console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
     console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
     console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
+    console.log(`- Photo English: http://localhost:${PORT}/photo-english`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
   });
@@ -335,6 +344,21 @@ const wordOfDayEntrySchema = new mongoose.Schema({
 }, { collection: 'wordofday' });
 
 const WordOfDayEntry = mongoose.model('WordOfDayEntry', wordOfDayEntrySchema);
+
+// 포토영어 (photo-english-list.html) → 컬렉션 photoenglish
+const photoEnglishEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'photoenglish' });
+
+const PhotoEnglishEntry = mongoose.model('PhotoEnglishEntry', photoEnglishEntrySchema);
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -1767,6 +1791,131 @@ app.post('/wordofday-admin/deletepost', async (req, res) => {
   }
 });
 
+//================================== Photo English API (photoenglish 컬렉션)
+app.get('/photo-english', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await PhotoEnglishEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Photo English entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving photo english entries', entries: [] });
+  }
+});
+
+app.post('/photo-english', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new PhotoEnglishEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Photo English save 오류:', error);
+    res.status(500).json({ error: 'Error saving photo english entry', detail: error.message });
+  }
+});
+
+app.post('/photo-english/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `pe_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await PhotoEnglishEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await PhotoEnglishEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Photo English view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/photo-english/:id/like', (req, res) => incrementEntryLike(req, res, PhotoEnglishEntry));
+
+app.post('/photo-english-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await PhotoEnglishEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/photo-english-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await PhotoEnglishEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/photo-english-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await PhotoEnglishEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await PhotoEnglishEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting guestbook entry' });
+  }
+});
+
+app.post('/photo-english-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await PhotoEnglishEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await PhotoEnglishEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
 //================================== Vocabulary API – Synonyms (synonyms 컬렉션)
 
 // Vocabulary entries 조회
@@ -2361,6 +2510,12 @@ if (uri) {
           console.log('wordofday 컬렉션 생성됨');
         } catch (e) {
           if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('wordofday 컬렉션:', e.message);
+        }
+        try {
+          await db.createCollection('photoenglish');
+          console.log('photoenglish 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('photoenglish 컬렉션:', e.message);
         }
       }
     })
