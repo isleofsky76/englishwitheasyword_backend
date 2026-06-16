@@ -264,6 +264,7 @@ function startServer() {
     console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
     console.log(`- Photo English: http://localhost:${PORT}/photo-english`);
     console.log(`- Ranking News: http://localhost:${PORT}/ranking-news`);
+    console.log(`- Cooking Voca: http://localhost:${PORT}/cooking-voca`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
   });
@@ -375,6 +376,21 @@ const rankingNewsEntrySchema = new mongoose.Schema({
 }, { collection: 'rankingnews' });
 
 const RankingNewsEntry = mongoose.model('RankingNewsEntry', rankingNewsEntrySchema);
+
+// 요리 어휘 (cooking-voca-list.html) → 컬렉션 cookingvoca
+const cookingVocaEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'cookingvoca' });
+
+const CookingVocaEntry = mongoose.model('CookingVocaEntry', cookingVocaEntrySchema);
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -2051,6 +2067,131 @@ app.post('/ranking-news-admin/deletepost', async (req, res) => {
     const entry = await RankingNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     await RankingNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+//================================== Cooking Voca API (cookingvoca 컬렉션)
+app.get('/cooking-voca', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await CookingVocaEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Cooking Voca entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving cooking voca entries', entries: [] });
+  }
+});
+
+app.post('/cooking-voca', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new CookingVocaEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Cooking Voca save 오류:', error);
+    res.status(500).json({ error: 'Error saving cooking voca entry', detail: error.message });
+  }
+});
+
+app.post('/cooking-voca/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `cv_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await CookingVocaEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await CookingVocaEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Cooking Voca view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/cooking-voca/:id/like', (req, res) => incrementEntryLike(req, res, CookingVocaEntry));
+
+app.post('/cooking-voca-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await CookingVocaEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/cooking-voca-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await CookingVocaEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/cooking-voca-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await CookingVocaEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await CookingVocaEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting cooking voca entry' });
+  }
+});
+
+app.post('/cooking-voca-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await CookingVocaEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await CookingVocaEntry.findByIdAndDelete(id);
     res.json({ message: 'Post deleted by admin' });
   } catch (error) {
     res.status(500).json({ error: 'Error deleting post' });
