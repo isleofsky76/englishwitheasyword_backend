@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Synonym | 영어 유의어·동의어 학습 · English Easy Study</title>
+    <meta name="description" content="영어 유의어와 동의어를 문맥별로 학습하는 Synonym 게시판. 비슷한 뜻의 영어 단어를 카드로 익혀 표현력을 키우세요.">
+    <meta name="keywords" content="English synonym, 영어 유의어, 동의어 학습, synonym quiz, English Easy Study">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="English Easy Study">
+    <link rel="canonical" href="https://englisheasystudy.com/english-synonym-list.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="English Easy Study">
+    <meta property="og:title" content="English Synonym | 영어 유의어 학습">
+    <meta property="og:description" content="영어 유의어·동의어를 문맥별로 학습하는 Synonym 게시판">
+    <meta property="og:url" content="https://englisheasystudy.com/english-synonym-list.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="English Synonym | 영어 유의어 학습">
+    <meta name="twitter:description" content="영어 유의어·동의어 카드 학습">
+    <meta name="google-adsense-account" content="ca-pub-6108574897789788">
+    <!-- 성능 최적화: 리소스 힌트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
+    <!-- 스타일시트 로드 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dongle&family=Nanum+Gothic&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="page30_guestbook_v.css">
+    <link rel="stylesheet" href="guestbook-list-table.css?v=20260618">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="title-text-sharp.css?v=20260615">
+    <link rel="stylesheet" href="nav-home-menu.css?v=20260617">
+    <link rel="stylesheet" href="navbar-unified.css?v=20260612c">
+    <link rel="stylesheet" href="weather-banner.css?v=20260612g">
+    <link rel="stylesheet" href="world-clock.css?v=20260612g">
+    <!-- 광고 스크립트는 비동기 로드 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6108574897789788" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+             <a class="navbar-brand" href="#">유의어</a>
+            <div data-nav-home-menu class="nav-home-menu-slot ms-auto"></div>
+        </div>
+    </nav>
+    <div class="guestbook-container">
+      <div class="guestbook-list" id="guestbook-list">
+        <!-- JS로 게시글 리스트가 생성됩니다 -->
+      </div>
+    </div>
+    <!-- Write Post Modal -->
+    <div class="modal fade" id="write-post-modal" tabindex="-1" aria-labelledby="write-post-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary" id="write-post-modal-label">Leave a Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="guestbook-form">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text" id="title" class="form-control" placeholder="Title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" id="nickname" class="form-control" placeholder="Nickname" required>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="editor-toolbar mb-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="bold" title="Bold">
+                                    <strong>B</strong>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="italic" title="Italic">
+                                    <em>I</em>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="underline" title="Underline">
+                                    <u>U</u>
+                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Text Color">
+                                        <span style="color: #000;">A</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-color="#000000">Black</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#FF0000">Red</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#0000FF">Blue</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#008000">Green</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#FFA500">Orange</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#800080">Purple</a></li>
+                                    </ul>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Highlight Color">
+                                        <span style="background-color: #FFFF00;">H</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-highlight="#FFFF00">Yellow</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#00FF00">Green</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#00FFFF">Cyan</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#FFB6C1">Pink</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#FFA500">Orange</a></li>
+                                    </ul>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Font Size">
+                                        Size
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-size="12px">Small</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="14px">Normal</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="18px">Large</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="24px">X-Large</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div id="message" class="form-control editor-content" contenteditable="true" style="min-height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: white;"></div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-6">
+                                <input type="password" id="password" class="form-control" placeholder="Password" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <input type="checkbox" id="isSecret" class="form-check-input me-2"> <label for="isSecret" class="form-check-label">Secret</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 기존 컨테이너는 숨김 (호환성 유지) -->
+    <div class="guestbook-card shadow-lg p-4 mb-4 bg-white rounded" id="write-post-container" style="display: none;">
+        <h3 class="mb-3 text-primary">Leave a Message</h3>
+        <form id="guestbook-form-old" style="display: none;">
+            <!-- 이전 폼은 숨김 -->
+        </form>
+    </div>
+    <div class="guestbook-card shadow-lg p-4 mb-4 bg-white rounded" id="edit-post-container" style="display: none;">
+        <h3 class="mb-3 text-warning">Edit Message</h3>
+        <form id="edit-guestbook-form">
+            <input type="hidden" id="edit-id">
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" id="edit-title" class="form-control" placeholder="Title" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="edit-nickname" class="form-control" placeholder="Nickname" required>
+                </div>
+            </div>
+            <div class="mt-2">
+                <textarea id="edit-message" class="form-control" placeholder="Message" rows="3" required></textarea>
+            </div>
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <input type="password" id="edit-password" class="form-control" placeholder="Password" required>
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                    <input type="checkbox" id="edit-isSecret" class="form-check-input me-2"> <label for="edit-isSecret" class="form-check-label">Secret</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 mt-3">Update</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="nav-home-menu.js?v=20260618"></script>
+    <script src="guestbook-list-table.js?v=20260618"></script>
+    <script src="page30_guestbook_v.js?v=20260629"></script>
+    <script src="weather-banner.js?v=20260612e" defer></script>
+    <script src="world-clock.js?v=20260612g" defer></script>
+</body>
+</html>
+

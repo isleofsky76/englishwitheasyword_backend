@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뉴스 어휘 | News Voca · English Easy Study</title>
+    <meta name="description" content="CNN 뉴스 기사 핵심 어휘, 발음, 예문을 정리한 뉴스 어휘 학습 페이지입니다.">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="English Easy Study">
+    <link rel="canonical" href="https://englisheasystudy.com/news-voca-list.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="English Easy Study">
+    <meta property="og:title" content="뉴스 어휘 | English Easy Study">
+    <meta property="og:description" content="뉴스 영어 단어 · 발음 · 예문">
+    <meta property="og:url" content="https://englisheasystudy.com/news-voca-list.html">
+    <meta name="google-adsense-account" content="ca-pub-6108574897789788">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6108574897789788" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="page30_guestbook.css">
+    <link rel="stylesheet" href="guestbook-list-table.css?v=20260618">
+    <link rel="stylesheet" href="title-text-sharp.css?v=20260613">
+    <link rel="stylesheet" href="nav-home-menu.css?v=20260617">
+    <link rel="stylesheet" href="navbar-unified.css?v=20260612c">
+    <link rel="stylesheet" href="weather-banner.css?v=20260612g">
+    <link rel="stylesheet" href="world-clock.css?v=20260612g">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" aria-label="주 메뉴">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="news-voca-list.html">뉴스 어휘</a>
+            <div data-nav-home-menu class="nav-home-menu-slot ms-auto"></div>
+        </div>
+    </nav>
+    <main class="guestbook-container" id="main-content">
+      <h1 class="visually-hidden">뉴스 어휘 목록</h1>
+      <div class="guestbook-list" id="guestbook-list"></div>
+    </main>
+    <div class="modal fade" id="write-post-modal" tabindex="-1" aria-labelledby="write-post-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary" id="write-post-modal-label">글쓰기</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="guestbook-form">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text" id="title" class="form-control" placeholder="Title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" id="nickname" class="form-control" placeholder="Nickname" required>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <textarea id="message" class="form-control" placeholder="Message (HTML or plain text)" rows="8" required></textarea>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-6">
+                                <input type="password" id="password" class="form-control" placeholder="Password" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <input type="checkbox" id="isSecret" class="form-check-input me-2"> <label for="isSecret" class="form-check-label">Secret</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="edit-post-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-warning">Edit Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="edit-guestbook-form" class="modal-body">
+                    <input type="hidden" id="edit-id">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <input type="text" id="edit-title" class="form-control" placeholder="Title" required>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="edit-nickname" class="form-control" placeholder="Nickname" required>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <textarea id="edit-message" class="form-control" placeholder="Message" rows="8" required></textarea>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-6">
+                            <input type="password" id="edit-password" class="form-control" placeholder="Password" required>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center">
+                            <input type="checkbox" id="edit-isSecret" class="form-check-input me-2"> <label for="edit-isSecret" class="form-check-label">Secret</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 mt-3">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="nav-home-menu.js?v=20260618"></script>
+    <script src="page30-api-config.js"></script>
+    <script src="guestbook-list-table.js?v=20260618"></script>
+    <script src="news-voca-list.js?v=20260616"></script>
+    <script src="weather-banner.js?v=20260612e" defer></script>
+    <script src="world-clock.js?v=20260612g" defer></script>
+</body>
+</html>

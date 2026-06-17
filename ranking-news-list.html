@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA 남자 랭킹 뉴스 | 순위·점수 정리 · English Easy Study</title>
+    <meta name="description" content="FIFA 랭킹, 음악 차트 등 각종 순위를 순위·이름·점수 형식으로 정리한 랭킹 뉴스 게시판입니다.">
+    <meta name="keywords" content="FIFA ranking, FIFA 남자 랭킹, FIFA world ranking, 축구 랭킹, ranking news, English Easy Study">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="English Easy Study">
+    <link rel="canonical" href="https://englisheasystudy.com/ranking-news-list.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="English Easy Study">
+    <meta property="og:title" content="FIFA 남자 랭킹 뉴스 | English Easy Study">
+    <meta property="og:description" content="각종 랭킹을 순위·이름·점수로 정리한 랭킹 뉴스">
+    <meta property="og:url" content="https://englisheasystudy.com/ranking-news-list.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="FIFA 남자 랭킹 뉴스">
+    <meta name="twitter:description" content="FIFA 남자 세계 랭킹 순위·점수 정리">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "FIFA 남자 랭킹 뉴스",
+      "description": "FIFA, 음악 차트 등 각종 순위를 순위·이름·점수로 정리",
+      "url": "https://englisheasystudy.com/ranking-news-list.html",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "English Easy Study",
+        "url": "https://englisheasystudy.com/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "English Easy Study",
+        "url": "https://englisheasystudy.com/"
+      }
+    }
+    </script>
+    <meta name="google-adsense-account" content="ca-pub-6108574897789788">
+    <!-- 성능 최적화: 리소스 힌트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
+    <!-- 스타일시트 로드 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dongle&family=Nanum+Gothic&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="page30_guestbook.css">
+    <link rel="stylesheet" href="ranking-news.css?v=20260623">
+    <link rel="stylesheet" href="guestbook-list-table.css?v=20260618">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="title-text-sharp.css?v=20260613">
+    <link rel="stylesheet" href="nav-home-menu.css?v=20260617">
+    <link rel="stylesheet" href="navbar-unified.css?v=20260612c">
+    <link rel="stylesheet" href="weather-banner.css?v=20260612g">
+    <link rel="stylesheet" href="world-clock.css?v=20260612g">
+    <!-- 광고 스크립트는 비동기 로드 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6108574897789788" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" aria-label="주 메뉴">
+        <div class="container-fluid">
+             <a class="navbar-brand" href="ranking-news-list.html">랭킹 뉴스</a>
+            
+            <div data-nav-home-menu class="nav-home-menu-slot ms-auto"></div>
+        </div>
+    </nav>
+    <main class="guestbook-container" id="main-content">
+      <h1 class="visually-hidden">랭킹 뉴스 목록</h1>
+      <div class="guestbook-list" id="guestbook-list">
+        <!-- JS로 게시글 리스트가 생성됩니다 -->
+      </div>
+    </main>
+    <!-- Write Post Modal -->
+    <div class="modal fade" id="write-post-modal" tabindex="-1" aria-labelledby="write-post-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary" id="write-post-modal-label">Leave a Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="guestbook-form">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text" id="title" class="form-control" placeholder="Title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" id="nickname" class="form-control" placeholder="Nickname" required>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="editor-toolbar mb-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="bold" title="Bold">
+                                    <strong>B</strong>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="italic" title="Italic">
+                                    <em>I</em>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="underline" title="Underline">
+                                    <u>U</u>
+                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Text Color">
+                                        <span style="color: #000;">A</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-color="#000000">Black</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#FF0000">Red</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#0000FF">Blue</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#008000">Green</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#FFA500">Orange</a></li>
+                                        <li><a class="dropdown-item" href="#" data-color="#800080">Purple</a></li>
+                                    </ul>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Highlight Color">
+                                        <span style="background-color: #FFFF00;">H</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-highlight="#FFFF00">Yellow</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#00FF00">Green</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#00FFFF">Cyan</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#FFB6C1">Pink</a></li>
+                                        <li><a class="dropdown-item" href="#" data-highlight="#FFA500">Orange</a></li>
+                                    </ul>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Font Size">
+                                        Size
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-size="12px">Small</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="14px">Normal</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="18px">Large</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="24px">X-Large</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div id="message" class="form-control editor-content" contenteditable="true" style="min-height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: white;"></div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-6">
+                                <input type="password" id="password" class="form-control" placeholder="Password" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <input type="checkbox" id="isSecret" class="form-check-input me-2"> <label for="isSecret" class="form-check-label">Secret</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 기존 컨테이너는 숨김 (호환성 유지) -->
+    <div class="guestbook-card shadow-lg p-4 mb-4 bg-white rounded" id="write-post-container" style="display: none;">
+        <h3 class="mb-3 text-primary">Leave a Message</h3>
+        <form id="guestbook-form-old" style="display: none;">
+            <!-- 이전 폼은 숨김 -->
+        </form>
+    </div>
+    <div class="guestbook-card shadow-lg p-4 mb-4 bg-white rounded" id="edit-post-container" style="display: none;">
+        <h3 class="mb-3 text-warning">Edit Message</h3>
+        <form id="edit-guestbook-form">
+            <input type="hidden" id="edit-id">
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" id="edit-title" class="form-control" placeholder="Title" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="edit-nickname" class="form-control" placeholder="Nickname" required>
+                </div>
+            </div>
+            <div class="mt-2">
+                <textarea id="edit-message" class="form-control" placeholder="Message" rows="3" required></textarea>
+            </div>
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <input type="password" id="edit-password" class="form-control" placeholder="Password" required>
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                    <input type="checkbox" id="edit-isSecret" class="form-check-input me-2"> <label for="edit-isSecret" class="form-check-label">Secret</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 mt-3">Update</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="nav-home-menu.js?v=20260618"></script>
+    <script src="page30-api-config.js"></script>
+    <script src="guestbook-list-table.js?v=20260618"></script>
+    <script src="page30_guestbook_ranking_news.js?v=20260616"></script>
+    <script src="weather-banner.js?v=20260612e" defer></script>
+    <script src="world-clock.js?v=20260612g" defer></script>
+</body>
+</html>
