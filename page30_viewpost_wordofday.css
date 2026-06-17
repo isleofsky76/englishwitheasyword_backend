@@ -1,0 +1,288 @@
+/* Word of the Day view post – page30_viewpost_wordofday
+   기존 guestbook view 스타일(page30_viewpost_v.css)을 재사용 */
+
+@import url('page30_viewpost_v.css');
+
+/* 전체 배경을 교재 느낌의 그라디언트로 */
+body {
+  background: radial-gradient(circle at top left, #fdfbfb 0%, #ebedff 35%, #f9f5ff 70%, #fdf2ff 100%);
+}
+
+/* 카드 전체를 Word of the Day 전용 스타일로 감싸기 */
+#post-container {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+#post-header,
+#post-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* 작성자 / 날짜 / 조회수 메타 정보 글자 크기 */
+#post-meta {
+  font-size: 0.75rem;
+}
+
+/* 본문 – 줄·문단 간격 (과거 촘촘함 ↔ 최근 넓음 사이 중간) */
+#post-message {
+  line-height: 1.35;
+  text-align: left;
+}
+
+#post-message > div {
+  margin: 0;
+  text-align: left;
+}
+
+#post-message p {
+  margin: 0.1em 0 0.24em 0;
+  line-height: 1.35;
+}
+
+#post-message p:first-child {
+  margin-top: 0;
+}
+
+#post-message p:last-child {
+  margin-bottom: 0;
+}
+
+#post-message img {
+  margin: 0 0 0.35rem 0;
+}
+
+/* 예문 한 줄 TTS 스피커 아이콘 */
+.wotd-inline-speaker {
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 4px;
+  margin-left: 8px;
+}
+
+.wotd-inline-speaker:hover {
+  color: #1d4ed8;
+}
+
+/* 섹션 제목 – 예문 번호와 본문 사이 구분 */
+#post-message .wotd-example-heading {
+  display: block;
+  margin: 0.32rem 0 0.16rem 0;
+  line-height: 1.3;
+}
+
+#post-message .wotd-example-heading:first-child {
+  margin-top: 0;
+}
+
+/* 제목 바로 아래 예문 문장 */
+#post-message .wotd-example-heading + span {
+  display: block;
+  margin-top: 0.05rem;
+  line-height: 1.35;
+}
+
+/* ===== Word of the Day 전용 블록 ===== */
+
+.wotd-card {
+  display: flex;
+  flex-direction: row;
+  gap: 1.8rem;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(6px);
+}
+
+.wotd-image-wrap {
+  flex: 0 0 220px;
+  max-width: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(30, 64, 175, 0.35);
+  position: relative;
+}
+
+.wotd-image-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.15), transparent 60%);
+  pointer-events: none;
+}
+
+.wotd-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wotd-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.wotd-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #1d4ed8;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.18), rgba(129, 140, 248, 0.22));
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+}
+
+.wotd-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.28);
+}
+
+.wotd-word {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin: 0.18rem 0 0.38rem;
+  background: linear-gradient(120deg, #1d4ed8, #db2777);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.wotd-pos {
+  margin: 0.15rem 0 0.45rem;
+  font-size: 0.98rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.wotd-pos-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.55rem;
+  margin-right: 0.4rem;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #0369a1;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.wotd-pos-tag::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.wotd-pos-text {
+  font-weight: 500;
+}
+
+.wotd-examples {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.wotd-example {
+  padding: 0.55rem 0.72rem 0.62rem;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+}
+
+.wotd-example-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.32rem;
+}
+
+.wotd-example-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.14rem 0.6rem;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.wotd-example-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #f97316;
+}
+
+.wotd-example-en {
+  margin: 0 0 0.28rem;
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.5;
+}
+
+.wotd-example-ko {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.55;
+}
+
+/* 모바일 레이아웃 정리 */
+@media (max-width: 767px) {
+  .wotd-card {
+    flex-direction: column;
+    padding: 1.2rem 1.15rem;
+    gap: 0.95rem;
+  }
+
+  .wotd-image-wrap {
+    flex: 0 0 auto;
+    max-width: 100%;
+    box-shadow: 0 10px 22px rgba(30, 64, 175, 0.3);
+  }
+
+  .wotd-word {
+    font-size: 1.8rem;
+  }
+
+  /* Word of the Day 상단 히어로 이미지: 모바일에서 가로에 맞춰 1:1 정사각형 */
+  #post-message .wotd-hero-image,
+  #post-message img.wotd-hero-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    height: auto;
+  }
+}
+

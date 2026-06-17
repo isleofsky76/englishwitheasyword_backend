@@ -1,0 +1,107 @@
+/* 본문 카드 안 — 별도 배경·테두리 없음 */
+.viewpost-like-row {
+  margin-top: 16px;
+  padding: 0;
+  border: none !important;
+  border-top: none !important;
+  text-align: center;
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.viewpost-like-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #666;
+}
+
+.vp-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vp-like-btn:hover:not(:disabled),
+.vp-like-btn:focus:not(:disabled),
+.vp-like-btn:active:not(:disabled) {
+  color: #357abd;
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.vp-like-btn.is-active,
+.vp-like-btn:disabled {
+  background: none !important;
+  background-color: transparent !important;
+  border: none;
+  box-shadow: none !important;
+  color: #357abd;
+  cursor: default;
+  opacity: 1;
+}
+
+.vp-like-icon {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.vp-like-label {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  background: none;
+}
+
+.vp-like-btn .vp-like-count {
+  color: #357abd;
+  font-weight: 600;
+  font-size: inherit;
+  margin-left: 4px;
+  background: none;
+}
+
+@media (max-width: 767px) {
+  .viewpost-like-row {
+    margin-top: 16px;
+  }
+
+  .viewpost-like-box {
+    font-size: 0.9rem;
+    gap: 10px;
+  }
+}
