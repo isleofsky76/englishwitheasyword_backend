@@ -261,6 +261,7 @@ function startServer() {
     console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
     console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
     console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
+    console.log(`- Situational English: http://localhost:${PORT}/situational-english`);
     console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
     console.log(`- Photo English: http://localhost:${PORT}/photo-english`);
     console.log(`- Ranking News: http://localhost:${PORT}/ranking-news`);
@@ -317,6 +318,21 @@ const easyVocaEntrySchema = new mongoose.Schema({
 }, { collection: 'popularvoca' });
 
 const EasyVocaEntry = mongoose.model('EasyVocaEntry', easyVocaEntrySchema);
+
+// Situational English (situational-english-list.html) → 컬렉션 situationalenglish
+const situationalEnglishEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false }
+}, { collection: 'situationalenglish' });
+
+const SituationalEnglishEntry = mongoose.model('SituationalEnglishEntry', situationalEnglishEntrySchema);
 
 // Pros & Cons (pros-cons-list.html) → 컬렉션 proscons
 const prosConsEntrySchema = new mongoose.Schema({
@@ -2707,6 +2723,186 @@ app.post('/easy-voca/updatepost', async (req, res) => {
   try {
     const { id, password, title, message, nickname, isSecret } = req.body;
     const entry = await EasyVocaEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+//================================== Situational English API (situationalenglish 컬렉션)
+
+app.get('/situational-english', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
+    const entries = await SituationalEnglishEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Situational English entries 오류:', error);
+    res.status(500).json({
+      error: 'Error retrieving situational english entries',
+      details: error.message,
+      entries: []
+    });
+  }
+});
+
+app.post('/situational-english', async (req, res) => {
+  const { title, message, nickname, password, isSecret } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new SituationalEnglishEntry({
+    title,
+    message,
+    nickname,
+    password: hashedPassword,
+    isSecret: isSecret || false
+  });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving situational english entry' });
+  }
+});
+
+const situationalEnglishViewTracker = new Map();
+
+app.post('/situational-english/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `${clientIp}_${id}`;
+    const lastViewTime = situationalEnglishViewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await SituationalEnglishEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+      });
+    }
+
+    const entry = await SituationalEnglishEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    situationalEnglishViewTracker.set(viewKey, now);
+    setTimeout(() => {
+      situationalEnglishViewTracker.delete(viewKey);
+    }, oneHour);
+
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Situational English 조회수 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/situational-english/:id/like', (req, res) => incrementEntryLike(req, res, SituationalEnglishEntry));
+
+app.post('/situational-english/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await SituationalEnglishEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/situational-english/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await SituationalEnglishEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Password required' });
+  }
+  if (!entry.password) {
+    return res.status(400).json({ error: 'Post has no stored password' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await SituationalEnglishEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting situational english entry' });
+  }
+});
+
+app.post('/situational-english/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await SituationalEnglishEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    await SituationalEnglishEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/situational-english/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret } = req.body;
+    const entry = await SituationalEnglishEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
     }
