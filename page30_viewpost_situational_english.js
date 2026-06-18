@@ -41,7 +41,7 @@ function sanitizeHtml(html) {
     const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'div', 'a', 'img', 'button'];
     const allowedAttributes = [
         'style', 'href', 'target', 'rel', 'src', 'alt', 'loading', 'decoding', 'onerror',
-        'type', 'class', 'aria-label', 'title', 'data-pv-tts',
+        'type', 'class', 'aria-label', 'title', 'data-pv-tts', 'data-se-tts',
     ];
     
     // 위험한 태그 제거
@@ -250,6 +250,34 @@ function attachPopularVocaWebTTS(container) {
 
         p.innerHTML = newLines.join('<br>');
         p.setAttribute('data-pv-tts', '1');
+    });
+
+    bindPopularVocaTtsButtons(container);
+}
+
+/** 상황 영어: 한글 : 영어 줄 — 영어(data-se-tts) 바로 뒤 스피커 */
+function attachSituationalEnglishWebTTS(container) {
+    if (!container) return;
+    if (!window.speechSynthesis) {
+        console.warn('상황 영어: 이 브라우저는 Web Speech API(speechSynthesis)를 지원하지 않아 발음 버튼을 쓸 수 없습니다.');
+        return;
+    }
+    try {
+        speechSynthesis.getVoices();
+    } catch (_) {}
+
+    container.querySelectorAll('[data-se-tts]').forEach((el) => {
+        const next = el.nextElementSibling;
+        if (next && next.classList && next.classList.contains('pv-tts-slot')) return;
+        const speak = el.getAttribute('data-se-tts');
+        if (!speak) return;
+        const slot = pvTtsSlotHtml(speak);
+        if (!slot) return;
+        if (/[.!?]$/.test(speak.trim())) {
+            el.outerHTML = pvAppendTtsInlineAfterEnglish(el.outerHTML, speak);
+        } else {
+            el.insertAdjacentHTML('afterend', slot);
+        }
     });
 
     bindPopularVocaTtsButtons(container);
@@ -531,7 +559,7 @@ async function loadPost() {
                 }
             });
             const postContent = document.getElementById('post-content');
-            if (postContent) attachPopularVocaWebTTS(postContent);
+            if (postContent) attachSituationalEnglishWebTTS(postContent);
         }
 
         if (typeof initViewpostLike === 'function') {
