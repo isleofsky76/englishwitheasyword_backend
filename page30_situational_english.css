@@ -1,0 +1,97 @@
+/* 상황 영어 — teal 테마 (popular-voca #357abd 와 구분) */
+:root {
+  --se-primary: #0f766e;
+  --se-primary-dark: #0d5c56;
+  --se-primary-light: #ccfbf1;
+  --se-accent: #14b8a6;
+  --se-text: #334155;
+  --se-text-muted: #64748b;
+  --se-bg: #f0fdfa;
+  --se-border: #99f6e4;
+}
+
+.se-page {
+  background-color: #f5f7fa;
+}
+
+.se-navbar {
+  background-color: var(--se-primary) !important;
+}
+
+.se-navbar .navbar-brand {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.se-list-header {
+  max-width: 900px;
+  margin: 0 auto 1rem;
+  padding: 0.25rem 0.5rem 0;
+}
+
+.se-list-title {
+  font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--se-primary-dark);
+  margin: 0 0 0.35rem;
+}
+
+.se-list-desc {
+  font-size: 0.92rem;
+  color: var(--se-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.se-modal-title,
+.se-page .text-primary {
+  color: var(--se-primary) !important;
+}
+
+.se-btn-primary {
+  background-color: var(--se-primary);
+  border-color: var(--se-primary);
+  color: #fff;
+}
+
+.se-btn-primary:hover {
+  background-color: var(--se-primary-dark);
+  border-color: var(--se-primary-dark);
+  color: #fff;
+}
+
+.se-page .guestbook-container .item-title a {
+  color: #134e4a;
+}
+
+.se-page .guestbook-container .item-title a:hover {
+  color: var(--se-primary);
+}
+
+/* 글 보기 페이지 */
+.se-page #post-container {
+  border-top: 3px solid var(--se-accent);
+}
+
+.se-page #post-title {
+  color: var(--se-primary-dark);
+}
+
+.se-page #post-message {
+  color: var(--se-text);
+}
+
+.se-page .btn-primary {
+  background-color: var(--se-primary);
+  border-color: var(--se-primary);
+}
+
+.se-page .btn-primary:hover {
+  background-color: var(--se-primary-dark);
+  border-color: var(--se-primary-dark);
+}
+
+.se-page .spinner-border.text-primary {
+  color: var(--se-primary) !important;
+}
