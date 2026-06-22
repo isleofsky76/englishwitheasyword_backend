@@ -301,7 +301,9 @@ const vocabularyEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'synonyms' });
 
 const VocabularyEntry = mongoose.model('VocabularyEntry', vocabularyEntrySchema);
@@ -316,7 +318,9 @@ const easyVocaEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'popularvoca' });
 
 const EasyVocaEntry = mongoose.model('EasyVocaEntry', easyVocaEntrySchema);
@@ -331,7 +335,9 @@ const situationalEnglishEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'situationalenglish' });
 
 const SituationalEnglishEntry = mongoose.model('SituationalEnglishEntry', situationalEnglishEntrySchema);
@@ -346,7 +352,9 @@ const prosConsEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'proscons' });
 
 const ProsConsEntry = mongoose.model('ProsConsEntry', prosConsEntrySchema);
@@ -361,7 +369,9 @@ const wordOfDayEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'wordofday' });
 
 const WordOfDayEntry = mongoose.model('WordOfDayEntry', wordOfDayEntrySchema);
@@ -376,7 +386,9 @@ const photoEnglishEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'photoenglish' });
 
 const PhotoEnglishEntry = mongoose.model('PhotoEnglishEntry', photoEnglishEntrySchema);
@@ -431,6 +443,34 @@ const cultureVocaEntrySchema = new mongoose.Schema({
 }, { collection: 'culturevoca' });
 
 const CultureVocaEntry = mongoose.model('CultureVocaEntry', cultureVocaEntrySchema);
+
+async function findEntryBySlug(req, res, Model, label) {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const entry = await Model.findOne({ slug: req.params.slug });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    res.status(200).json({ entry });
+  } catch (error) {
+    console.error(`${label} by-slug 오류:`, error);
+    res.status(500).json({ error: 'Error retrieving entry' });
+  }
+}
+
+function applySeoFieldsToBody(body, entry) {
+  const { slug, metaDescription } = body;
+  if (slug !== undefined) entry.slug = slug;
+  if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+}
+
+function seoFieldsFromBody(body) {
+  const { slug, metaDescription } = body;
+  return {
+    slug: slug || '',
+    metaDescription: metaDescription || '',
+  };
+}
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -1552,21 +1592,9 @@ app.get('/guestbook', async (req, res) => {
   }
 });
 
-app.get('/guestbook/by-slug/:slug', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
-    }
-    const entry = await GuestbookEntry.findOne({ slug: req.params.slug });
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-    res.status(200).json({ entry });
-  } catch (error) {
-    console.error('Guestbook by-slug 오류:', error);
-    res.status(500).json({ error: 'Error retrieving guestbook entry' });
-  }
-});
+app.get('/guestbook/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, GuestbookEntry, 'Guestbook')
+);
 
 app.post('/guestbook', async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
@@ -1712,6 +1740,28 @@ app.post('/deletepost', async (req, res) => {
   }
 });
 
+app.post('/guestbook/delete-by-slug', async (req, res) => {
+  const { slug, password } = req.body;
+  if (!slug || !password) {
+    return res.status(400).json({ error: 'slug and password are required' });
+  }
+  try {
+    const entry = await GuestbookEntry.findOne({ slug });
+    if (!entry) {
+      return res.json({ deleted: 0 });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    await GuestbookEntry.findByIdAndDelete(entry._id);
+    res.json({ deleted: 1 });
+  } catch (error) {
+    console.error('guestbook/delete-by-slug 오류:', error);
+    res.status(500).json({ error: 'Error deleting guestbook entry' });
+  }
+});
+
 app.post('/deleteposts-by-password', async (req, res) => {
   const { password } = req.body;
   if (!password) {
@@ -1795,17 +1845,22 @@ app.get('/wordofday', async (req, res) => {
   }
 });
 
+app.get('/wordofday/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, WordOfDayEntry, 'WordOfDay')
+);
+
 app.post('/wordofday', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newEntry = new WordOfDayEntry({
-    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
   });
   try {
     await newEntry.save();
@@ -1861,7 +1916,7 @@ app.post('/wordofday-viewpost', async (req, res) => {
 
 app.post('/wordofday-updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await WordOfDayEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     const isMatch = await safeBcryptCompare(password, entry.password);
@@ -1870,6 +1925,7 @@ app.post('/wordofday-updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -1920,17 +1976,22 @@ app.get('/photo-english', async (req, res) => {
   }
 });
 
+app.get('/photo-english/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, PhotoEnglishEntry, 'PhotoEnglish')
+);
+
 app.post('/photo-english', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newEntry = new PhotoEnglishEntry({
-    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
   });
   try {
     await newEntry.save();
@@ -1986,7 +2047,7 @@ app.post('/photo-english-viewpost', async (req, res) => {
 
 app.post('/photo-english-updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await PhotoEnglishEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     const isMatch = await safeBcryptCompare(password, entry.password);
@@ -1995,6 +2056,7 @@ app.post('/photo-english-updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -2045,18 +2107,9 @@ app.get('/ranking-news', async (req, res) => {
   }
 });
 
-app.get('/ranking-news/by-slug/:slug', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
-    }
-    const entry = await RankingNewsEntry.findOne({ slug: req.params.slug });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    res.status(200).json({ entry });
-  } catch (error) {
-    res.status(500).json({ error: 'Error retrieving ranking news entry' });
-  }
-});
+app.get('/ranking-news/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, RankingNewsEntry, 'RankingNews')
+);
 
 app.post('/ranking-news', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
@@ -2186,18 +2239,9 @@ app.get('/cooking-voca', async (req, res) => {
   }
 });
 
-app.get('/cooking-voca/by-slug/:slug', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
-    }
-    const entry = await CookingVocaEntry.findOne({ slug: req.params.slug });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    res.status(200).json({ entry });
-  } catch (error) {
-    res.status(500).json({ error: 'Error retrieving cooking voca entry' });
-  }
-});
+app.get('/cooking-voca/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, CookingVocaEntry, 'CookingVoca')
+);
 
 app.post('/cooking-voca', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
@@ -2327,18 +2371,9 @@ app.get('/culture-voca', async (req, res) => {
   }
 });
 
-app.get('/culture-voca/by-slug/:slug', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
-    }
-    const entry = await CultureVocaEntry.findOne({ slug: req.params.slug });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    res.status(200).json({ entry });
-  } catch (error) {
-    res.status(500).json({ error: 'Error retrieving culture voca entry' });
-  }
-});
+app.get('/culture-voca/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, CultureVocaEntry, 'CultureVoca')
+);
 
 app.post('/culture-voca', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
@@ -2479,8 +2514,12 @@ app.get('/vocabulary', async (req, res) => {
 });
 
 // Vocabulary entry 생성
+app.get('/vocabulary/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, VocabularyEntry, 'Vocabulary')
+);
+
 app.post('/vocabulary', async (req, res) => {
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -2492,7 +2531,8 @@ app.post('/vocabulary', async (req, res) => {
     message, 
     nickname, 
     password: hashedPassword,
-    isSecret: isSecret || false
+    isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
   });
 
   try {
@@ -2617,7 +2657,7 @@ app.post('/vocabulary/admin/deletepost', async (req, res) => {
 // Vocabulary entry 수정
 app.post('/vocabulary/updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await VocabularyEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
@@ -2630,6 +2670,7 @@ app.post('/vocabulary/updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -2659,8 +2700,12 @@ app.get('/easy-voca', async (req, res) => {
   }
 });
 
+app.get('/easy-voca/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, EasyVocaEntry, 'EasyVoca')
+);
+
 app.post('/easy-voca', async (req, res) => {
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -2672,7 +2717,8 @@ app.post('/easy-voca', async (req, res) => {
     message,
     nickname,
     password: hashedPassword,
-    isSecret: isSecret || false
+    isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
   });
 
   try {
@@ -2797,7 +2843,7 @@ app.post('/easy-voca/admin/deletepost', async (req, res) => {
 
 app.post('/easy-voca/updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await EasyVocaEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
@@ -2810,6 +2856,7 @@ app.post('/easy-voca/updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -2839,8 +2886,12 @@ app.get('/situational-english', async (req, res) => {
   }
 });
 
+app.get('/situational-english/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, SituationalEnglishEntry, 'SituationalEnglish')
+);
+
 app.post('/situational-english', async (req, res) => {
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -2852,7 +2903,8 @@ app.post('/situational-english', async (req, res) => {
     message,
     nickname,
     password: hashedPassword,
-    isSecret: isSecret || false
+    isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
   });
 
   try {
@@ -2977,7 +3029,7 @@ app.post('/situational-english/admin/deletepost', async (req, res) => {
 
 app.post('/situational-english/updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await SituationalEnglishEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
@@ -2990,6 +3042,7 @@ app.post('/situational-english/updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -3019,8 +3072,12 @@ app.get('/pros-cons', async (req, res) => {
   }
 });
 
+app.get('/pros-cons/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, ProsConsEntry, 'ProsCons')
+);
+
 app.post('/pros-cons', async (req, res) => {
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -3032,7 +3089,8 @@ app.post('/pros-cons', async (req, res) => {
     message,
     nickname,
     password: hashedPassword,
-    isSecret: isSecret || false
+    isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
   });
 
   try {
@@ -3157,7 +3215,7 @@ app.post('/pros-cons/admin/deletepost', async (req, res) => {
 
 app.post('/pros-cons/updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await ProsConsEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
@@ -3170,6 +3228,7 @@ app.post('/pros-cons/updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
     await entry.save();
     res.json({ entry });
   } catch (error) {
