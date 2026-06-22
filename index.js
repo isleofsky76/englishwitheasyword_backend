@@ -280,6 +280,8 @@ const guestbookEntrySchema = new mongoose.Schema({
   message: String,
   nickname: String,
   password: String,
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' },
   date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
@@ -389,7 +391,9 @@ const rankingNewsEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'rankingnews' });
 
 const RankingNewsEntry = mongoose.model('RankingNewsEntry', rankingNewsEntrySchema);
@@ -404,7 +408,9 @@ const cookingVocaEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'cookingvoca' });
 
 const CookingVocaEntry = mongoose.model('CookingVocaEntry', cookingVocaEntrySchema);
@@ -419,7 +425,9 @@ const cultureVocaEntrySchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   likedFingerprints: { type: [String], default: [] },
-  isSecret: { type: Boolean, default: false }
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
 }, { collection: 'culturevoca' });
 
 const CultureVocaEntry = mongoose.model('CultureVocaEntry', cultureVocaEntrySchema);
@@ -1544,8 +1552,24 @@ app.get('/guestbook', async (req, res) => {
   }
 });
 
+app.get('/guestbook/by-slug/:slug', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const entry = await GuestbookEntry.findOne({ slug: req.params.slug });
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    res.status(200).json({ entry });
+  } catch (error) {
+    console.error('Guestbook by-slug 오류:', error);
+    res.status(500).json({ error: 'Error retrieving guestbook entry' });
+  }
+});
+
 app.post('/guestbook', async (req, res) => {
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -1558,7 +1582,9 @@ app.post('/guestbook', async (req, res) => {
     message, 
     nickname, 
     password: hashedPassword,
-    isSecret: isSecret || false
+    isSecret: isSecret || false,
+    slug: slug || '',
+    metaDescription: metaDescription || ''
   });
 
   try {
@@ -1733,7 +1759,7 @@ app.post('/admin/deletepost', async (req, res) => {
 
 app.post('/updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await GuestbookEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
@@ -1746,6 +1772,8 @@ app.post('/updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -2017,17 +2045,31 @@ app.get('/ranking-news', async (req, res) => {
   }
 });
 
+app.get('/ranking-news/by-slug/:slug', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const entry = await RankingNewsEntry.findOne({ slug: req.params.slug });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    res.status(200).json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving ranking news entry' });
+  }
+});
+
 app.post('/ranking-news', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newEntry = new RankingNewsEntry({
-    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
   });
   try {
     await newEntry.save();
@@ -2083,7 +2125,7 @@ app.post('/ranking-news-viewpost', async (req, res) => {
 
 app.post('/ranking-news-updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await RankingNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     const isMatch = await safeBcryptCompare(password, entry.password);
@@ -2092,6 +2134,8 @@ app.post('/ranking-news-updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -2142,17 +2186,31 @@ app.get('/cooking-voca', async (req, res) => {
   }
 });
 
+app.get('/cooking-voca/by-slug/:slug', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const entry = await CookingVocaEntry.findOne({ slug: req.params.slug });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    res.status(200).json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving cooking voca entry' });
+  }
+});
+
 app.post('/cooking-voca', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newEntry = new CookingVocaEntry({
-    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
   });
   try {
     await newEntry.save();
@@ -2208,7 +2266,7 @@ app.post('/cooking-voca-viewpost', async (req, res) => {
 
 app.post('/cooking-voca-updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await CookingVocaEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     const isMatch = await safeBcryptCompare(password, entry.password);
@@ -2217,6 +2275,8 @@ app.post('/cooking-voca-updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
     await entry.save();
     res.json({ entry });
   } catch (error) {
@@ -2267,17 +2327,31 @@ app.get('/culture-voca', async (req, res) => {
   }
 });
 
+app.get('/culture-voca/by-slug/:slug', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const entry = await CultureVocaEntry.findOne({ slug: req.params.slug });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    res.status(200).json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving culture voca entry' });
+  }
+});
+
 app.post('/culture-voca', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
-  const { title, message, nickname, password, isSecret } = req.body;
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
   if (!title || !message || !nickname || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const newEntry = new CultureVocaEntry({
-    title, message, nickname, password: hashedPassword, isSecret: isSecret || false
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
   });
   try {
     await newEntry.save();
@@ -2333,7 +2407,7 @@ app.post('/culture-voca-viewpost', async (req, res) => {
 
 app.post('/culture-voca-updatepost', async (req, res) => {
   try {
-    const { id, password, title, message, nickname, isSecret } = req.body;
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await CultureVocaEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     const isMatch = await safeBcryptCompare(password, entry.password);
@@ -2342,6 +2416,8 @@ app.post('/culture-voca-updatepost', async (req, res) => {
     entry.message = message;
     entry.nickname = nickname;
     entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
     await entry.save();
     res.json({ entry });
   } catch (error) {
