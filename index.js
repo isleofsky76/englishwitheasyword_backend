@@ -81,6 +81,118 @@ try {
   console.error("Error loading credentials:", error.message);
 }
 
+/** SSML word marks → timepoints (v1beta1) */
+let clientBeta = null;
+try {
+  const credentials = JSON.parse(fs.readFileSync('./youtubespeech-430112-5a2ce6dffa5c.json', 'utf8'));
+  clientBeta = new textToSpeech.v1beta1.TextToSpeechClient({ credentials });
+} catch (_) {
+  clientBeta = null;
+}
+
+function escapeSsmlText(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+/** 단어마다 `<mark>` — 구간별(마침표 분리) 합성 시 timepoint 누락 완화 */
+function buildWordMarkedSsml(text) {
+  const tokens = String(text || '').trim().split(/\s+/).filter(Boolean);
+  if (!tokens.length) return '<speak></speak>';
+  const body = tokens.map((tok, i) => `<mark name="w${i}"/>${escapeSsmlText(tok)}`).join(' ');
+  return `<speak>${body}</speak>`;
+}
+
+function findSegmentInPlainText(plain, seg, fromIndex) {
+  const s = String(seg || '').trim();
+  if (!s) return null;
+  const start = Math.max(0, Number(fromIndex) || 0);
+  const candidates = [s];
+  /** 구절 끝 「에서의」 등이 본문의 「에서 의」와 어긋날 때 */
+  const soft = s.replace(/([가-힣]{2,})의(?!\s)/g, '$1 의');
+  if (soft !== s) candidates.push(soft);
+  for (const cand of candidates) {
+    const exactIdx = plain.indexOf(cand, start);
+    if (exactIdx >= 0) return { idx: exactIdx, length: cand.length };
+    const escaped = cand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const flex = new RegExp(escaped.replace(/\s+/g, '\\s+'));
+    const m = flex.exec(plain.slice(start));
+    if (m && typeof m.index === 'number') {
+      return { idx: start + m.index, length: m[0].length };
+    }
+  }
+  return null;
+}
+
+/** 한국어 TTS — 소유 조사 「의」 누락 방지(띄어쓰기로 발음 유도). 합성어 회의·의미 등은 제외 */
+function koreanPossessiveUiForTTS(text) {
+  if (!text || typeof text !== 'string') return text;
+  return text.replace(/([가-힣]{2,})의(?=\s+[가-힣])/g, '$1 의');
+}
+
+/** 한국어 TTS — 「정점」 표기는 유지, 발음만 「정쩜」 */
+function jeongjeomForKoreanTTS(text) {
+  if (!text || typeof text !== 'string') return text;
+  return text.replace(/정점/g, '정쩜');
+}
+
+/** exampleKoChunked 구절마다 `<mark name="cN"/>` — 한글 문맥 단위 하이라이트용 */
+function buildChunkMarkedSsmlFromFullText(fullText, chunkStrings) {
+  const plain = String(fullText || '').trim();
+  if (!plain) return '<speak></speak>';
+  let cursor = 0;
+  const out = [];
+  let markIdx = 0;
+  for (const raw of chunkStrings) {
+    const seg = String(raw || '').trim();
+    if (!seg) continue;
+    const match = findSegmentInPlainText(plain, seg, cursor);
+    if (!match) continue;
+    if (match.idx > cursor) out.push(escapeSsmlText(plain.slice(cursor, match.idx)));
+    out.push(`<mark name="c${markIdx}"/>${escapeSsmlText(plain.slice(match.idx, match.idx + match.length))}`);
+    markIdx += 1;
+    cursor = match.idx + match.length;
+  }
+  if (cursor < plain.length) out.push(escapeSsmlText(plain.slice(cursor)));
+  return `<speak>${out.join('')}</speak>`;
+}
+
+function resolveLanguageCodeFromVoice(voiceName, fallback = 'en-US') {
+  const v = String(voiceName || '');
+  if (v.includes('en-GB')) return 'en-GB';
+  if (v.includes('en-AU')) return 'en-AU';
+  if (v.includes('ko-KR')) return 'ko-KR';
+  if (v.includes('en-US')) return 'en-US';
+  return fallback;
+}
+
+/** Chirp / Chirp3 HD — `<mark>` + enableTimePointing(SSML_MARK) 미지원 */
+function voiceSupportsSsmlMarks(voiceName) {
+  return !/Chirp/i.test(String(voiceName || ''));
+}
+
+/** marks 합성용 Neural2 등 SSML mark 지원 음성 */
+function marksCompatibleVoice(voiceName, languageCode) {
+  const v = String(voiceName || '');
+  const lc = String(languageCode || '');
+  if (lc.startsWith('ko') || v.includes('ko-KR')) return 'ko-KR-Neural2-C';
+  if (lc.startsWith('en-GB') || v.includes('en-GB')) return 'en-GB-Neural2-B';
+  if (lc.startsWith('en-AU') || v.includes('en-AU')) return 'en-AU-Neural2-B';
+  return 'en-US-Neural2-D';
+}
+
+function isTtsInvalidArgumentError(error) {
+  const code = error?.code;
+  const msg = String(error?.message || '');
+  return code === 3 || /INVALID_ARGUMENT/i.test(msg);
+}
+
+const TTS_SSML_MAX_BYTES = 5000;
+
 // Initialize the OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -154,6 +266,11 @@ app.get('/generate-audio', async (req, res) => {
   console.log(`🟢 Requested Speakrate: ${speakrate}`);
   console.log(`🟢 Selected Voice: ${voiceName}`);
 
+  if (!String(text || '').trim()) {
+    console.error('🔴 Empty text specified.');
+    return res.status(400).json({ error: 'Empty text specified.' });
+  }
+
   // 올바른 음성 설정이 없으면 에러 반환
   if (!voiceName) {
     console.error('🔴 Invalid language or voice specified.');
@@ -189,6 +306,19 @@ app.get('/generate-audio', async (req, res) => {
     }
   }
 
+  // VAR(비디오 판독) — 영어 TTS만 bee ay ahl(=비 에이 알). 영어 음성은 한글 미지원
+  const isKoLang = actualLanguageCode === 'ko-KR' || (language && /^ko/i.test(language));
+  if (!isKoLang && /\bVAR\b/i.test(textForInput)) {
+    textForInput = textForInput
+      .replace(/\bVAR['']s\b/gi, "bee ay ahl's")
+      .replace(/\bVAR\b/gi, 'bee ay ahl');
+  }
+
+  if (actualLanguageCode === 'ko-KR' || (language && /^ko/i.test(language))) {
+    textForInput = jeongjeomForKoreanTTS(textForInput);
+    textForInput = koreanPossessiveUiForTTS(textForInput);
+  }
+
   // B.C./A.D. moment → BC AD-moment (연대 확장·AD↔moment 사이 끊김 방지)
   textForInput = textForInput
     .replace(/\bB\.C\.\s*\/\s*A\.D\.\s+moment\b/gi, 'BC AD-moment')
@@ -208,15 +338,95 @@ app.get('/generate-audio', async (req, res) => {
     audioConfig: { audioEncoding: 'MP3', speakingRate: speakingRate, pitch: 0.0 }
   };
 
+  const wantsWordMarks = req.query.marks === '1' || req.query.marks === 'true';
+  const wantsChunkMarks = req.query.marks === 'chunk';
+
   try {
     if (!client) {
       console.log('⚠️ Google Cloud TTS not available, returning error');
       return res.status(503).json({ error: 'Text-to-Speech service not available. Please configure Google Cloud credentials.' });
     }
 
+    let markCount = 0;
+    let markMode = 'word';
+
+    if ((wantsWordMarks || wantsChunkMarks) && clientBeta) {
+      let ssml;
+      if (wantsChunkMarks) {
+        let chunkStrings = [];
+        try {
+          chunkStrings = JSON.parse(req.query.chunks || '[]');
+        } catch (_) {
+          chunkStrings = [];
+        }
+        ssml = buildChunkMarkedSsmlFromFullText(textForInput, chunkStrings);
+        markCount = chunkStrings.filter((c) => String(c || '').trim()).length;
+        markMode = 'chunk';
+      } else {
+        ssml = buildWordMarkedSsml(textForInput);
+        markCount = String(textForInput || '').trim().split(/\s+/).filter(Boolean).length;
+      }
+
+      const ssmlBytes = Buffer.byteLength(ssml, 'utf8');
+      if (ssmlBytes <= TTS_SSML_MAX_BYTES) {
+        const marksVoiceName = voiceSupportsSsmlMarks(voiceName)
+          ? voiceName
+          : marksCompatibleVoice(voiceName, actualLanguageCode);
+        const marksLanguageCode = resolveLanguageCodeFromVoice(marksVoiceName, actualLanguageCode);
+
+        if (marksVoiceName !== voiceName) {
+          console.warn(`⚠️ ${voiceName} does not support SSML marks — using ${marksVoiceName} for timepoints`);
+        }
+
+        const markRequest = {
+          input: { ssml },
+          voice: { languageCode: marksLanguageCode, name: marksVoiceName },
+          audioConfig: { audioEncoding: 'MP3', speakingRate, pitch: 0.0 },
+          enableTimePointing: ['SSML_MARK'],
+        };
+
+        try {
+          const [markResponse] = await clientBeta.synthesizeSpeech(markRequest);
+          const rawTps = markResponse.timepoints || [];
+          const timepoints = rawTps.map((tp) => ({
+            markName: tp.markName ?? tp.mark_name ?? '',
+            timeSeconds: Number(tp.timeSeconds ?? tp.time_seconds ?? 0),
+          })).sort((a, b) => a.timeSeconds - b.timeSeconds);
+
+          const audioBuf = markResponse.audioContent;
+          console.log('🟢 Audio response received successfully! (marks)');
+          res.set('Content-Type', 'application/json; charset=utf-8');
+          return res.json({
+            audio: Buffer.from(audioBuf).toString('base64'),
+            timepoints,
+            wordCount: markCount,
+            markMode,
+          });
+        } catch (markErr) {
+          if (!isTtsInvalidArgumentError(markErr)) throw markErr;
+          console.warn(`⚠️ SSML marks synthesis failed (${markErr.message}) — falling back to plain audio`);
+        }
+      } else {
+        console.warn(`⚠️ SSML too long (${ssmlBytes} bytes) — falling back to plain audio`);
+      }
+    }
+    if (wantsWordMarks || wantsChunkMarks) {
+      console.warn('⚠️ marks unavailable — returning plain audio only');
+    }
+
     const [response] = await client.synthesizeSpeech(request);
 
     console.log('🟢 Audio response received successfully!');
+
+    if (wantsWordMarks || wantsChunkMarks) {
+      res.set('Content-Type', 'application/json; charset=utf-8');
+      return res.json({
+        audio: Buffer.from(response.audioContent).toString('base64'),
+        timepoints: [],
+        wordCount: markCount,
+        markMode,
+      });
+    }
 
     res.set('Content-Type', 'audio/mpeg');
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -375,6 +585,23 @@ const wordOfDayEntrySchema = new mongoose.Schema({
 }, { collection: 'wordofday' });
 
 const WordOfDayEntry = mongoose.model('WordOfDayEntry', wordOfDayEntrySchema);
+
+// 영어 단어 퀴즈 (vocabulary-quiz.html) → 컬렉션 vocabularyquiz
+const vocabularyQuizEntrySchema = new mongoose.Schema({
+  title: String,
+  quizzes: { type: [mongoose.Schema.Types.Mixed], default: [] },
+  sourceUrl: { type: String, default: '' },
+  sourceLabel: { type: String, default: '' },
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'vocabularyquiz' });
+
+const VocabularyQuizEntry = mongoose.model('VocabularyQuizEntry', vocabularyQuizEntrySchema);
 
 // 포토영어 (photo-english-list.html) → 컬렉션 photoenglish
 const photoEnglishEntrySchema = new mongoose.Schema({
@@ -1959,6 +2186,69 @@ app.post('/wordofday-admin/deletepost', async (req, res) => {
     res.json({ message: 'Post deleted by admin' });
   } catch (error) {
     res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+//================================== Vocabulary Quiz API (vocabularyquiz 컬렉션)
+app.get('/vocabulary-quiz', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await VocabularyQuizEntry.find().sort({ date: 1 });
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Vocabulary Quiz entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving vocabulary quiz entries', entries: [] });
+  }
+});
+
+app.get('/vocabulary-quiz/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, VocabularyQuizEntry, 'VocabularyQuiz')
+);
+
+app.post('/vocabulary-quiz', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const {
+    title, quizzes, sourceUrl, sourceLabel, nickname, password,
+    isSecret, slug, metaDescription
+  } = req.body;
+  if (!title || !Array.isArray(quizzes) || !quizzes.length || !nickname || !password) {
+    return res.status(400).json({ error: 'title, quizzes, nickname and password are required' });
+  }
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newEntry = new VocabularyQuizEntry({
+      title,
+      quizzes,
+      sourceUrl: sourceUrl || '',
+      sourceLabel: sourceLabel || '',
+      nickname,
+      password: hashedPassword,
+      isSecret: isSecret || false,
+      ...seoFieldsFromBody({ slug, metaDescription }),
+    });
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Vocabulary Quiz save 오류:', error);
+    res.status(500).json({ error: 'Error saving vocabulary quiz entry', detail: error.message });
+  }
+});
+
+app.post('/vocabulary-quiz-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  try {
+    const entry = await VocabularyQuizEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    await VocabularyQuizEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting vocabulary quiz entry' });
   }
 });
 
