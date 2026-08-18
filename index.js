@@ -192,6 +192,9 @@ function isTtsInvalidArgumentError(error) {
 }
 
 const TTS_SSML_MAX_BYTES = 5000;
+/** Google TTS volumeGainDb 허용 범위. 요청 없으면 0 (페이지별로 쿼리로만 올림) */
+const TTS_VOLUME_GAIN_DB_MIN = -96;
+const TTS_VOLUME_GAIN_DB_MAX = 16;
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
@@ -295,6 +298,11 @@ app.get('/generate-audio', async (req, res) => {
 
   console.log(`🟢 Final Speaking Rate: ${speakingRate}`);
 
+  const rawGainDb = parseFloat(req.query.volumeGainDb ?? req.query.gainDb);
+  const volumeGainDb = Number.isFinite(rawGainDb)
+    ? Math.min(TTS_VOLUME_GAIN_DB_MAX, Math.max(TTS_VOLUME_GAIN_DB_MIN, rawGainDb))
+    : 0;
+
   // AI 발음: 한국어·영어 모두 에이아이(글자 A I)로 읽기 — OpenAI 등 단어 안 AI는 \b 경계로 제외
   let textForInput = String(text || '');
   const hasAI = /\bAI\b/i.test(textForInput);
@@ -336,7 +344,12 @@ app.get('/generate-audio', async (req, res) => {
   const request = {
     input: { text: textForInput },
     voice: { languageCode: actualLanguageCode, name: voiceName },
-    audioConfig: { audioEncoding: 'MP3', speakingRate: speakingRate, pitch: 0.0 }
+    audioConfig: {
+      audioEncoding: 'MP3',
+      speakingRate: speakingRate,
+      pitch: 0.0,
+      volumeGainDb
+    }
   };
 
   const wantsWordMarks = req.query.marks === '1' || req.query.marks === 'true';
@@ -382,7 +395,12 @@ app.get('/generate-audio', async (req, res) => {
         const markRequest = {
           input: { ssml },
           voice: { languageCode: marksLanguageCode, name: marksVoiceName },
-          audioConfig: { audioEncoding: 'MP3', speakingRate, pitch: 0.0 },
+          audioConfig: {
+            audioEncoding: 'MP3',
+            speakingRate,
+            pitch: 0.0,
+            volumeGainDb
+          },
           enableTimePointing: ['SSML_MARK'],
         };
 
@@ -479,6 +497,7 @@ function startServer() {
     console.log(`- Ranking News: http://localhost:${PORT}/ranking-news`);
     console.log(`- Cooking Voca: http://localhost:${PORT}/cooking-voca`);
     console.log(`- Culture Voca: http://localhost:${PORT}/culture-voca`);
+    console.log(`- Defense News: http://localhost:${PORT}/defense-news`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
   });
@@ -672,6 +691,23 @@ const cultureVocaEntrySchema = new mongoose.Schema({
 }, { collection: 'culturevoca' });
 
 const CultureVocaEntry = mongoose.model('CultureVocaEntry', cultureVocaEntrySchema);
+
+// 국방뉴스 (defense-news-list.html) → 컬렉션 defensenews
+const defenseNewsEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'defensenews' });
+
+const DefenseNewsEntry = mongoose.model('DefenseNewsEntry', defenseNewsEntrySchema);
 
 // Opinions (english-opinions-list.html) → 컬렉션 opinions
 const opinionEntrySchema = new mongoose.Schema({
@@ -2795,6 +2831,160 @@ app.post('/culture-voca-admin/deletepost', async (req, res) => {
     res.json({ message: 'Post deleted by admin' });
   } catch (error) {
     res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+//================================== Defense News API (defensenews 컬렉션)
+app.get('/defense-news', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await DefenseNewsEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Defense News entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving defense news entries', entries: [] });
+  }
+});
+
+app.get('/defense-news/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, DefenseNewsEntry, 'DefenseNews')
+);
+
+app.post('/defense-news', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new DefenseNewsEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Defense News save 오류:', error);
+    res.status(500).json({ error: 'Error saving defense news entry', detail: error.message });
+  }
+});
+
+app.post('/defense-news/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `dfn_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await DefenseNewsEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await DefenseNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Defense News view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/defense-news/:id/like', (req, res) => incrementEntryLike(req, res, DefenseNewsEntry));
+
+app.post('/defense-news-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await DefenseNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/defense-news-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await DefenseNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/defense-news-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await DefenseNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await DefenseNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting defense news entry' });
+  }
+});
+
+app.post('/defense-news-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await DefenseNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await DefenseNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/defense-news/delete-by-slug', async (req, res) => {
+  const { slug, password } = req.body;
+  if (!slug || !password) {
+    return res.status(400).json({ error: 'slug and password are required' });
+  }
+  try {
+    const entry = await DefenseNewsEntry.findOne({ slug });
+    if (!entry) {
+      return res.json({ deleted: 0 });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    await DefenseNewsEntry.findByIdAndDelete(entry._id);
+    res.json({ deleted: 1 });
+  } catch (error) {
+    console.error('defense-news/delete-by-slug 오류:', error);
+    res.status(500).json({ error: 'Error deleting defense news entry' });
   }
 });
 
