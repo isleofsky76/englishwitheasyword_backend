@@ -490,6 +490,7 @@ function startServer() {
     console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
     console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
     console.log(`- Opinions: http://localhost:${PORT}/opinions`);
+    console.log(`- Calm Mind: http://localhost:${PORT}/calm-mind`);
     console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
     console.log(`- Situational English: http://localhost:${PORT}/situational-english`);
     console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
@@ -725,6 +726,23 @@ const opinionEntrySchema = new mongoose.Schema({
 }, { collection: 'opinions' });
 
 const OpinionEntry = mongoose.model('OpinionEntry', opinionEntrySchema);
+
+// 마음 다스리는 글 (calm-mind-list.html) → 컬렉션 calmmind
+const calmMindEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'calmmind' });
+
+const CalmMindEntry = mongoose.model('CalmMindEntry', calmMindEntrySchema);
 
 async function findEntryBySlug(req, res, Model, label) {
   try {
@@ -3339,6 +3357,187 @@ app.post('/opinions/updatepost', async (req, res) => {
   try {
     const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
     const entry = await OpinionEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+//================================== Calm Mind API (calmmind 컬렉션)
+
+app.get('/calm-mind', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
+    const entries = await CalmMindEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Calm Mind entries 오류:', error);
+    res.status(500).json({
+      error: 'Error retrieving calm mind entries',
+      details: error.message,
+      entries: []
+    });
+  }
+});
+
+app.get('/calm-mind/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, CalmMindEntry, 'Calm Mind')
+);
+
+app.post('/calm-mind', async (req, res) => {
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new CalmMindEntry({
+    title,
+    message,
+    nickname,
+    password: hashedPassword,
+    isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
+  });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving calm mind entry' });
+  }
+});
+
+const calmMindViewTracker = new Map();
+
+app.post('/calm-mind/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+
+    const viewKey = `${clientIp}_${id}`;
+    const lastViewTime = calmMindViewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await CalmMindEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+      });
+    }
+
+    const entry = await CalmMindEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    calmMindViewTracker.set(viewKey, now);
+    setTimeout(() => {
+      calmMindViewTracker.delete(viewKey);
+    }, oneHour);
+
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('조회수 증가 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/calm-mind/:id/like', (req, res) => incrementEntryLike(req, res, CalmMindEntry));
+
+app.post('/calm-mind/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await CalmMindEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/calm-mind/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await CalmMindEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await CalmMindEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting calm mind entry' });
+  }
+});
+
+app.post('/calm-mind/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await CalmMindEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    await CalmMindEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/calm-mind/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await CalmMindEntry.findById(id);
     if (!entry) {
       return res.status(404).json({ error: 'Post not found' });
     }
