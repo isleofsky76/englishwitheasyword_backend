@@ -710,6 +710,23 @@ const defenseNewsEntrySchema = new mongoose.Schema({
 
 const DefenseNewsEntry = mongoose.model('DefenseNewsEntry', defenseNewsEntrySchema);
 
+// 쇼츠 배경 이미지 (shorts-bg-image-list.html) → 컬렉션 shortsbgimage
+const shortsBgImageEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'shortsbgimage' });
+
+const ShortsBgImageEntry = mongoose.model('ShortsBgImageEntry', shortsBgImageEntrySchema);
+
 // Opinions (english-opinions-list.html) → 컬렉션 opinions
 const opinionEntrySchema = new mongoose.Schema({
   title: String,
@@ -3003,6 +3020,160 @@ app.post('/defense-news/delete-by-slug', async (req, res) => {
   } catch (error) {
     console.error('defense-news/delete-by-slug 오류:', error);
     res.status(500).json({ error: 'Error deleting defense news entry' });
+  }
+});
+
+//================================== Shorts Background Image API (shortsbgimage 컬렉션)
+app.get('/shorts-bg-image', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await ShortsBgImageEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Shorts bg image entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving shorts bg image entries', entries: [] });
+  }
+});
+
+app.get('/shorts-bg-image/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, ShortsBgImageEntry, 'ShortsBgImage')
+);
+
+app.post('/shorts-bg-image', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new ShortsBgImageEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Shorts bg image save 오류:', error);
+    res.status(500).json({ error: 'Error saving shorts bg image entry', detail: error.message });
+  }
+});
+
+app.post('/shorts-bg-image/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `sbgi_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await ShortsBgImageEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await ShortsBgImageEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Shorts bg image view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/shorts-bg-image/:id/like', (req, res) => incrementEntryLike(req, res, ShortsBgImageEntry));
+
+app.post('/shorts-bg-image-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await ShortsBgImageEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/shorts-bg-image-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await ShortsBgImageEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/shorts-bg-image-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await ShortsBgImageEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await ShortsBgImageEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting shorts bg image entry' });
+  }
+});
+
+app.post('/shorts-bg-image-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await ShortsBgImageEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await ShortsBgImageEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/shorts-bg-image/delete-by-slug', async (req, res) => {
+  const { slug, password } = req.body;
+  if (!slug || !password) {
+    return res.status(400).json({ error: 'slug and password are required' });
+  }
+  try {
+    const entry = await ShortsBgImageEntry.findOne({ slug });
+    if (!entry) {
+      return res.json({ deleted: 0 });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    await ShortsBgImageEntry.findByIdAndDelete(entry._id);
+    res.json({ deleted: 1 });
+  } catch (error) {
+    console.error('shorts-bg-image/delete-by-slug 오류:', error);
+    res.status(500).json({ error: 'Error deleting shorts bg image entry' });
   }
 });
 
