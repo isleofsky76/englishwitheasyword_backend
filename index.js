@@ -36,7 +36,8 @@ const CORS_ALLOWED_ORIGINS = [
 ];
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || CORS_ALLOWED_ORIGINS.includes(origin)) {
+    // file:// 로 HTML을 열면 Origin이 문자열 "null"
+    if (!origin || origin === 'null' || CORS_ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
     // 로컬 개발: Live Server 등 localhost/127.0.0.1 임의 포트 허용
@@ -103,7 +104,15 @@ function escapeSsmlText(s) {
 function buildWordMarkedSsml(text) {
   const tokens = String(text || '').trim().split(/\s+/).filter(Boolean);
   if (!tokens.length) return '<speak></speak>';
-  const body = tokens.map((tok, i) => `<mark name="w${i}"/>${escapeSsmlText(tok)}`).join(' ');
+  const body = tokens.map((tok, i) => {
+    // live/lyve → IPA /laɪv/ (라이브). 철자 V(/viː/→라이비) 방지
+    const core = String(tok).replace(/^[^A-Za-z]+/, '').replace(/[^A-Za-z]+$/, '');
+    const spoken =
+      /^(lyve|laive|live|lyev)$/i.test(core)
+        ? `<phoneme alphabet="ipa" ph="laɪv">${escapeSsmlText(tok)}</phoneme>`
+        : escapeSsmlText(tok);
+    return `<mark name="w${i}"/>${spoken}`;
+  }).join(' ');
   return `<speak>${body}</speak>`;
 }
 
@@ -214,6 +223,10 @@ app.get('/generate-audio', async (req, res) => {
     'en-US-Wavenet-D': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Wavenet-D 대체)
     'en-US-Wavenet-C': ['en-US-Wavenet-C'], // 미국 영어 Wavenet-C (여성)
     'en-US-Chirp3-HD-Zubenelgenubi': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (Chirp3-HD-Zubenelgenubi 대체)
+    'en-US-Chirp3-HD-Sulafat': ['en-US-Chirp3-HD-Sulafat'],
+    'en-US-Chirp3-HD-Gacrux': ['en-US-Chirp3-HD-Gacrux'],
+    'en-US-Chirp3-HD-Algenib': ['en-US-Chirp3-HD-Algenib'],
+    'en-US-Chirp3-HD-Enceladus': ['en-US-Chirp3-HD-Enceladus'],
     'en-US-Chirp-HD-D': ['en-US-Chirp-HD-D'], // 미국 영어 Chirp-HD-D 음성 (직접 매핑)
     'en-US-Chirp-HD-F': ['en-US-Chirp-HD-F'], // 미국 영어 Chirp-HD-F 음성
     'en-US-News-N': ['en-US-News-N'], // 미국 News-N
@@ -303,15 +316,21 @@ app.get('/generate-audio', async (req, res) => {
     ? Math.min(TTS_VOLUME_GAIN_DB_MAX, Math.max(TTS_VOLUME_GAIN_DB_MIN, rawGainDb))
     : 0;
 
-  // AI 발음: 한국어·영어 모두 에이아이(글자 A I)로 읽기 — OpenAI 등 단어 안 AI는 \b 경계로 제외
+  // AI 발음: artificial intelligence (한국어는 인공지능). OpenAI 등 단어 안 AI는 \b 경계로 제외
   let textForInput = String(text || '');
-  const hasAI = /\bAI\b/i.test(textForInput);
+  const hasAI = /\bA\.I\.?\b/i.test(textForInput) || /\bAI\b/i.test(textForInput);
 
   if (hasAI) {
     if (actualLanguageCode === 'ko-KR' || (language && /^ko/i.test(language))) {
-      textForInput = textForInput.replace(/\bAI\b/gi, '에이아이');
+      textForInput = textForInput
+        .replace(/\bA\.I\.?\b/gi, '인공지능')
+        .replace(/\bAI['']s\b/gi, '인공지능의')
+        .replace(/\bAI\b/gi, '인공지능');
     } else {
-      textForInput = textForInput.replace(/\bAI\b/gi, 'A I');
+      textForInput = textForInput
+        .replace(/\bA\.I\.?\b/gi, 'artificial intelligence')
+        .replace(/\bAI['']s\b/gi, "artificial intelligence's")
+        .replace(/\bAI\b/gi, 'artificial intelligence');
     }
   }
 
@@ -321,6 +340,19 @@ app.get('/generate-audio', async (req, res) => {
     textForInput = textForInput
       .replace(/\bVAR['']s\b/gi, "bee ay ahl's")
       .replace(/\bVAR\b/gi, 'bee ay ahl');
+  }
+
+  // live /laɪv/ (라이브) — 동사 /lɪv/·철자 V(라이비) 방지. marks SSML에서 IPA 재확인
+  if (!isKoLang) {
+    const toLyve = (m) => (m[0] === 'L' ? 'Lyve' : 'lyve');
+    textForInput = textForInput
+      .replace(/\blye-v\b/gi, toLyve)
+      .replace(/\blaive\b/gi, toLyve)
+      .replace(/\blive\b(?=\s+images?\b)/gi, toLyve)
+      .replace(
+        /\blive\b(?=\s+(?:stream|broadcast|show|feed|tv|TV|music|video|event|coverage|update|session|demo|concert|performance|audio|footage|camera|cameras)\b)/gi,
+        toLyve
+      );
   }
 
   if (actualLanguageCode === 'ko-KR' || (language && /^ko/i.test(language))) {
@@ -491,6 +523,7 @@ function startServer() {
     console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
     console.log(`- Opinions: http://localhost:${PORT}/opinions`);
     console.log(`- Calm Mind: http://localhost:${PORT}/calm-mind`);
+    console.log(`- English Quotes: http://localhost:${PORT}/english-quotes`);
     console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
     console.log(`- Situational English: http://localhost:${PORT}/situational-english`);
     console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
@@ -780,6 +813,23 @@ const calmMindEntrySchema = new mongoose.Schema({
 }, { collection: 'calmmind' });
 
 const CalmMindEntry = mongoose.model('CalmMindEntry', calmMindEntrySchema);
+
+// 영어 명언 (english-quotes-list.html) → 컬렉션 englishquotes
+const englishQuotesEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'englishquotes' });
+
+const EnglishQuotesEntry = mongoose.model('EnglishQuotesEntry', englishQuotesEntrySchema);
 
 async function findEntryBySlug(req, res, Model, label) {
   try {
@@ -3910,6 +3960,187 @@ app.post('/calm-mind/updatepost', async (req, res) => {
   }
 });
 
+//================================== English Quotes API (englishquotes 컬렉션)
+
+app.get('/english-quotes', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: 'MongoDB 연결이 되지 않았습니다. MONGO_URI 환경 변수를 확인해주세요.',
+        entries: []
+      });
+    }
+    const entries = await EnglishQuotesEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('English Quotes entries 오류:', error);
+    res.status(500).json({
+      error: 'Error retrieving english quotes entries',
+      details: error.message,
+      entries: []
+    });
+  }
+});
+
+app.get('/english-quotes/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, EnglishQuotesEntry, 'English Quotes')
+);
+
+app.post('/english-quotes', async (req, res) => {
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new EnglishQuotesEntry({
+    title,
+    message,
+    nickname,
+    password: hashedPassword,
+    isSecret: isSecret || false,
+    ...seoFieldsFromBody({ slug, metaDescription }),
+  });
+
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving english quotes entry' });
+  }
+});
+
+const englishQuotesViewTracker = new Map();
+
+app.post('/english-quotes/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+
+    const viewKey = `eq_${clientIp}_${id}`;
+    const lastViewTime = englishQuotesViewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await EnglishQuotesEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
+      });
+    }
+
+    const entry = await EnglishQuotesEntry.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    englishQuotesViewTracker.set(viewKey, now);
+    setTimeout(() => {
+      englishQuotesViewTracker.delete(viewKey);
+    }, oneHour);
+
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('English Quotes view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/english-quotes/:id/like', (req, res) => incrementEntryLike(req, res, EnglishQuotesEntry));
+
+app.post('/english-quotes/viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await EnglishQuotesEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/english-quotes/deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await EnglishQuotesEntry.findById(id);
+
+  if (!entry) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    await EnglishQuotesEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting english quotes entry' });
+  }
+});
+
+app.post('/english-quotes/admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+
+  try {
+    const entry = await EnglishQuotesEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    await EnglishQuotesEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/english-quotes/updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await EnglishQuotesEntry.findById(id);
+    if (!entry) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    applySeoFieldsToBody({ slug, metaDescription }, entry);
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
 //================================== Popular Voca API (popularvoca 컬렉션)
 
 app.get('/easy-voca', async (req, res) => {
@@ -4525,6 +4756,12 @@ if (uri) {
           console.log('photoenglish 컬렉션 생성됨');
         } catch (e) {
           if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('photoenglish 컬렉션:', e.message);
+        }
+        try {
+          await db.createCollection('englishquotes');
+          console.log('englishquotes 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('englishquotes 컬렉션:', e.message);
         }
       }
     })
