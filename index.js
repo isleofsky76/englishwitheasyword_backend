@@ -581,6 +581,7 @@ function startServer() {
     console.log(`- Culture Voca: http://localhost:${PORT}/culture-voca`);
     console.log(`- Defense News: http://localhost:${PORT}/defense-news`);
     console.log(`- Economy News: http://localhost:${PORT}/economy-news`);
+    console.log(`- Travel News: http://localhost:${PORT}/travel-news`);
     console.log(`- Korea News: http://localhost:${PORT}/korea-news`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
@@ -809,6 +810,23 @@ const economyNewsEntrySchema = new mongoose.Schema({
 }, { collection: 'economynews' });
 
 const EconomyNewsEntry = mongoose.model('EconomyNewsEntry', economyNewsEntrySchema);
+
+// 여행뉴스 (travel-news-list.html) → 컬렉션 travelnews
+const travelNewsEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'travelnews' });
+
+const TravelNewsEntry = mongoose.model('TravelNewsEntry', travelNewsEntrySchema);
 
 // 한국뉴스 (korea-news-list.html) → 컬렉션 koreanews
 // category: '국방' | '국제' (제목 접두사 [국방]/[국제] 와 함께 사용)
@@ -3310,6 +3328,160 @@ app.post('/economy-news/delete-by-slug', async (req, res) => {
   } catch (error) {
     console.error('economy-news/delete-by-slug 오류:', error);
     res.status(500).json({ error: 'Error deleting economy news entry' });
+  }
+});
+
+//================================== Travel News API (travelnews 컬렉션)
+app.get('/travel-news', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await TravelNewsEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Travel News entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving travel news entries', entries: [] });
+  }
+});
+
+app.get('/travel-news/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, TravelNewsEntry, 'TravelNews')
+);
+
+app.post('/travel-news', requireWriteToken, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new TravelNewsEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Travel News save 오류:', error);
+    res.status(500).json({ error: 'Error saving travel news entry', detail: error.message });
+  }
+});
+
+app.post('/travel-news/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `tvn_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await TravelNewsEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await TravelNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Travel News view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/travel-news/:id/like', (req, res) => incrementEntryLike(req, res, TravelNewsEntry));
+
+app.post('/travel-news-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await TravelNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/travel-news-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await TravelNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/travel-news-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await TravelNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await TravelNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting travel news entry' });
+  }
+});
+
+app.post('/travel-news-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await TravelNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await TravelNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/travel-news/delete-by-slug', async (req, res) => {
+  const { slug, password } = req.body;
+  if (!slug || !password) {
+    return res.status(400).json({ error: 'slug and password are required' });
+  }
+  try {
+    const entry = await TravelNewsEntry.findOne({ slug });
+    if (!entry) {
+      return res.json({ deleted: 0 });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    await TravelNewsEntry.findByIdAndDelete(entry._id);
+    res.json({ deleted: 1 });
+  } catch (error) {
+    console.error('travel-news/delete-by-slug 오류:', error);
+    res.status(500).json({ error: 'Error deleting travel news entry' });
   }
 });
 
