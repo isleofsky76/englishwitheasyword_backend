@@ -47,7 +47,7 @@ app.use(cors({
     callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Write-Token'],
   credentials: false,
   optionsSuccessStatus: 200
 }));
@@ -55,6 +55,20 @@ app.use(cors({
 // Body parser 설정 (이미지 업로드를 위한 크기 제한 증가)
 app.use(express.json({ limit: '10mb' })); // JSON 본문 크기 제한: 10MB
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // URL 인코딩 본문 크기 제한: 10MB
+
+/** WRITE_API_TOKEN 설정 시에만 글 생성 POST에 토큰 요구. 미설정이면 기존과 동일. */
+const writeApiToken = process.env.WRITE_API_TOKEN || '';
+function requireWriteToken(req, res, next) {
+  if (!writeApiToken) return next();
+  const got =
+    req.get('x-write-token') ||
+    (req.body && (req.body.writeToken || req.body.adminPasswordInput)) ||
+    '';
+  if (String(got) !== String(writeApiToken)) {
+    return res.status(403).json({ error: 'Write token required' });
+  }
+  return next();
+}
 
 // Session middleware for conversation history
 app.use(session({
@@ -69,26 +83,60 @@ app.use(express.static('public'));
 
 // Google Cloud Text-to-Speech 클라이언트 초기화
 let client = null;
+let clientBeta = null;
 
-try {
-  // JSON 파일에서 직접 인증 정보 로드
-  const credentials = JSON.parse(fs.readFileSync('./youtubespeech-430112-5a2ce6dffa5c.json', 'utf8'));
-  client = new textToSpeech.TextToSpeechClient({
-    credentials: credentials
-  });
-  console.log("✅ Google Cloud TTS client initialized successfully");
-} catch (error) {
-  console.log("⚠️ Google Cloud credentials not found, using fallback TTS");
-  console.error("Error loading credentials:", error.message);
+function loadGoogleTtsCredentials() {
+  const jsonPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || './youtubespeech-430112-5a2ce6dffa5c.json';
+  try {
+    if (fs.existsSync(jsonPath)) {
+      return { credentials: JSON.parse(fs.readFileSync(jsonPath, 'utf8')), source: jsonPath };
+    }
+  } catch (error) {
+    console.error('Error loading TTS JSON credentials:', error.message);
+  }
+
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL || '';
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
+  if (clientEmail && privateKey) {
+    // .env 에서 \\n 로 넣은 PEM 줄바꿈 복원 + 줄 끝 ^ 복사 잔여물 제거
+    privateKey = privateKey
+      .replace(/\\n/g, '\n')
+      .split('\n')
+      .map((line) => line.replace(/\^+$/, '').trimEnd())
+      .join('\n');
+    if (!privateKey.endsWith('\n')) privateKey += '\n';
+    if (!/END PRIVATE KEY-----/.test(privateKey) || privateKey.length < 200) {
+      console.error(
+        '⚠️ GOOGLE_PRIVATE_KEY looks incomplete (put the full PEM on one line with \\n, or restore the JSON key file).'
+      );
+    } else {
+      return {
+        credentials: {
+          client_email: clientEmail,
+          private_key: privateKey,
+        },
+        source: 'env(GOOGLE_CLIENT_EMAIL/GOOGLE_PRIVATE_KEY)',
+      };
+    }
+  }
+  return null;
 }
 
-/** SSML word marks → timepoints (v1beta1) */
-let clientBeta = null;
 try {
-  const credentials = JSON.parse(fs.readFileSync('./youtubespeech-430112-5a2ce6dffa5c.json', 'utf8'));
-  clientBeta = new textToSpeech.v1beta1.TextToSpeechClient({ credentials });
-} catch (_) {
-  clientBeta = null;
+  const loaded = loadGoogleTtsCredentials();
+  if (!loaded) {
+    throw new Error('No JSON file and no GOOGLE_CLIENT_EMAIL/GOOGLE_PRIVATE_KEY in .env');
+  }
+  client = new textToSpeech.TextToSpeechClient({ credentials: loaded.credentials });
+  try {
+    clientBeta = new textToSpeech.v1beta1.TextToSpeechClient({ credentials: loaded.credentials });
+  } catch (_) {
+    clientBeta = null;
+  }
+  console.log(`✅ Google Cloud TTS client initialized successfully (${loaded.source})`);
+} catch (error) {
+  console.log('⚠️ Google Cloud credentials not found, using fallback TTS');
+  console.error('Error loading credentials:', error.message);
 }
 
 function escapeSsmlText(s) {
@@ -532,6 +580,7 @@ function startServer() {
     console.log(`- Cooking Voca: http://localhost:${PORT}/cooking-voca`);
     console.log(`- Culture Voca: http://localhost:${PORT}/culture-voca`);
     console.log(`- Defense News: http://localhost:${PORT}/defense-news`);
+    console.log(`- Economy News: http://localhost:${PORT}/economy-news`);
     console.log(`- Korea News: http://localhost:${PORT}/korea-news`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
@@ -743,6 +792,23 @@ const defenseNewsEntrySchema = new mongoose.Schema({
 }, { collection: 'defensenews' });
 
 const DefenseNewsEntry = mongoose.model('DefenseNewsEntry', defenseNewsEntrySchema);
+
+// 경제뉴스 (economy-news-list.html) → 컬렉션 economynews
+const economyNewsEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'economynews' });
+
+const EconomyNewsEntry = mongoose.model('EconomyNewsEntry', economyNewsEntrySchema);
 
 // 한국뉴스 (korea-news-list.html) → 컬렉션 koreanews
 // category: '국방' | '국제' (제목 접두사 [국방]/[국제] 와 함께 사용)
@@ -1983,7 +2049,7 @@ app.get('/guestbook/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, GuestbookEntry, 'Guestbook')
 );
 
-app.post('/guestbook', async (req, res) => {
+app.post('/guestbook', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -2236,7 +2302,7 @@ app.get('/wordofday/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, WordOfDayEntry, 'WordOfDay')
 );
 
-app.post('/wordofday', async (req, res) => {
+app.post('/wordofday', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -2367,7 +2433,7 @@ app.get('/vocabulary-quiz/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, VocabularyQuizEntry, 'VocabularyQuiz')
 );
 
-app.post('/vocabulary-quiz', async (req, res) => {
+app.post('/vocabulary-quiz', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
   }
@@ -2430,7 +2496,7 @@ app.get('/photo-english/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, PhotoEnglishEntry, 'PhotoEnglish')
 );
 
-app.post('/photo-english', async (req, res) => {
+app.post('/photo-english', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -2561,7 +2627,7 @@ app.get('/ranking-news/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, RankingNewsEntry, 'RankingNews')
 );
 
-app.post('/ranking-news', async (req, res) => {
+app.post('/ranking-news', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -2693,7 +2759,7 @@ app.get('/cooking-voca/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, CookingVocaEntry, 'CookingVoca')
 );
 
-app.post('/cooking-voca', async (req, res) => {
+app.post('/cooking-voca', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -2825,7 +2891,7 @@ app.get('/culture-voca/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, CultureVocaEntry, 'CultureVoca')
 );
 
-app.post('/culture-voca', async (req, res) => {
+app.post('/culture-voca', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -2957,7 +3023,7 @@ app.get('/defense-news/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, DefenseNewsEntry, 'DefenseNews')
 );
 
-app.post('/defense-news', async (req, res) => {
+app.post('/defense-news', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -3093,6 +3159,160 @@ app.post('/defense-news/delete-by-slug', async (req, res) => {
   }
 });
 
+//================================== Economy News API (economynews 컬렉션)
+app.get('/economy-news', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await EconomyNewsEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Economy News entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving economy news entries', entries: [] });
+  }
+});
+
+app.get('/economy-news/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, EconomyNewsEntry, 'EconomyNews')
+);
+
+app.post('/economy-news', requireWriteToken, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new EconomyNewsEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Economy News save 오류:', error);
+    res.status(500).json({ error: 'Error saving economy news entry', detail: error.message });
+  }
+});
+
+app.post('/economy-news/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `ecn_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await EconomyNewsEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await EconomyNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Economy News view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/economy-news/:id/like', (req, res) => incrementEntryLike(req, res, EconomyNewsEntry));
+
+app.post('/economy-news-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await EconomyNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/economy-news-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await EconomyNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/economy-news-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await EconomyNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await EconomyNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting economy news entry' });
+  }
+});
+
+app.post('/economy-news-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await EconomyNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await EconomyNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/economy-news/delete-by-slug', async (req, res) => {
+  const { slug, password } = req.body;
+  if (!slug || !password) {
+    return res.status(400).json({ error: 'slug and password are required' });
+  }
+  try {
+    const entry = await EconomyNewsEntry.findOne({ slug });
+    if (!entry) {
+      return res.json({ deleted: 0 });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    await EconomyNewsEntry.findByIdAndDelete(entry._id);
+    res.json({ deleted: 1 });
+  } catch (error) {
+    console.error('economy-news/delete-by-slug 오류:', error);
+    res.status(500).json({ error: 'Error deleting economy news entry' });
+  }
+});
+
 //================================== Korea News API (koreanews 컬렉션) — 국방 / 국제
 app.get('/korea-news', async (req, res) => {
   try {
@@ -3115,7 +3335,7 @@ app.get('/korea-news/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, KoreaNewsEntry, 'KoreaNews')
 );
 
-app.post('/korea-news', async (req, res) => {
+app.post('/korea-news', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -3273,7 +3493,7 @@ app.get('/shorts-bg-image/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, ShortsBgImageEntry, 'ShortsBgImage')
 );
 
-app.post('/shorts-bg-image', async (req, res) => {
+app.post('/shorts-bg-image', requireWriteToken, async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
   }
@@ -3438,7 +3658,7 @@ app.get('/vocabulary/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, VocabularyEntry, 'Vocabulary')
 );
 
-app.post('/vocabulary', async (req, res) => {
+app.post('/vocabulary', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -3624,7 +3844,7 @@ app.get('/opinions/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, OpinionEntry, 'Opinions')
 );
 
-app.post('/opinions', async (req, res) => {
+app.post('/opinions', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -3805,7 +4025,7 @@ app.get('/calm-mind/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, CalmMindEntry, 'Calm Mind')
 );
 
-app.post('/calm-mind', async (req, res) => {
+app.post('/calm-mind', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -3986,7 +4206,7 @@ app.get('/english-quotes/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, EnglishQuotesEntry, 'English Quotes')
 );
 
-app.post('/english-quotes', async (req, res) => {
+app.post('/english-quotes', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -4167,7 +4387,7 @@ app.get('/easy-voca/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, EasyVocaEntry, 'EasyVoca')
 );
 
-app.post('/easy-voca', async (req, res) => {
+app.post('/easy-voca', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -4353,7 +4573,7 @@ app.get('/situational-english/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, SituationalEnglishEntry, 'SituationalEnglish')
 );
 
-app.post('/situational-english', async (req, res) => {
+app.post('/situational-english', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
@@ -4539,7 +4759,7 @@ app.get('/pros-cons/by-slug/:slug', (req, res) =>
   findEntryBySlug(req, res, ProsConsEntry, 'ProsCons')
 );
 
-app.post('/pros-cons', async (req, res) => {
+app.post('/pros-cons', requireWriteToken, async (req, res) => {
   const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
 
   if (!title || !message || !nickname || !password) {
