@@ -31,6 +31,11 @@ const AUTH_LOCK_MS = 30 * 60 * 1000; // 30분
 const COMMENT_DOC_MAX_FAILS = 3;
 const COMMENT_DOC_LOCK_MS = 30 * 60 * 1000; // 30분
 const COMMENT_CREATE_COOLDOWN_MS = 60 * 1000; // 60초
+/** 봇·대량 등록 상한 */
+const COMMENT_IP_HOURLY_MAX = 10;
+const COMMENT_IP_DAILY_MAX = 30;
+const COMMENT_IP_WORD_HOURLY_MAX = 5;
+const COMMENT_DUP_BODY_WINDOW_MS = 24 * 60 * 60 * 1000; // 동일 IP·동일 본문 24시간
 const BCRYPT_ROUNDS = 12;
 import RSS from 'rss'; // RSS 모듈 추가
 import textToSpeech from '@google-cloud/text-to-speech';
@@ -760,12 +765,72 @@ oneSentenceCommentSchema.index({ wordKey: 1, date: 1 });
 const OneSentenceComment = mongoose.model('OneSentenceComment', oneSentenceCommentSchema);
 
 const oneSentenceCommentIpCooldown = new Map(); // ip -> lastPostMs
+/** IP별 등록 시각 로그 (봇·대량 등록 상한) */
+const oneSentenceCommentIpCreates = new Map(); // ip -> number[] timestamps
+const oneSentenceCommentIpWordCreates = new Map(); // `${ip}::${wordKey}` -> number[]
+const oneSentenceCommentIpBodies = new Map(); // `${ip}::${bodyNorm}` -> lastMs
 /** IP별 비밀번호 대입 방어 (관리자·댓글) */
 const authFailByIp = new Map(); // ip -> { count, lockedUntil }
 
 function getRequestIp(req) {
   const xf = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   return xf || req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
+function pruneTimestamps(list, sinceMs) {
+  const arr = Array.isArray(list) ? list : [];
+  return arr.filter((t) => t >= sinceMs);
+}
+
+function normalizeCommentBodyKey(body) {
+  return String(body || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * 댓글 등록 남용 제한.
+ * @returns {{ ok: true } | { ok: false, status: number, error: string }}
+ */
+function checkCommentCreateLimits(ip, wordKey, body) {
+  const now = Date.now();
+  const hourAgo = now - 60 * 60 * 1000;
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+  const bodyKey = `${ip}::${normalizeCommentBodyKey(body)}`;
+  const wordMapKey = `${ip}::${String(wordKey || '').trim()}`;
+
+  const lastSameBody = oneSentenceCommentIpBodies.get(bodyKey) || 0;
+  if (lastSameBody && now - lastSameBody < COMMENT_DUP_BODY_WINDOW_MS) {
+    return { ok: false, status: 429, error: '같은 내용의 댓글은 잠시 후 다시 등록할 수 있어요.' };
+  }
+
+  const ipTimes = pruneTimestamps(oneSentenceCommentIpCreates.get(ip), dayAgo);
+  const hourCount = ipTimes.filter((t) => t >= hourAgo).length;
+  if (hourCount >= COMMENT_IP_HOURLY_MAX) {
+    return { ok: false, status: 429, error: '잠시 후 다시 작성해 주세요. (시간당 등록 한도)' };
+  }
+  if (ipTimes.length >= COMMENT_IP_DAILY_MAX) {
+    return { ok: false, status: 429, error: '오늘 댓글 등록 한도에 도달했어요.' };
+  }
+
+  const wordTimes = pruneTimestamps(oneSentenceCommentIpWordCreates.get(wordMapKey), hourAgo);
+  if (wordTimes.length >= COMMENT_IP_WORD_HOURLY_MAX) {
+    return { ok: false, status: 429, error: '이 단어에는 잠시 후 다시 댓글을 남길 수 있어요.' };
+  }
+
+  return { ok: true, ipTimes, wordTimes, bodyKey, wordMapKey, now };
+}
+
+function recordCommentCreateSuccess(ip, limitState) {
+  if (!limitState || !limitState.ok) return;
+  const { ipTimes, wordTimes, bodyKey, wordMapKey, now } = limitState;
+  ipTimes.push(now);
+  oneSentenceCommentIpCreates.set(ip, ipTimes);
+  const nextWord = (wordTimes || []).concat(now);
+  oneSentenceCommentIpWordCreates.set(wordMapKey, nextWord);
+  oneSentenceCommentIpBodies.set(bodyKey, now);
+  oneSentenceCommentIpCooldown.set(ip, now);
 }
 
 function isIpAuthLocked(ip) {
@@ -2955,9 +3020,22 @@ app.post('/onesentence/comments', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
   }
-  const { wordKey, word, pos, nickname, body, password, adminPasswordInput } = req.body || {};
+  const { wordKey, word, pos, nickname, body, password, adminPasswordInput, website } = req.body || {};
   const key = String(wordKey || '').trim();
   if (!key) return res.status(400).json({ error: 'wordKey is required' });
+
+  // 허니팟: 봇이 숨은 필드를 채우면 저장하지 않음 (성공처럼 보이게 201)
+  if (String(website == null ? '' : website).trim()) {
+    return res.status(201).json({
+      comment: {
+        id: 'ok',
+        wordKey: key,
+        nickname: String(nickname || '').trim() || '익명',
+        body: String(body || '').trim().slice(0, 100),
+        date: new Date().toISOString(),
+      },
+    });
+  }
 
   const checked = validateCommentFields({ nickname, body, password });
   if (!checked.ok) return res.status(400).json({ error: checked.error });
@@ -2973,10 +3051,14 @@ app.post('/onesentence/comments', async (req, res) => {
     clearIpAuthFail(ip);
   }
 
-  const now = Date.now();
   const last = oneSentenceCommentIpCooldown.get(ip) || 0;
-  if (now - last < COMMENT_CREATE_COOLDOWN_MS) {
+  if (Date.now() - last < COMMENT_CREATE_COOLDOWN_MS) {
     return res.status(429).json({ error: '잠시 후 다시 작성해 주세요. (60초에 1개)' });
+  }
+
+  const limitState = checkCommentCreateLimits(ip, key, checked.body);
+  if (!limitState.ok) {
+    return res.status(limitState.status).json({ error: limitState.error });
   }
 
   try {
@@ -2990,7 +3072,7 @@ app.post('/onesentence/comments', async (req, res) => {
       passwordHash,
     });
     await doc.save();
-    oneSentenceCommentIpCooldown.set(ip, now);
+    recordCommentCreateSuccess(ip, limitState);
     res.status(201).json({ comment: publicComment(doc) });
   } catch (error) {
     console.error('One Sentence comment create 오류:', error);
