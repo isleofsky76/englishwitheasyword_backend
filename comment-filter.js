@@ -104,7 +104,9 @@ export function normalizeKeepDigits(text) {
 /** 나이·연도 등 학습·일반 문맥의 18 (은어 차단에서 제외) */
 function isEducationalEighteenContext(text) {
   const raw = String(text || '').toLowerCase();
-  return /18\s*살|18\s*세|18\s*세기|18\s*년|2018|1918|18\s*years|age\s*of\s*18|under\s*18|over\s*18|turned\s*18|18th|18\s*century/i.test(
+  // 연도(1xxx/2xxx)·나이 표현은 은어 18과 구분
+  if (/(?:19|20)\d{2}/.test(raw)) return true;
+  return /18\s*살|18\s*세|18\s*세기|18\s*년|18\s*years|age\s*of\s*18|under\s*18|over\s*18|turned\s*18|18th|18\s*century/i.test(
     raw
   );
 }
@@ -163,13 +165,13 @@ export function containsBadWords(text) {
     if (!t || /\s/.test(t)) continue;
     const nt = normalizeForFilter(t);
     if (!nt || nt.length < 2) continue;
+    // 순수 영문: 단어 경계만 (hell ⊂ hello 오탐 방지). 숫자·leet는 compact 허용
+    if (/^[a-z]+$/i.test(t)) {
+      if (englishWordBoundaryHit(originalLower, t)) return true;
+      continue;
+    }
     if (/^[a-z0-9]+$/i.test(t) && compact.includes(nt)) {
-      // 치환 우회(s3x) 또는 단어 경계 매칭
-      if (
-        /[0-9@$]/.test(String(text || '').toLowerCase()) ||
-        englishWordBoundaryHit(originalLower, t) ||
-        compact.includes(nt)
-      ) {
+      if (/[0-9@$]/.test(String(text || '').toLowerCase()) || englishWordBoundaryHit(originalLower, t)) {
         return true;
       }
     }
