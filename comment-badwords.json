@@ -117,12 +117,9 @@
     "매춘",
     "성매매",
     "스트립",
-    "admin",
     "administrator",
     "administration",
     "admins",
-    "관리자",
-    "주인장",
     "운영자",
     "어드민"
   ],
@@ -183,6 +180,9 @@
     "ㅄ"
   ],
   "allowlist": [
+    "admin",
+    "관리자",
+    "주인장",
     "sex education",
     "biological sex",
     "same-sex",

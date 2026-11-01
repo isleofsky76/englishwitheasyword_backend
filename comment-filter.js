@@ -90,8 +90,9 @@ function listHits(haystackLower, terms) {
   return false;
 }
 
-/** 댓글 자동 차단 대상: A + B (+ 자모) */
+/** 댓글 자동 차단 대상: A + B (+ 자모). 예약 관리자 닉네임 단독은 예외 */
 export function containsBadWords(text) {
+  if (isReservedAdminNickname(text)) return false;
   const originalLower = stripAllowlist(text);
   const compact = normalizeForFilter(originalLower);
 
@@ -120,6 +121,14 @@ export function containsBadWords(text) {
   return false;
 }
 
+/** 관리자 전용 닉네임 — 금지어 예외, ADMIN_PASSWORD 확인 후에만 허용 */
+export function isReservedAdminNickname(nickname) {
+  const raw = String(nickname == null ? '' : nickname).trim();
+  if (!raw) return false;
+  const lower = raw.toLowerCase();
+  return lower === 'admin' || raw === '관리자' || raw === '주인장';
+}
+
 export function validateCommentFields({ nickname, body, password }) {
   const nick = String(nickname == null ? '' : nickname).trim();
   const text = String(body == null ? '' : body).trim();
@@ -128,17 +137,26 @@ export function validateCommentFields({ nickname, body, password }) {
   if (!text) return { ok: false, error: '댓글 내용을 입력해 주세요.' };
   if (text.length > 100) return { ok: false, error: '댓글은 100자까지 입력할 수 있어요.' };
   if (nick.length > 10) return { ok: false, error: '닉네임은 10자까지 입력할 수 있어요.' };
-  if (!pw || pw.length > 14) {
-    return { ok: false, error: '비밀번호는 1~14자로 입력해 주세요.' };
+  if (!pw || pw.length < 4 || pw.length > 14) {
+    return { ok: false, error: '비밀번호는 4~14자로 입력해 주세요.' };
   }
   if (/\s/.test(pw)) {
     return { ok: false, error: '비밀번호에 공백은 넣을 수 없어요.' };
   }
+  // 너무 단순한 비밀번호(숫자만 2자 반복 등) 완화 방지: 동일 문자만 금지
+  if (/^(.)\1+$/.test(pw)) {
+    return { ok: false, error: '비밀번호가 너무 단순해요.' };
+  }
   if (hasLink(text) || hasLink(nick)) {
     return { ok: false, error: '링크는 포함할 수 없어요.' };
   }
-  if (containsBadWords(text) || containsBadWords(nick)) {
+  // admin / 관리자 / 주인장 닉네임은 금지어 검사 예외 (비밀번호는 라우트에서 검증)
+  const reservedNick = isReservedAdminNickname(nick);
+  if (containsBadWords(text)) {
     return { ok: false, error: '사용할 수 없는 표현이 포함되어 있어요.' };
   }
-  return { ok: true, nickname: nick, body: text, password: pw };
+  if (!reservedNick && nick && containsBadWords(nick)) {
+    return { ok: false, error: '사용할 수 없는 표현이 포함되어 있어요.' };
+  }
+  return { ok: true, nickname: nick, body: text, password: pw, reservedNick };
 }

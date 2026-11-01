@@ -5,12 +5,33 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
-import { validateCommentFields } from './comment-filter.js';
+import crypto from 'crypto';
+import { validateCommentFields, isReservedAdminNickname } from './comment-filter.js';
 
 async function safeBcryptCompare(plain, hash) {
   if (plain == null || typeof plain !== 'string' || hash == null || typeof hash !== 'string') return false;
   return bcrypt.compare(plain, hash);
 }
+
+/** 타이밍 안전 문자열 비교 (관리자 비밀번호) */
+function safeEqualString(a, b) {
+  const left = Buffer.from(String(a == null ? '' : a), 'utf8');
+  const right = Buffer.from(String(b == null ? '' : b), 'utf8');
+  if (left.length !== right.length) {
+    crypto.timingSafeEqual(left, left);
+    return false;
+  }
+  return crypto.timingSafeEqual(left, right);
+}
+
+/** 비밀번호 대입 방어 — 엄격 기준 */
+const AUTH_ADMIN_MAX_FAILS = 5;
+const AUTH_COMMENT_IP_MAX_FAILS = 8;
+const AUTH_LOCK_MS = 30 * 60 * 1000; // 30분
+const COMMENT_DOC_MAX_FAILS = 3;
+const COMMENT_DOC_LOCK_MS = 30 * 60 * 1000; // 30분
+const COMMENT_CREATE_COOLDOWN_MS = 60 * 1000; // 60초
+const BCRYPT_ROUNDS = 12;
 import RSS from 'rss'; // RSS 모듈 추가
 import textToSpeech from '@google-cloud/text-to-speech';
 import fs from 'fs';
@@ -37,8 +58,8 @@ const CORS_ALLOWED_ORIGINS = [
 ];
 app.use(cors({
   origin: (origin, callback) => {
-    // file:// 로 HTML을 열면 Origin이 문자열 "null"
-    if (!origin || origin === 'null' || CORS_ALLOWED_ORIGINS.includes(origin)) {
+    // Origin 없음: curl/서버 간 호출. 브라우저 file://(Origin "null")은 차단
+    if (!origin || CORS_ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
     // 로컬 개발: Live Server 등 localhost/127.0.0.1 임의 포트 허용
@@ -739,10 +760,40 @@ oneSentenceCommentSchema.index({ wordKey: 1, date: 1 });
 const OneSentenceComment = mongoose.model('OneSentenceComment', oneSentenceCommentSchema);
 
 const oneSentenceCommentIpCooldown = new Map(); // ip -> lastPostMs
+/** IP별 비밀번호 대입 방어 (관리자·댓글) */
+const authFailByIp = new Map(); // ip -> { count, lockedUntil }
 
 function getRequestIp(req) {
   const xf = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   return xf || req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
+function isIpAuthLocked(ip) {
+  const row = authFailByIp.get(ip);
+  return !!(row && row.lockedUntil && row.lockedUntil > Date.now());
+}
+
+function rejectIfIpAuthLocked(ip, res) {
+  if (!isIpAuthLocked(ip)) return false;
+  res.status(429).json({ error: '잠시 잠겼어요. 30분 뒤 다시 시도해 주세요.' });
+  return true;
+}
+
+function recordIpAuthFail(ip, { maxFails = AUTH_COMMENT_IP_MAX_FAILS, lockMs = AUTH_LOCK_MS } = {}) {
+  const now = Date.now();
+  const row = authFailByIp.get(ip) || { count: 0, lockedUntil: 0 };
+  if (row.lockedUntil && row.lockedUntil > now) return row;
+  row.count += 1;
+  if (row.count >= maxFails) {
+    row.lockedUntil = now + lockMs;
+    row.count = 0;
+  }
+  authFailByIp.set(ip, row);
+  return row;
+}
+
+function clearIpAuthFail(ip) {
+  authFailByIp.delete(ip);
 }
 
 function publicComment(doc) {
@@ -2518,7 +2569,7 @@ app.post('/deleteposts-by-password', async (req, res) => {
   }
 });
 ///=============
-const adminPassword = process.env.ADMIN_PASSWORD;
+const adminPassword = process.env.ADMIN_PASSWORD || process.env.admin_password;
 
 app.post('/admin/deletepost', async (req, res) => {
   const { id, adminPasswordInput } = req.body;
@@ -2788,11 +2839,15 @@ function normalizeOneSentenceCf(cf) {
 }
 
 function requireOneSentenceAdmin(req, res) {
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return false;
   const { adminPasswordInput } = req.body || {};
-  if (!adminPassword || adminPasswordInput !== adminPassword) {
+  if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
+    recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
     res.status(403).json({ error: 'Invalid admin password' });
     return false;
   }
+  clearIpAuthFail(ip);
   return true;
 }
 
@@ -2900,7 +2955,7 @@ app.post('/onesentence/comments', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
   }
-  const { wordKey, word, pos, nickname, body, password } = req.body || {};
+  const { wordKey, word, pos, nickname, body, password, adminPasswordInput } = req.body || {};
   const key = String(wordKey || '').trim();
   if (!key) return res.status(400).json({ error: 'wordKey is required' });
 
@@ -2908,14 +2963,24 @@ app.post('/onesentence/comments', async (req, res) => {
   if (!checked.ok) return res.status(400).json({ error: checked.error });
 
   const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return;
+
+  if (checked.reservedNick || isReservedAdminNickname(checked.nickname)) {
+    if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
+      recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
+      return res.status(403).json({ error: 'admin / 관리자 / 주인장 닉네임은 관리자 비밀번호가 필요해요.' });
+    }
+    clearIpAuthFail(ip);
+  }
+
   const now = Date.now();
   const last = oneSentenceCommentIpCooldown.get(ip) || 0;
-  if (now - last < 30000) {
-    return res.status(429).json({ error: '잠시 후 다시 작성해 주세요. (30초에 1개)' });
+  if (now - last < COMMENT_CREATE_COOLDOWN_MS) {
+    return res.status(429).json({ error: '잠시 후 다시 작성해 주세요. (60초에 1개)' });
   }
 
   try {
-    const passwordHash = await bcrypt.hash(checked.password, 10);
+    const passwordHash = await bcrypt.hash(checked.password, BCRYPT_ROUNDS);
     const doc = new OneSentenceComment({
       wordKey: key,
       word: String(word || '').trim(),
@@ -2933,22 +2998,24 @@ app.post('/onesentence/comments', async (req, res) => {
   }
 });
 
-async function verifyOneSentenceCommentPassword(doc, pw) {
+async function verifyOneSentenceCommentPassword(doc, pw, ip) {
   if (doc.deleteLockedUntil && doc.deleteLockedUntil.getTime() > Date.now()) {
-    return { ok: false, status: 429, error: '잠시 잠겼어요. 10분 뒤 다시 시도해 주세요.' };
+    return { ok: false, status: 429, error: '잠시 잠겼어요. 30분 뒤 다시 시도해 주세요.' };
   }
   const matched = await safeBcryptCompare(pw, doc.passwordHash);
   if (!matched) {
     doc.deleteFailCount = (doc.deleteFailCount || 0) + 1;
-    if (doc.deleteFailCount >= 5) {
-      doc.deleteLockedUntil = new Date(Date.now() + 10 * 60 * 1000);
+    if (doc.deleteFailCount >= COMMENT_DOC_MAX_FAILS) {
+      doc.deleteLockedUntil = new Date(Date.now() + COMMENT_DOC_LOCK_MS);
       doc.deleteFailCount = 0;
     }
     await doc.save();
+    if (ip) recordIpAuthFail(ip, { maxFails: AUTH_COMMENT_IP_MAX_FAILS, lockMs: AUTH_LOCK_MS });
     return { ok: false, status: 403, error: '비밀번호가 맞지 않아요' };
   }
   doc.deleteFailCount = 0;
   doc.deleteLockedUntil = null;
+  if (ip) clearIpAuthFail(ip);
   return { ok: true };
 }
 
@@ -2956,16 +3023,18 @@ app.post('/onesentence/comments/delete', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
   }
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return;
   const { id, password } = req.body || {};
   if (!id) return res.status(400).json({ error: 'id is required' });
   const pw = String(password == null ? '' : password);
-  if (!pw || pw.length > 14 || /\s/.test(pw)) {
-    return res.status(400).json({ error: '비밀번호는 1~14자로 입력해 주세요.' });
+  if (!pw || pw.length < 4 || pw.length > 14 || /\s/.test(pw)) {
+    return res.status(400).json({ error: '비밀번호는 4~14자로 입력해 주세요.' });
   }
   try {
     const doc = await OneSentenceComment.findById(id);
     if (!doc) return res.status(404).json({ error: 'Comment not found' });
-    const verified = await verifyOneSentenceCommentPassword(doc, pw);
+    const verified = await verifyOneSentenceCommentPassword(doc, pw, ip);
     if (!verified.ok) return res.status(verified.status).json({ error: verified.error });
     await OneSentenceComment.findByIdAndDelete(id);
     res.json({ message: 'Comment deleted' });
@@ -2979,14 +3048,22 @@ app.post('/onesentence/comments/edit', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
   }
-  const { id, password, nickname, body } = req.body || {};
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return;
+  const { id, password, nickname, body, adminPasswordInput } = req.body || {};
   if (!id) return res.status(400).json({ error: 'id is required' });
   const checked = validateCommentFields({ nickname, body, password });
   if (!checked.ok) return res.status(400).json({ error: checked.error });
+  if (checked.reservedNick || isReservedAdminNickname(checked.nickname)) {
+    if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
+      recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
+      return res.status(403).json({ error: 'admin / 관리자 / 주인장 닉네임은 관리자 비밀번호가 필요해요.' });
+    }
+  }
   try {
     const doc = await OneSentenceComment.findById(id);
     if (!doc) return res.status(404).json({ error: 'Comment not found' });
-    const verified = await verifyOneSentenceCommentPassword(doc, checked.password);
+    const verified = await verifyOneSentenceCommentPassword(doc, checked.password, ip);
     if (!verified.ok) return res.status(verified.status).json({ error: verified.error });
     doc.nickname = checked.nickname;
     doc.body = checked.body;
