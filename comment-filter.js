@@ -79,8 +79,12 @@ function phraseHit(haystackLower, phrase) {
   if (!p) return false;
   if (/\s/.test(p)) return haystackLower.includes(p);
   if (/^[a-z]+$/i.test(p)) return englishWordBoundaryHit(haystackLower, p);
-  // 한글·혼합: 원문 포함 또는 정규화 포함
-  return haystackLower.includes(p) || normalizeForFilter(haystackLower).includes(normalizeForFilter(p));
+  // 원문 그대로 포함 (한·중·일 등)
+  if (haystackLower.includes(p)) return true;
+  // 정규화 비교 — 빈 문자열(중국어만 있는 항 등)은 오탐이므로 무시
+  const needle = normalizeForFilter(p);
+  if (!needle || needle.length < 2) return false;
+  return normalizeForFilter(haystackLower).includes(needle);
 }
 
 function listHits(haystackLower, terms) {
@@ -90,12 +94,48 @@ function listHits(haystackLower, terms) {
   return false;
 }
 
-/** 댓글 자동 차단 대상: A + B (+ 자모). 예약 관리자 닉네임 단독은 예외 */
+/** 숫자 유지 compact — 18/69 은어 검사용 (1→i 치환하지 않음) */
+export function normalizeKeepDigits(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+/gi, '');
+}
+
+/**
+ * 숫자형 욕설·성인 은어 패턴
+ * - 단독 18 / 69 / 18년 / 6969 는 학습 문맥 가능 → 자동 차단하지 않음
+ * - 1818·181818 반복, 18놈/18새끼, tlqkf, 섹69, 19금 등은 차단
+ */
+export function containsNumericAbusePatterns(text) {
+  const c = normalizeKeepDigits(text);
+  if (!c) return false;
+
+  // 18 반복 (1818, 181818, 18181818 …) — 단독 "18" 제외
+  if (/(?:18){2,}/.test(c)) return true;
+
+  // 18/10/108 + 욕설 접미 (LoL·커뮤니티 우회형). 18년(연도·기간)은 제외
+  if (/(?:18|10|108)(?:놈|넘|새끼|새기|새키|쉐끼|새끼들|뇬|련)/.test(c)) return true;
+  if (/18(?:발|팔|섹|쉑)/.test(c)) return true;
+
+  // 욕설 자판·초성 + 18
+  if (/시18|씨18|ㅅㅂ18|tlqkf/.test(c)) return true;
+
+  // 성적 조합 69 (단독 69·6969 제외)
+  if (/(?:섹|sex|sexy|porn)69|69(?:섹|sex|sexy|porn)/.test(c)) return true;
+
+  // 19금 / 야동19
+  if (/19금|19禁|야동19/.test(c)) return true;
+
+  return false;
+}
+
+/** 댓글 자동 차단 대상: A + B (+ 자모 + 숫자 은어). 예약 관리자 닉네임 단독은 예외 */
 export function containsBadWords(text) {
   if (isReservedAdminNickname(text)) return false;
   const originalLower = stripAllowlist(text);
   const compact = normalizeForFilter(originalLower);
 
+  if (containsNumericAbusePatterns(originalLower)) return true;
   if (listHits(originalLower, lists.blockedA)) return true;
   if (listHits(originalLower, lists.blockedB)) return true;
 
@@ -104,11 +144,16 @@ export function containsBadWords(text) {
   for (const term of autoTerms) {
     const t = String(term || '').trim().toLowerCase();
     if (!t || /\s/.test(t)) continue;
-    if (/^[a-z0-9]+$/i.test(t) && compact.includes(normalizeForFilter(t))) {
-      // 짧은 영문이 compact에만 잡히는 경우, 원문 단어 경계도 한번 더 확인하되
-      // 치환 우회(s3x)는 compact 매칭을 허용
-      if (/[0-9@$]/.test(String(text || '').toLowerCase()) || englishWordBoundaryHit(originalLower, t) || compact.includes(normalizeForFilter(t))) {
-        if (compact.includes(normalizeForFilter(t))) return true;
+    const nt = normalizeForFilter(t);
+    if (!nt || nt.length < 2) continue;
+    if (/^[a-z0-9]+$/i.test(t) && compact.includes(nt)) {
+      // 치환 우회(s3x) 또는 단어 경계 매칭
+      if (
+        /[0-9@$]/.test(String(text || '').toLowerCase()) ||
+        englishWordBoundaryHit(originalLower, t) ||
+        compact.includes(nt)
+      ) {
+        return true;
       }
     }
   }
