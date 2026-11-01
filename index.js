@@ -2933,6 +2933,25 @@ app.post('/onesentence/comments', async (req, res) => {
   }
 });
 
+async function verifyOneSentenceCommentPassword(doc, pw) {
+  if (doc.deleteLockedUntil && doc.deleteLockedUntil.getTime() > Date.now()) {
+    return { ok: false, status: 429, error: '잠시 잠겼어요. 10분 뒤 다시 시도해 주세요.' };
+  }
+  const matched = await safeBcryptCompare(pw, doc.passwordHash);
+  if (!matched) {
+    doc.deleteFailCount = (doc.deleteFailCount || 0) + 1;
+    if (doc.deleteFailCount >= 5) {
+      doc.deleteLockedUntil = new Date(Date.now() + 10 * 60 * 1000);
+      doc.deleteFailCount = 0;
+    }
+    await doc.save();
+    return { ok: false, status: 403, error: '비밀번호가 맞지 않아요' };
+  }
+  doc.deleteFailCount = 0;
+  doc.deleteLockedUntil = null;
+  return { ok: true };
+}
+
 app.post('/onesentence/comments/delete', async (req, res) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
@@ -2946,24 +2965,36 @@ app.post('/onesentence/comments/delete', async (req, res) => {
   try {
     const doc = await OneSentenceComment.findById(id);
     if (!doc) return res.status(404).json({ error: 'Comment not found' });
-    if (doc.deleteLockedUntil && doc.deleteLockedUntil.getTime() > Date.now()) {
-      return res.status(429).json({ error: '삭제가 잠시 잠겼어요. 10분 뒤 다시 시도해 주세요.' });
-    }
-    const ok = await safeBcryptCompare(pw, doc.passwordHash);
-    if (!ok) {
-      doc.deleteFailCount = (doc.deleteFailCount || 0) + 1;
-      if (doc.deleteFailCount >= 5) {
-        doc.deleteLockedUntil = new Date(Date.now() + 10 * 60 * 1000);
-        doc.deleteFailCount = 0;
-      }
-      await doc.save();
-      return res.status(403).json({ error: '비밀번호가 맞지 않아요' });
-    }
+    const verified = await verifyOneSentenceCommentPassword(doc, pw);
+    if (!verified.ok) return res.status(verified.status).json({ error: verified.error });
     await OneSentenceComment.findByIdAndDelete(id);
     res.json({ message: 'Comment deleted' });
   } catch (error) {
     console.error('One Sentence comment delete 오류:', error);
     res.status(500).json({ error: 'Error deleting comment' });
+  }
+});
+
+app.post('/onesentence/comments/edit', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const { id, password, nickname, body } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  const checked = validateCommentFields({ nickname, body, password });
+  if (!checked.ok) return res.status(400).json({ error: checked.error });
+  try {
+    const doc = await OneSentenceComment.findById(id);
+    if (!doc) return res.status(404).json({ error: 'Comment not found' });
+    const verified = await verifyOneSentenceCommentPassword(doc, checked.password);
+    if (!verified.ok) return res.status(verified.status).json({ error: verified.error });
+    doc.nickname = checked.nickname;
+    doc.body = checked.body;
+    await doc.save();
+    res.json({ comment: publicComment(doc) });
+  } catch (error) {
+    console.error('One Sentence comment edit 오류:', error);
+    res.status(500).json({ error: 'Error updating comment' });
   }
 });
 
