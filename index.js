@@ -582,6 +582,10 @@ function startServer() {
     console.log(`- Defense News: http://localhost:${PORT}/defense-news`);
     console.log(`- Economy News: http://localhost:${PORT}/economy-news`);
     console.log(`- Travel News: http://localhost:${PORT}/travel-news`);
+    console.log(`- Sports News: http://localhost:${PORT}/sports-news`);
+    for (const board of EXTRA_NEWS_BOARDS) {
+      console.log(`- ${board.labelFull}: http://localhost:${PORT}/${board.key}`);
+    }
     console.log(`- Korea News: http://localhost:${PORT}/korea-news`);
     console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
     console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
@@ -691,6 +695,32 @@ const wordOfDayEntrySchema = new mongoose.Schema({
 }, { collection: 'wordofday' });
 
 const WordOfDayEntry = mongoose.model('WordOfDayEntry', wordOfDayEntrySchema);
+
+// 문장으로 익히는 단어 (one-sentence.html) → 컬렉션 onesentence
+const oneSentenceCfSchema = new mongoose.Schema({
+  word: { type: String, default: '' },
+  pos: { type: String, default: '' },
+  meaning: { type: String, default: '' },
+}, { _id: false });
+
+const oneSentenceEntrySchema = new mongoose.Schema({
+  word: { type: String, required: true },
+  pos: { type: String, default: '' },
+  meaning: { type: String, default: '' },
+  ko: { type: String, default: '' },
+  en: { type: String, required: true },
+  highlight: { type: String, default: '' },
+  ipa: { type: String, default: '' },
+  ipaKo: { type: String, default: '' },
+  /* 예: [{ word:'weather', pos:'동사', meaning:'견뎌내다' }] → cf. weather 동사 - 견뎌내다 */
+  cf: { type: [oneSentenceCfSchema], default: [] },
+  memo: { type: String, default: '' },
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+}, { collection: 'onesentence' });
+
+const OneSentenceEntry = mongoose.model('OneSentenceEntry', oneSentenceEntrySchema);
 
 // 영어 단어 퀴즈 (vocabulary-quiz.html) → 컬렉션 vocabularyquiz
 const vocabularyQuizEntrySchema = new mongoose.Schema({
@@ -828,6 +858,45 @@ const travelNewsEntrySchema = new mongoose.Schema({
 
 const TravelNewsEntry = mongoose.model('TravelNewsEntry', travelNewsEntrySchema);
 
+// 스포츠뉴스 (sports-news-list.html) → 컬렉션 sportsnews
+const sportsNewsEntrySchema = new mongoose.Schema({
+  title: String,
+  message: String,
+  nickname: String,
+  password: String,
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  likedFingerprints: { type: [String], default: [] },
+  isSecret: { type: Boolean, default: false },
+  slug: { type: String, default: '' },
+  metaDescription: { type: String, default: '' }
+}, { collection: 'sportsnews' });
+
+const SportsNewsEntry = mongoose.model('SportsNewsEntry', sportsNewsEntrySchema);
+
+/** 추가 뉴스 보드 (미국·날씨/환경·유통·문학·헬스·정치·산업·AI·사건사고·우크라/러시아) */
+const EXTRA_NEWS_BOARDS = JSON.parse(
+  fs.readFileSync(new URL('./scripts/new-boards.json', import.meta.url), 'utf8')
+);
+const extraNewsModels = {};
+for (const board of EXTRA_NEWS_BOARDS) {
+  const schema = new mongoose.Schema({
+    title: String,
+    message: String,
+    nickname: String,
+    password: String,
+    date: { type: Date, default: Date.now },
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    likedFingerprints: { type: [String], default: [] },
+    isSecret: { type: Boolean, default: false },
+    slug: { type: String, default: '' },
+    metaDescription: { type: String, default: '' }
+  }, { collection: board.collection });
+  extraNewsModels[board.key] = mongoose.model(board.model, schema);
+}
+
 // 한국뉴스 (korea-news-list.html) → 컬렉션 koreanews
 // category: '국방' | '국제' (제목 접두사 [국방]/[국제] 와 함께 사용)
 const koreaNewsEntrySchema = new mongoose.Schema({
@@ -842,6 +911,7 @@ const koreaNewsEntrySchema = new mongoose.Schema({
   isSecret: { type: Boolean, default: false },
   slug: { type: String, default: '' },
   metaDescription: { type: String, default: '' },
+  thumbnail: { type: String, default: '' },
   category: { type: String, default: '', enum: ['', '국방', '국제'] }
 }, { collection: 'koreanews' });
 
@@ -927,6 +997,159 @@ async function findEntryBySlug(req, res, Model, label) {
     console.error(`${label} by-slug 오류:`, error);
     res.status(500).json({ error: 'Error retrieving entry' });
   }
+}
+
+/** economy/travel/sports 와 동일 CRUD 보드를 path 하나로 등록 */
+function registerSimpleNewsBoard(app, { key, label, viewPrefix, Model }) {
+  const base = `/${key}`;
+  app.get(base, async (req, res) => {
+    try {
+      if (mongoose.connection.readyState !== 1) {
+        return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+      }
+      const entries = await Model.find();
+      res.status(200).json({ entries });
+    } catch (error) {
+      console.error(`${label} entries 오류:`, error);
+      res.status(500).json({ error: `Error retrieving ${key} entries`, entries: [] });
+    }
+  });
+
+  app.get(`${base}/by-slug/:slug`, (req, res) => findEntryBySlug(req, res, Model, label));
+
+  app.post(base, requireWriteToken, async (req, res) => {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.',
+        detail: 'MongoDB connection not ready',
+      });
+    }
+    const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+    if (!title || !message || !nickname || !password) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newEntry = new Model({
+      title,
+      message,
+      nickname,
+      password: hashedPassword,
+      isSecret: isSecret || false,
+      slug: slug || '',
+      metaDescription: metaDescription || '',
+    });
+    try {
+      await newEntry.save();
+      res.status(201).json({ entry: newEntry });
+    } catch (error) {
+      console.error(`${label} save 오류:`, error);
+      res.status(500).json({ error: `Error saving ${key} entry`, detail: error.message });
+    }
+  });
+
+  app.post(`${base}/:id/view`, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+      const viewKey = `${viewPrefix}${clientIp}_${id}`;
+      const lastViewTime = viewTracker.get(viewKey);
+      const now = Date.now();
+      const oneHour = 60 * 60 * 1000;
+      if (lastViewTime && now - lastViewTime < oneHour) {
+        const entry = await Model.findById(id);
+        if (!entry) return res.status(404).json({ error: 'Post not found' });
+        return res.json({ entry, views: entry.views, message: '조회수가 증가하지 않았습니다.' });
+      }
+      const entry = await Model.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+      if (!entry) return res.status(404).json({ error: 'Post not found' });
+      viewTracker.set(viewKey, now);
+      setTimeout(() => viewTracker.delete(viewKey), oneHour);
+      res.json({ entry, views: entry.views });
+    } catch (error) {
+      console.error(`${label} view 오류:`, error);
+      res.status(500).json({ error: 'Error incrementing view count' });
+    }
+  });
+
+  app.post(`${base}/:id/like`, (req, res) => incrementEntryLike(req, res, Model));
+
+  app.post(`${base}-viewpost`, async (req, res) => {
+    const { id, password } = req.body;
+    const entry = await Model.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.views += 1;
+    await entry.save();
+    res.json({ entry });
+  });
+
+  app.post(`${base}-updatepost`, async (req, res) => {
+    try {
+      const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+      const entry = await Model.findById(id);
+      if (!entry) return res.status(404).json({ error: 'Post not found' });
+      const isMatch = await safeBcryptCompare(password, entry.password);
+      if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+      entry.title = title;
+      entry.message = message;
+      entry.nickname = nickname;
+      entry.isSecret = isSecret;
+      if (slug !== undefined) entry.slug = slug;
+      if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+      await entry.save();
+      res.json({ entry });
+    } catch (error) {
+      res.status(500).json({ error: 'Error updating post' });
+    }
+  });
+
+  app.post(`${base}-deletepost`, async (req, res) => {
+    const { id, password } = req.body;
+    const entry = await Model.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    try {
+      await Model.findByIdAndDelete(id);
+      res.json({ message: 'Post deleted' });
+    } catch (error) {
+      res.status(500).json({ error: `Error deleting ${key} entry` });
+    }
+  });
+
+  app.post(`${base}-admin/deletepost`, async (req, res) => {
+    const { id, adminPasswordInput } = req.body;
+    if (adminPasswordInput !== adminPassword) {
+      return res.status(403).json({ error: 'Invalid admin password' });
+    }
+    try {
+      const entry = await Model.findById(id);
+      if (!entry) return res.status(404).json({ error: 'Post not found' });
+      await Model.findByIdAndDelete(id);
+      res.json({ message: 'Post deleted by admin' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error deleting post' });
+    }
+  });
+
+  app.post(`${base}/delete-by-slug`, async (req, res) => {
+    const { slug, password } = req.body;
+    if (!slug || !password) {
+      return res.status(400).json({ error: 'slug and password are required' });
+    }
+    try {
+      const entry = await Model.findOne({ slug });
+      if (!entry) return res.json({ deleted: 0 });
+      const isMatch = await safeBcryptCompare(password, entry.password);
+      if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+      await Model.findByIdAndDelete(entry._id);
+      res.json({ deleted: 1 });
+    } catch (error) {
+      console.error(`${key}/delete-by-slug 오류:`, error);
+      res.status(500).json({ error: `Error deleting ${key} entry` });
+    }
+  });
 }
 
 function applySeoFieldsToBody(body, entry) {
@@ -2433,6 +2656,172 @@ app.post('/wordofday-admin/deletepost', async (req, res) => {
   }
 });
 
+//================================== One Sentence API (onesentence 컬렉션)
+app.get('/onesentence', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    /* 오래된 것부터 = 화면 001 → 아래로 누적 */
+    const entries = await OneSentenceEntry.find().sort({ date: 1, _id: 1 });
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('One Sentence entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving one-sentence entries', entries: [] });
+  }
+});
+
+app.post('/onesentence', requireWriteToken, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      error: 'MongoDB에 연결되지 않았습니다.',
+      detail: 'MongoDB connection not ready',
+    });
+  }
+  const { word, pos, meaning, ko, en, highlight, ipa, ipaKo, cf, nickname, password } = req.body;
+  if (!word || !en || !nickname || !password) {
+    return res.status(400).json({ error: 'word, en, nickname, password are required' });
+  }
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const cfList = Array.isArray(cf)
+      ? cf
+          .map((c) => ({
+            word: String(c?.word || '').trim(),
+            pos: String(c?.pos || '').trim(),
+            meaning: String(c?.meaning || '').trim(),
+          }))
+          .filter((c) => c.word)
+      : [];
+    const newEntry = new OneSentenceEntry({
+      word: String(word).trim(),
+      pos: String(pos || '').trim(),
+      meaning: String(meaning || '').trim(),
+      ko: String(ko || '').trim(),
+      en: String(en).trim(),
+      highlight: String(highlight || word).trim(),
+      ipa: String(ipa || '').trim(),
+      ipaKo: String(ipaKo || '').trim(),
+      cf: cfList,
+      nickname,
+      password: hashedPassword,
+    });
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('One Sentence save 오류:', error);
+    res.status(500).json({ error: 'Error saving one-sentence entry', detail: error.message });
+  }
+});
+
+app.post('/onesentence-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await OneSentenceEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await OneSentenceEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting one-sentence entry' });
+  }
+});
+
+function normalizeOneSentenceCf(cf) {
+  if (Array.isArray(cf)) {
+    return cf
+      .map((c) => ({
+        word: String(c?.word || '').trim(),
+        pos: String(c?.pos || '').trim(),
+        meaning: String(c?.meaning || '').trim(),
+      }))
+      .filter((c) => c.word);
+  }
+  const raw = String(cf || '').trim();
+  if (!raw) return [];
+  // "taken aback 숙어 - 깜짝 놀라다" / "weather 동사 - 견뎌내다"
+  const m = raw.match(/^(.+?)\s+(\S+)\s*[-–—]\s*(.+)$/);
+  if (m) {
+    return [{ word: m[1].trim(), pos: m[2].trim(), meaning: m[3].trim() }];
+  }
+  return [{ word: raw, pos: '', meaning: '' }];
+}
+
+function requireOneSentenceAdmin(req, res) {
+  const { adminPasswordInput } = req.body || {};
+  if (!adminPassword || adminPasswordInput !== adminPassword) {
+    res.status(403).json({ error: 'Invalid admin password' });
+    return false;
+  }
+  return true;
+}
+
+app.post('/onesentence/admin/create', async (req, res) => {
+  if (!requireOneSentenceAdmin(req, res)) return;
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const { word, pos, meaning, ko, en, highlight, ipa, ipaKo, cf, memo } = req.body || {};
+  if (!word || !en) {
+    return res.status(400).json({ error: 'word and en are required' });
+  }
+  try {
+    const randomPw = `os_admin_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const hashedPassword = await bcrypt.hash(randomPw, 10);
+    const newEntry = new OneSentenceEntry({
+      word: String(word).trim(),
+      pos: String(pos || '').trim(),
+      meaning: String(meaning || '').trim(),
+      ko: String(ko || '').trim(),
+      en: String(en).trim(),
+      highlight: String(highlight || word).trim(),
+      ipa: String(ipa || '').trim(),
+      ipaKo: String(ipaKo || '').trim(),
+      cf: normalizeOneSentenceCf(cf),
+      memo: String(memo || '').trim(),
+      nickname: 'admin',
+      password: hashedPassword,
+    });
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('One Sentence admin create 오류:', error);
+    res.status(500).json({ error: 'Error saving one-sentence entry', detail: error.message });
+  }
+});
+
+app.post('/onesentence/admin/memo', async (req, res) => {
+  if (!requireOneSentenceAdmin(req, res)) return;
+  const { id, memo } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  try {
+    const entry = await OneSentenceEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    entry.memo = String(memo == null ? '' : memo).trim();
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    console.error('One Sentence admin memo 오류:', error);
+    res.status(500).json({ error: 'Error updating memo' });
+  }
+});
+
+app.post('/onesentence/admin/deletepost', async (req, res) => {
+  if (!requireOneSentenceAdmin(req, res)) return;
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  try {
+    const entry = await OneSentenceEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await OneSentenceEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    console.error('One Sentence admin delete 오류:', error);
+    res.status(500).json({ error: 'Error deleting one-sentence entry' });
+  }
+});
+
 //================================== Vocabulary Quiz API (vocabularyquiz 컬렉션)
 app.get('/vocabulary-quiz', async (req, res) => {
   try {
@@ -3484,6 +3873,171 @@ app.post('/travel-news/delete-by-slug', async (req, res) => {
     res.status(500).json({ error: 'Error deleting travel news entry' });
   }
 });
+
+//================================== Sports News API (sportsnews 컬렉션)
+app.get('/sports-news', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
+    }
+    const entries = await SportsNewsEntry.find();
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Sports News entries 오류:', error);
+    res.status(500).json({ error: 'Error retrieving sports news entries', entries: [] });
+  }
+});
+
+app.get('/sports-news/by-slug/:slug', (req, res) =>
+  findEntryBySlug(req, res, SportsNewsEntry, 'SportsNews')
+);
+
+app.post('/sports-news', requireWriteToken, async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다. MongoDB가 실행 중인지 확인하세요.', detail: 'MongoDB connection not ready' });
+  }
+  const { title, message, nickname, password, isSecret, slug, metaDescription } = req.body;
+  if (!title || !message || !nickname || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newEntry = new SportsNewsEntry({
+    title, message, nickname, password: hashedPassword, isSecret: isSecret || false,
+    slug: slug || '', metaDescription: metaDescription || ''
+  });
+  try {
+    await newEntry.save();
+    res.status(201).json({ entry: newEntry });
+  } catch (error) {
+    console.error('Sports News save 오류:', error);
+    res.status(500).json({ error: 'Error saving sports news entry', detail: error.message });
+  }
+});
+
+app.post('/sports-news/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    const viewKey = `spn_${clientIp}_${id}`;
+    const lastViewTime = viewTracker.get(viewKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    if (lastViewTime && (now - lastViewTime) < oneHour) {
+      const entry = await SportsNewsEntry.findById(id);
+      if (!entry) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      return res.json({
+        entry,
+        views: entry.views,
+        message: '조회수가 증가하지 않았습니다.'
+      });
+    }
+    const entry = await SportsNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    viewTracker.set(viewKey, now);
+    setTimeout(() => viewTracker.delete(viewKey), oneHour);
+    res.json({ entry, views: entry.views });
+  } catch (error) {
+    console.error('Sports News view 오류:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+});
+
+app.post('/sports-news/:id/like', (req, res) => incrementEntryLike(req, res, SportsNewsEntry));
+
+app.post('/sports-news-viewpost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await SportsNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  entry.views += 1;
+  await entry.save();
+  res.json({ entry });
+});
+
+app.post('/sports-news-updatepost', async (req, res) => {
+  try {
+    const { id, password, title, message, nickname, isSecret, slug, metaDescription } = req.body;
+    const entry = await SportsNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+    entry.title = title;
+    entry.message = message;
+    entry.nickname = nickname;
+    entry.isSecret = isSecret;
+    if (slug !== undefined) entry.slug = slug;
+    if (metaDescription !== undefined) entry.metaDescription = metaDescription;
+    await entry.save();
+    res.json({ entry });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating post' });
+  }
+});
+
+app.post('/sports-news-deletepost', async (req, res) => {
+  const { id, password } = req.body;
+  const entry = await SportsNewsEntry.findById(id);
+  if (!entry) return res.status(404).json({ error: 'Post not found' });
+  const isMatch = await safeBcryptCompare(password, entry.password);
+  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
+  try {
+    await SportsNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting sports news entry' });
+  }
+});
+
+app.post('/sports-news-admin/deletepost', async (req, res) => {
+  const { id, adminPasswordInput } = req.body;
+  if (adminPasswordInput !== adminPassword) {
+    return res.status(403).json({ error: 'Invalid admin password' });
+  }
+  try {
+    const entry = await SportsNewsEntry.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+    await SportsNewsEntry.findByIdAndDelete(id);
+    res.json({ message: 'Post deleted by admin' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting post' });
+  }
+});
+
+app.post('/sports-news/delete-by-slug', async (req, res) => {
+  const { slug, password } = req.body;
+  if (!slug || !password) {
+    return res.status(400).json({ error: 'slug and password are required' });
+  }
+  try {
+    const entry = await SportsNewsEntry.findOne({ slug });
+    if (!entry) {
+      return res.json({ deleted: 0 });
+    }
+    const isMatch = await safeBcryptCompare(password, entry.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Invalid password' });
+    }
+    await SportsNewsEntry.findByIdAndDelete(entry._id);
+    res.json({ deleted: 1 });
+  } catch (error) {
+    console.error('sports-news/delete-by-slug 오류:', error);
+    res.status(500).json({ error: 'Error deleting sports news entry' });
+  }
+});
+
+//================================== Extra news boards (미국·날씨/환경·유통·문학·헬스·정치·산업·AI·사건사고·우크라/러시아)
+for (const board of EXTRA_NEWS_BOARDS) {
+  registerSimpleNewsBoard(app, {
+    key: board.key,
+    label: board.labelFull || board.label,
+    viewPrefix: board.viewPrefix,
+    Model: extraNewsModels[board.key],
+  });
+  console.log(`- Extra board registered: /${board.key} (${board.labelFull})`);
+}
 
 //================================== Korea News API (koreanews 컬렉션) — 국방 / 국제
 app.get('/korea-news', async (req, res) => {
@@ -5142,6 +5696,12 @@ if (uri) {
           console.log('wordofday 컬렉션 생성됨');
         } catch (e) {
           if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('wordofday 컬렉션:', e.message);
+        }
+        try {
+          await db.createCollection('onesentence');
+          console.log('onesentence 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('onesentence 컬렉션:', e.message);
         }
         try {
           await db.createCollection('photoenglish');
