@@ -89,7 +89,12 @@ export function validateCommentFields({ nickname, body, password }) {
   if (!text) return { ok: false, error: '댓글 내용을 입력해 주세요.' };
   if (text.length > 100) return { ok: false, error: '댓글은 100자까지 입력할 수 있어요.' };
   if (nick.length > 10) return { ok: false, error: '닉네임은 10자까지 입력할 수 있어요.' };
-  if (!/^\d{4}$/.test(pw)) return { ok: false, error: '비밀번호는 숫자 4자리여야 해요.' };
+  if (!pw || pw.length > 14) {
+    return { ok: false, error: '비밀번호는 1~14자로 입력해 주세요.' };
+  }
+  if (/\s/.test(pw)) {
+    return { ok: false, error: '비밀번호에 공백은 넣을 수 없어요.' };
+  }
   if (hasLink(text) || hasLink(nick)) {
     return { ok: false, error: '링크는 포함할 수 없어요.' };
   }

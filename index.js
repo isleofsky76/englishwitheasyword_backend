@@ -909,9 +909,15 @@ const sportsNewsEntrySchema = new mongoose.Schema({
 const SportsNewsEntry = mongoose.model('SportsNewsEntry', sportsNewsEntrySchema);
 
 /** 추가 뉴스 보드 (미국·날씨/환경·유통·문학·헬스·정치·산업·AI·사건사고·우크라/러시아) */
-const EXTRA_NEWS_BOARDS = JSON.parse(
-  fs.readFileSync(new URL('./scripts/new-boards.json', import.meta.url), 'utf8')
-);
+let EXTRA_NEWS_BOARDS = [];
+try {
+  EXTRA_NEWS_BOARDS = JSON.parse(
+    fs.readFileSync(new URL('./scripts/new-boards.json', import.meta.url), 'utf8')
+  );
+  if (!Array.isArray(EXTRA_NEWS_BOARDS)) EXTRA_NEWS_BOARDS = [];
+} catch (e) {
+  console.warn('[new-boards] scripts/new-boards.json 없음 — 추가 뉴스 보드 비활성:', e.message);
+}
 const extraNewsModels = {};
 for (const board of EXTRA_NEWS_BOARDS) {
   const schema = new mongoose.Schema({
@@ -2934,8 +2940,8 @@ app.post('/onesentence/comments/delete', async (req, res) => {
   const { id, password } = req.body || {};
   if (!id) return res.status(400).json({ error: 'id is required' });
   const pw = String(password == null ? '' : password);
-  if (!/^\d{4}$/.test(pw)) {
-    return res.status(400).json({ error: '비밀번호는 숫자 4자리여야 해요.' });
+  if (!pw || pw.length > 14 || /\s/.test(pw)) {
+    return res.status(400).json({ error: '비밀번호는 1~14자로 입력해 주세요.' });
   }
   try {
     const doc = await OneSentenceComment.findById(id);
