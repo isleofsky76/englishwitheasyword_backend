@@ -99,10 +99,14 @@ function requireWriteToken(req, res, next) {
 
 // Session middleware for conversation history
 app.use(session({
-  secret: 'your-secret-key-here',
+  secret: process.env.SESSION_SECRET || process.env.ADMIN_PASSWORD || 'dev-only-session-secret',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: {
+    secure: process.env.NODE_ENV === 'production' || process.env.SESSION_COOKIE_SECURE === '1',
+    sameSite: 'lax',
+    httpOnly: true,
+  },
 }));
 
 // 정적 파일 제공 경로 설정
@@ -861,6 +865,25 @@ function clearIpAuthFail(ip) {
   authFailByIp.delete(ip);
 }
 
+function getAdminPassword() {
+  return process.env.ADMIN_PASSWORD || process.env.admin_password || '';
+}
+
+/** 모든 관리자 변이 API 공통: timing-safe 비교 + IP 실패 잠금 */
+function requireAdmin(req, res) {
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return false;
+  const { adminPasswordInput } = req.body || {};
+  const adminPassword = getAdminPassword();
+  if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
+    recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
+    res.status(403).json({ error: 'Invalid admin password' });
+    return false;
+  }
+  clearIpAuthFail(ip);
+  return true;
+}
+
 function publicComment(doc) {
   return {
     id: String(doc._id),
@@ -1274,10 +1297,8 @@ function registerSimpleNewsBoard(app, { key, label, viewPrefix, Model }) {
   });
 
   app.post(`${base}-admin/deletepost`, async (req, res) => {
-    const { id, adminPasswordInput } = req.body;
-    if (adminPasswordInput !== adminPassword) {
-      return res.status(403).json({ error: 'Invalid admin password' });
-    }
+    if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
     try {
       const entry = await Model.findById(id);
       if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -2637,11 +2658,8 @@ app.post('/deleteposts-by-password', async (req, res) => {
 const adminPassword = process.env.ADMIN_PASSWORD || process.env.admin_password;
 
 app.post('/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await GuestbookEntry.findById(id);
@@ -2797,10 +2815,8 @@ app.post('/wordofday-deletepost', async (req, res) => {
 });
 
 app.post('/wordofday-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await WordOfDayEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -2869,19 +2885,6 @@ app.post('/onesentence', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/onesentence-deletepost', async (req, res) => {
-  const { id, password } = req.body;
-  const entry = await OneSentenceEntry.findById(id);
-  if (!entry) return res.status(404).json({ error: 'Post not found' });
-  const isMatch = await safeBcryptCompare(password, entry.password);
-  if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
-  try {
-    await OneSentenceEntry.findByIdAndDelete(id);
-    res.json({ message: 'Post deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error deleting one-sentence entry' });
-  }
-});
 
 function normalizeOneSentenceCf(cf) {
   if (Array.isArray(cf)) {
@@ -2904,16 +2907,7 @@ function normalizeOneSentenceCf(cf) {
 }
 
 function requireOneSentenceAdmin(req, res) {
-  const ip = getRequestIp(req);
-  if (rejectIfIpAuthLocked(ip, res)) return false;
-  const { adminPasswordInput } = req.body || {};
-  if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
-    recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
-    res.status(403).json({ error: 'Invalid admin password' });
-    return false;
-  }
-  clearIpAuthFail(ip);
-  return true;
+  return requireAdmin(req, res);
 }
 
 app.post('/onesentence/admin/create', async (req, res) => {
@@ -3044,7 +3038,8 @@ app.post('/onesentence/comments', async (req, res) => {
   if (rejectIfIpAuthLocked(ip, res)) return;
 
   if (checked.reservedNick || isReservedAdminNickname(checked.nickname)) {
-    if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
+    const adminPw = getAdminPassword();
+    if (!adminPw || !safeEqualString(adminPasswordInput, adminPw)) {
       recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
       return res.status(403).json({ error: 'admin / 관리자 / 주인장 닉네임은 관리자 비밀번호가 필요해요.' });
     }
@@ -3137,10 +3132,12 @@ app.post('/onesentence/comments/edit', async (req, res) => {
   const checked = validateCommentFields({ nickname, body, password });
   if (!checked.ok) return res.status(400).json({ error: checked.error });
   if (checked.reservedNick || isReservedAdminNickname(checked.nickname)) {
-    if (!adminPassword || !safeEqualString(adminPasswordInput, adminPassword)) {
+    const adminPw = getAdminPassword();
+    if (!adminPw || !safeEqualString(adminPasswordInput, adminPw)) {
       recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
       return res.status(403).json({ error: 'admin / 관리자 / 주인장 닉네임은 관리자 비밀번호가 필요해요.' });
     }
+    clearIpAuthFail(ip);
   }
   try {
     const doc = await OneSentenceComment.findById(id);
@@ -3352,10 +3349,8 @@ app.post('/photo-english-deletepost', async (req, res) => {
 });
 
 app.post('/photo-english-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await PhotoEnglishEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -3484,10 +3479,8 @@ app.post('/ranking-news-deletepost', async (req, res) => {
 });
 
 app.post('/ranking-news-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await RankingNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -3616,10 +3609,8 @@ app.post('/cooking-voca-deletepost', async (req, res) => {
 });
 
 app.post('/cooking-voca-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await CookingVocaEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -3748,10 +3739,8 @@ app.post('/culture-voca-deletepost', async (req, res) => {
 });
 
 app.post('/culture-voca-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await CultureVocaEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -3880,10 +3869,8 @@ app.post('/defense-news-deletepost', async (req, res) => {
 });
 
 app.post('/defense-news-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await DefenseNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -4034,10 +4021,8 @@ app.post('/economy-news-deletepost', async (req, res) => {
 });
 
 app.post('/economy-news-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await EconomyNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -4188,10 +4173,8 @@ app.post('/travel-news-deletepost', async (req, res) => {
 });
 
 app.post('/travel-news-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await TravelNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -4342,10 +4325,8 @@ app.post('/sports-news-deletepost', async (req, res) => {
 });
 
 app.post('/sports-news-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await SportsNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -4515,10 +4496,8 @@ app.post('/korea-news-deletepost', async (req, res) => {
 });
 
 app.post('/korea-news-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await KoreaNewsEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -4669,10 +4648,8 @@ app.post('/shorts-bg-image-deletepost', async (req, res) => {
 });
 
 app.post('/shorts-bg-image-admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
   try {
     const entry = await ShortsBgImageEntry.findById(id);
     if (!entry) return res.status(404).json({ error: 'Post not found' });
@@ -4851,11 +4828,8 @@ app.post('/vocabulary/deletepost', async (req, res) => {
 
 // Vocabulary entry 관리자 삭제
 app.post('/vocabulary/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await VocabularyEntry.findById(id);
@@ -5033,11 +5007,8 @@ app.post('/opinions/deletepost', async (req, res) => {
 });
 
 app.post('/opinions/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await OpinionEntry.findById(id);
@@ -5214,11 +5185,8 @@ app.post('/calm-mind/deletepost', async (req, res) => {
 });
 
 app.post('/calm-mind/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await CalmMindEntry.findById(id);
@@ -5395,11 +5363,8 @@ app.post('/english-quotes/deletepost', async (req, res) => {
 });
 
 app.post('/english-quotes/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await EnglishQuotesEntry.findById(id);
@@ -5582,11 +5547,8 @@ app.post('/easy-voca/deletepost', async (req, res) => {
 });
 
 app.post('/easy-voca/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await EasyVocaEntry.findById(id);
@@ -5768,11 +5730,8 @@ app.post('/situational-english/deletepost', async (req, res) => {
 });
 
 app.post('/situational-english/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await SituationalEnglishEntry.findById(id);
@@ -5954,11 +5913,8 @@ app.post('/pros-cons/deletepost', async (req, res) => {
 });
 
 app.post('/pros-cons/admin/deletepost', async (req, res) => {
-  const { id, adminPasswordInput } = req.body;
-
-  if (adminPasswordInput !== adminPassword) {
-    return res.status(403).json({ error: 'Invalid admin password' });
-  }
+  if (!requireAdmin(req, res)) return;
+    const { id } = req.body;
 
   try {
     const entry = await ProsConsEntry.findById(id);
