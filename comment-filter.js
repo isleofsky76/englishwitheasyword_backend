@@ -1,5 +1,6 @@
 /**
  * 문장 피드 댓글 금지어·링크 필터 (서버)
+ * A/B = 자동 차단, C = 자동 차단 안 함(목록만 보관), allowlist = 오탐 방지
  */
 import fs from 'fs';
 import path from 'path';
@@ -7,10 +8,22 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-let lists = { blocked: [], blockedHangulJamo: [], allowlist: [] };
+let lists = {
+  blockedA: [],
+  blockedB: [],
+  blockedC: [],
+  blockedHangulJamo: [],
+  allowlist: [],
+};
+
 try {
-  const raw = fs.readFileSync(path.join(__dirname, 'comment-badwords.json'), 'utf8');
-  lists = JSON.parse(raw);
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'comment-badwords.json'), 'utf8'));
+  // 구버전 blocked 호환
+  lists.blockedA = Array.isArray(raw.blockedA) ? raw.blockedA : Array.isArray(raw.blocked) ? raw.blocked : [];
+  lists.blockedB = Array.isArray(raw.blockedB) ? raw.blockedB : [];
+  lists.blockedC = Array.isArray(raw.blockedC) ? raw.blockedC : [];
+  lists.blockedHangulJamo = Array.isArray(raw.blockedHangulJamo) ? raw.blockedHangulJamo : [];
+  lists.allowlist = Array.isArray(raw.allowlist) ? raw.allowlist : [];
 } catch (e) {
   console.error('[comment-filter] badwords load failed:', e.message);
 }
@@ -23,7 +36,7 @@ const DIGIT_MAP = {
   '5': 's',
   '7': 't',
   '@': 'a',
-  '$': 's',
+  $: 's',
 };
 
 export function hasLink(text) {
@@ -39,44 +52,70 @@ export function normalizeForFilter(text) {
 
 function stripAllowlist(text) {
   let t = String(text || '').toLowerCase();
-  const allows = Array.isArray(lists.allowlist) ? lists.allowlist : [];
+  const allows = [...(lists.allowlist || [])].sort((a, b) => String(b).length - String(a).length);
   allows.forEach((a) => {
     const needle = String(a || '').toLowerCase().trim();
     if (!needle) return;
-    t = t.split(needle).join(' ');
+    // 구문/단어 단위로 제거
+    if (/\s/.test(needle) || /[^a-z]/i.test(needle)) {
+      t = t.split(needle).join(' ');
+    } else {
+      const re = new RegExp(`(?:^|[^a-z])${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=[^a-z]|$)`, 'gi');
+      t = t.replace(re, ' ');
+    }
   });
   return t;
 }
 
-function englishWordBoundaryHit(originalLower, word) {
+function englishWordBoundaryHit(haystackLower, word) {
   const w = String(word || '').toLowerCase().trim();
   if (!w || /[^a-z]/.test(w)) return false;
-  const re = new RegExp(`(?:^|[^a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[^a-z]|$)`, 'i');
-  return re.test(originalLower);
+  const re = new RegExp(`(?:^|[^a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=[^a-z]|$)`, 'i');
+  return re.test(haystackLower);
 }
 
-export function containsBadWords(text) {
-  const original = String(text || '');
-  const originalLower = stripAllowlist(original);
-  const compact = normalizeForFilter(originalLower);
-  const blocked = Array.isArray(lists.blocked) ? lists.blocked : [];
-  const jamo = Array.isArray(lists.blockedHangulJamo) ? lists.blockedHangulJamo : [];
+function phraseHit(haystackLower, phrase) {
+  const p = String(phrase || '').toLowerCase().trim();
+  if (!p) return false;
+  if (/\s/.test(p)) return haystackLower.includes(p);
+  if (/^[a-z]+$/i.test(p)) return englishWordBoundaryHit(haystackLower, p);
+  // 한글·혼합: 원문 포함 또는 정규화 포함
+  return haystackLower.includes(p) || normalizeForFilter(haystackLower).includes(normalizeForFilter(p));
+}
 
-  for (const term of blocked) {
-    const t = String(term || '').trim();
-    if (!t) continue;
-    const tLower = t.toLowerCase();
-    if (/^[a-z]+$/i.test(t)) {
-      if (englishWordBoundaryHit(originalLower, tLower)) return true;
-      if (compact.includes(normalizeForFilter(tLower))) return true;
-    } else {
-      if (originalLower.includes(tLower) || compact.includes(normalizeForFilter(tLower))) return true;
+function listHits(haystackLower, terms) {
+  for (const term of terms || []) {
+    if (phraseHit(haystackLower, term)) return true;
+  }
+  return false;
+}
+
+/** 댓글 자동 차단 대상: A + B (+ 자모) */
+export function containsBadWords(text) {
+  const originalLower = stripAllowlist(text);
+  const compact = normalizeForFilter(originalLower);
+
+  if (listHits(originalLower, lists.blockedA)) return true;
+  if (listHits(originalLower, lists.blockedB)) return true;
+
+  // 숫자 치환 우회 (s3x 등) — 영문 단일 용어도 compact로 재검사
+  const autoTerms = [...(lists.blockedA || []), ...(lists.blockedB || [])];
+  for (const term of autoTerms) {
+    const t = String(term || '').trim().toLowerCase();
+    if (!t || /\s/.test(t)) continue;
+    if (/^[a-z0-9]+$/i.test(t) && compact.includes(normalizeForFilter(t))) {
+      // 짧은 영문이 compact에만 잡히는 경우, 원문 단어 경계도 한번 더 확인하되
+      // 치환 우회(s3x)는 compact 매칭을 허용
+      if (/[0-9@$]/.test(String(text || '').toLowerCase()) || englishWordBoundaryHit(originalLower, t) || compact.includes(normalizeForFilter(t))) {
+        if (compact.includes(normalizeForFilter(t))) return true;
+      }
     }
   }
-  for (const term of jamo) {
+
+  for (const term of lists.blockedHangulJamo || []) {
     const t = String(term || '').trim();
     if (!t) continue;
-    if (compact.includes(normalizeForFilter(t)) || original.replace(/\s+/g, '').includes(t)) return true;
+    if (compact.includes(normalizeForFilter(t)) || String(text || '').replace(/\s+/g, '').includes(t)) return true;
   }
   return false;
 }
