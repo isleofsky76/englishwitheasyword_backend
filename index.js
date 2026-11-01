@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
+import { validateCommentFields } from './comment-filter.js';
 
 async function safeBcryptCompare(plain, hash) {
   if (plain == null || typeof plain !== 'string' || hash == null || typeof hash !== 'string') return false;
@@ -721,6 +722,38 @@ const oneSentenceEntrySchema = new mongoose.Schema({
 }, { collection: 'onesentence' });
 
 const OneSentenceEntry = mongoose.model('OneSentenceEntry', oneSentenceEntrySchema);
+
+// 문장 피드 단어별 익명 댓글 → 컬렉션 onesentencecomments
+const oneSentenceCommentSchema = new mongoose.Schema({
+  wordKey: { type: String, required: true, index: true },
+  word: { type: String, default: '' },
+  pos: { type: String, default: '' },
+  nickname: { type: String, default: '' },
+  body: { type: String, required: true },
+  passwordHash: { type: String, required: true },
+  date: { type: Date, default: Date.now },
+  deleteFailCount: { type: Number, default: 0 },
+  deleteLockedUntil: { type: Date, default: null },
+}, { collection: 'onesentencecomments' });
+oneSentenceCommentSchema.index({ wordKey: 1, date: 1 });
+const OneSentenceComment = mongoose.model('OneSentenceComment', oneSentenceCommentSchema);
+
+const oneSentenceCommentIpCooldown = new Map(); // ip -> lastPostMs
+
+function getRequestIp(req) {
+  const xf = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return xf || req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
+function publicComment(doc) {
+  return {
+    id: String(doc._id),
+    wordKey: doc.wordKey,
+    nickname: doc.nickname || '',
+    body: doc.body,
+    date: doc.date,
+  };
+}
 
 // 영어 단어 퀴즈 (vocabulary-quiz.html) → 컬렉션 vocabularyquiz
 const vocabularyQuizEntrySchema = new mongoose.Schema({
@@ -2819,6 +2852,127 @@ app.post('/onesentence/admin/deletepost', async (req, res) => {
   } catch (error) {
     console.error('One Sentence admin delete 오류:', error);
     res.status(500).json({ error: 'Error deleting one-sentence entry' });
+  }
+});
+
+//================================== One Sentence Comments API
+app.get('/onesentence/comments/counts', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', counts: {} });
+    }
+    const rows = await OneSentenceComment.aggregate([
+      { $group: { _id: '$wordKey', count: { $sum: 1 } } },
+    ]);
+    const counts = {};
+    rows.forEach((r) => {
+      if (r && r._id) counts[r._id] = r.count;
+    });
+    res.json({ counts });
+  } catch (error) {
+    console.error('One Sentence comment counts 오류:', error);
+    res.status(500).json({ error: 'Error retrieving comment counts', counts: {} });
+  }
+});
+
+app.get('/onesentence/comments', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', comments: [] });
+    }
+    const wordKey = String(req.query.wordKey || '').trim();
+    if (!wordKey) return res.status(400).json({ error: 'wordKey is required', comments: [] });
+    const rows = await OneSentenceComment.find({ wordKey }).sort({ date: 1, _id: 1 }).select('-passwordHash');
+    res.json({ comments: rows.map(publicComment) });
+  } catch (error) {
+    console.error('One Sentence comments list 오류:', error);
+    res.status(500).json({ error: 'Error retrieving comments', comments: [] });
+  }
+});
+
+app.post('/onesentence/comments', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const { wordKey, word, pos, nickname, body, password } = req.body || {};
+  const key = String(wordKey || '').trim();
+  if (!key) return res.status(400).json({ error: 'wordKey is required' });
+
+  const checked = validateCommentFields({ nickname, body, password });
+  if (!checked.ok) return res.status(400).json({ error: checked.error });
+
+  const ip = getRequestIp(req);
+  const now = Date.now();
+  const last = oneSentenceCommentIpCooldown.get(ip) || 0;
+  if (now - last < 30000) {
+    return res.status(429).json({ error: '잠시 후 다시 작성해 주세요. (30초에 1개)' });
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(checked.password, 10);
+    const doc = new OneSentenceComment({
+      wordKey: key,
+      word: String(word || '').trim(),
+      pos: String(pos || '').trim(),
+      nickname: checked.nickname,
+      body: checked.body,
+      passwordHash,
+    });
+    await doc.save();
+    oneSentenceCommentIpCooldown.set(ip, now);
+    res.status(201).json({ comment: publicComment(doc) });
+  } catch (error) {
+    console.error('One Sentence comment create 오류:', error);
+    res.status(500).json({ error: 'Error saving comment' });
+  }
+});
+
+app.post('/onesentence/comments/delete', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const { id, password } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  const pw = String(password == null ? '' : password);
+  if (!/^\d{4}$/.test(pw)) {
+    return res.status(400).json({ error: '비밀번호는 숫자 4자리여야 해요.' });
+  }
+  try {
+    const doc = await OneSentenceComment.findById(id);
+    if (!doc) return res.status(404).json({ error: 'Comment not found' });
+    if (doc.deleteLockedUntil && doc.deleteLockedUntil.getTime() > Date.now()) {
+      return res.status(429).json({ error: '삭제가 잠시 잠겼어요. 10분 뒤 다시 시도해 주세요.' });
+    }
+    const ok = await safeBcryptCompare(pw, doc.passwordHash);
+    if (!ok) {
+      doc.deleteFailCount = (doc.deleteFailCount || 0) + 1;
+      if (doc.deleteFailCount >= 5) {
+        doc.deleteLockedUntil = new Date(Date.now() + 10 * 60 * 1000);
+        doc.deleteFailCount = 0;
+      }
+      await doc.save();
+      return res.status(403).json({ error: '비밀번호가 맞지 않아요' });
+    }
+    await OneSentenceComment.findByIdAndDelete(id);
+    res.json({ message: 'Comment deleted' });
+  } catch (error) {
+    console.error('One Sentence comment delete 오류:', error);
+    res.status(500).json({ error: 'Error deleting comment' });
+  }
+});
+
+app.post('/onesentence/comments/admin/delete', async (req, res) => {
+  if (!requireOneSentenceAdmin(req, res)) return;
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  try {
+    const doc = await OneSentenceComment.findById(id);
+    if (!doc) return res.status(404).json({ error: 'Comment not found' });
+    await OneSentenceComment.findByIdAndDelete(id);
+    res.json({ message: 'Comment deleted by admin' });
+  } catch (error) {
+    console.error('One Sentence comment admin delete 오류:', error);
+    res.status(500).json({ error: 'Error deleting comment' });
   }
 });
 
@@ -5702,6 +5856,12 @@ if (uri) {
           console.log('onesentence 컬렉션 생성됨');
         } catch (e) {
           if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('onesentence 컬렉션:', e.message);
+        }
+        try {
+          await db.createCollection('onesentencecomments');
+          console.log('onesentencecomments 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('onesentencecomments 컬렉션:', e.message);
         }
         try {
           await db.createCollection('photoenglish');
