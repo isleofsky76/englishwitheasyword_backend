@@ -101,19 +101,36 @@ export function normalizeKeepDigits(text) {
     .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+/gi, '');
 }
 
+/** 나이·연도 등 학습·일반 문맥의 18 (은어 차단에서 제외) */
+function isEducationalEighteenContext(text) {
+  const raw = String(text || '').toLowerCase();
+  return /18\s*살|18\s*세|18\s*세기|18\s*년|2018|1918|18\s*years|age\s*of\s*18|under\s*18|over\s*18|turned\s*18|18th|18\s*century/i.test(
+    raw
+  );
+}
+
 /**
  * 숫자형 욕설·성인 은어 패턴
- * - 단독 18 / 69 / 18년 / 6969 는 학습 문맥 가능 → 자동 차단하지 않음
- * - 1818·181818 반복, 18놈/18새끼, tlqkf, 섹69, 19금 등은 차단
+ * - 단독 18(은어) 차단. 18살/2018 등 학습 문맥은 허용
+ * - 1818 반복, 18놈/10새끼, tlqkf, 섹69, 19금 차단
+ * - 단독 69 / 6969 는 학습·문맥 가능 → 조합만 차단
  */
 export function containsNumericAbusePatterns(text) {
+  const raw = String(text || '').trim();
   const c = normalizeKeepDigits(text);
   if (!c) return false;
 
-  // 18 반복 (1818, 181818, 18181818 …) — 단독 "18" 제외
+  // 18 반복 (1818, 181818 …)
   if (/(?:18){2,}/.test(c)) return true;
 
-  // 18/10/108 + 욕설 접미 (LoL·커뮤니티 우회형). 18년(연도·기간)은 제외
+  // 단독 18 은어 (댓글/닉이 "18" 이거나, 숫자 경계의 18). 18살·2018 등은 제외
+  if (!isEducationalEighteenContext(raw)) {
+    if (/^18$/.test(c)) return true;
+    // 앞뒤가 숫자가 아닌 독립 "18" (예: "야 18", "18!", "이거18")
+    if (/(?:^|[^0-9])18(?:[^0-9]|$)/.test(c)) return true;
+  }
+
+  // 18/10/108 + 욕설 접미
   if (/(?:18|10|108)(?:놈|넘|새끼|새기|새키|쉐끼|새끼들|뇬|련)/.test(c)) return true;
   if (/18(?:발|팔|섹|쉑)/.test(c)) return true;
 
