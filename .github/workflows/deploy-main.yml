@@ -1,9 +1,9 @@
-# Cloudtype CLI 탭 설정 기준
+# Cloudtype CLI 탭 기준 배포
 # project: isleofsky76/englishwitheasyword-backend
 #
-# Secrets (GitHub → Settings → Secrets → Actions):
-#   CLOUDTYPE_TOKEN  = Cloudtype API Key  (또는 기존 CLOUDTYPE_API_KEY)
-#   GHP_TOKEN        = GitHub PAT (repo, admin:public_key) — 없으면 github.token 사용
+# GitHub Secrets (필수):
+#   CLOUDTYPE_TOKEN = Cloudtype API Key
+#   GHP_TOKEN       = GitHub PAT (classic: repo, admin:public_key)
 #
 name: Deploy to cloudtype
 
@@ -23,17 +23,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check secrets
+        env:
+          HAS_CT: ${{ secrets.CLOUDTYPE_TOKEN != '' }}
+          HAS_CT_OLD: ${{ secrets.CLOUDTYPE_API_KEY != '' }}
+          HAS_GHP: ${{ secrets.GHP_TOKEN != '' }}
+        run: |
+          echo "CLOUDTYPE_TOKEN set: $HAS_CT"
+          echo "CLOUDTYPE_API_KEY set: $HAS_CT_OLD"
+          echo "GHP_TOKEN set: $HAS_GHP"
+          if [ "$HAS_CT" != "true" ] && [ "$HAS_CT_OLD" != "true" ]; then
+            echo "::error::CLOUDTYPE_TOKEN 시크릿이 필요합니다. (Cloudtype → 스페이스 설정 → API Key)"
+            exit 1
+          fi
+          if [ "$HAS_GHP" != "true" ]; then
+            echo "::warning::GHP_TOKEN 이 없습니다. github.token 으로 시도합니다. 실패하면 classic PAT(repo, admin:public_key)를 GHP_TOKEN 으로 추가하세요."
+          fi
+
       - name: Connect deploy key
         uses: cloudtype-github-actions/connect@v1
         with:
-          token: ${{ secrets.CLOUDTYPE_TOKEN || secrets.CLOUDTYPE_API_KEY }}
-          ghtoken: ${{ secrets.GHP_TOKEN || github.token }}
+          token: ${{ secrets.CLOUDTYPE_TOKEN != '' && secrets.CLOUDTYPE_TOKEN || secrets.CLOUDTYPE_API_KEY }}
+          ghtoken: ${{ secrets.GHP_TOKEN != '' && secrets.GHP_TOKEN || github.token }}
           endpoint: https://api.cloudtype.io
 
       - name: Deploy
         uses: cloudtype-github-actions/deploy@v1
         with:
-          token: ${{ secrets.CLOUDTYPE_TOKEN || secrets.CLOUDTYPE_API_KEY }}
+          token: ${{ secrets.CLOUDTYPE_TOKEN != '' && secrets.CLOUDTYPE_TOKEN || secrets.CLOUDTYPE_API_KEY }}
           endpoint: https://api.cloudtype.io
           project: isleofsky76/englishwitheasyword-backend
           stage: main
