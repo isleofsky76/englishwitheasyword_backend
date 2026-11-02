@@ -1,0 +1,13 @@
+# Cloudtype 서비스 설정 (GitHub Actions / CLI)
+# 환경변수(MONGO_URI 등)는 대시보드에 둔 값을 유지합니다.
+# 최초 배포 후 env가 비면 대시보드에서 다시 넣고, CLI 탭 yaml을 이 파일에 맞춰 주세요.
+name: englishwitheasyword-backend
+app: node@20
+options:
+  ports: 3000
+  install: npm ci --omit=dev
+  start: node index.js
+context:
+  git:
+    url: https://github.com/isleofsky76/englishwitheasyword_backend.git
+    branch: main
