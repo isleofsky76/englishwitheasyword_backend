@@ -768,6 +768,21 @@ const oneSentenceCommentSchema = new mongoose.Schema({
 oneSentenceCommentSchema.index({ wordKey: 1, date: 1 });
 const OneSentenceComment = mongoose.model('OneSentenceComment', oneSentenceCommentSchema);
 
+/** 게시판 글(slug)별 익명 댓글 — 뉴스 영어 등 → 컬렉션 boardcomments */
+const boardCommentSchema = new mongoose.Schema({
+  board: { type: String, required: true, index: true },
+  contentKey: { type: String, required: true, index: true },
+  title: { type: String, default: '' },
+  nickname: { type: String, default: '' },
+  body: { type: String, required: true },
+  passwordHash: { type: String, required: true },
+  date: { type: Date, default: Date.now },
+  deleteFailCount: { type: Number, default: 0 },
+  deleteLockedUntil: { type: Date, default: null },
+}, { collection: 'boardcomments' });
+boardCommentSchema.index({ board: 1, contentKey: 1, date: 1 });
+const BoardComment = mongoose.model('BoardComment', boardCommentSchema);
+
 const oneSentenceCommentIpCooldown = new Map(); // ip -> lastPostMs
 /** IP별 등록 시각 로그 (봇·대량 등록 상한) */
 const oneSentenceCommentIpCreates = new Map(); // ip -> number[] timestamps
@@ -888,6 +903,17 @@ function publicComment(doc) {
   return {
     id: String(doc._id),
     wordKey: doc.wordKey,
+    nickname: doc.nickname || '',
+    body: doc.body,
+    date: doc.date,
+  };
+}
+
+function publicBoardComment(doc) {
+  return {
+    id: String(doc._id),
+    board: doc.board,
+    contentKey: doc.contentKey,
     nickname: doc.nickname || '',
     body: doc.body,
     date: doc.date,
@@ -3165,6 +3191,181 @@ app.post('/onesentence/comments/admin/delete', async (req, res) => {
     res.json({ message: 'Comment deleted by admin' });
   } catch (error) {
     console.error('One Sentence comment admin delete 오류:', error);
+    res.status(500).json({ error: 'Error deleting comment' });
+  }
+});
+
+//================================== Board Comments API (뉴스 영어 등 글 단위)
+app.get('/board-comments/count', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', count: 0 });
+    }
+    const board = String(req.query.board || '').trim();
+    const contentKey = String(req.query.contentKey || '').trim();
+    if (!board || !contentKey) return res.status(400).json({ error: 'board and contentKey required', count: 0 });
+    const count = await BoardComment.countDocuments({ board, contentKey });
+    res.json({ count });
+  } catch (error) {
+    console.error('Board comment count 오류:', error);
+    res.status(500).json({ error: 'Error retrieving comment count', count: 0 });
+  }
+});
+
+app.get('/board-comments', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', comments: [] });
+    }
+    const board = String(req.query.board || '').trim();
+    const contentKey = String(req.query.contentKey || '').trim();
+    if (!board || !contentKey) {
+      return res.status(400).json({ error: 'board and contentKey required', comments: [] });
+    }
+    const rows = await BoardComment.find({ board, contentKey }).sort({ date: 1, _id: 1 }).select('-passwordHash');
+    res.json({ comments: rows.map(publicBoardComment) });
+  } catch (error) {
+    console.error('Board comments list 오류:', error);
+    res.status(500).json({ error: 'Error retrieving comments', comments: [] });
+  }
+});
+
+app.post('/board-comments', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const { board, contentKey, title, nickname, body, password, adminPasswordInput, website } = req.body || {};
+  const boardKey = String(board || '').trim();
+  const key = String(contentKey || '').trim();
+  if (!boardKey || !key) return res.status(400).json({ error: 'board and contentKey are required' });
+
+  if (String(website == null ? '' : website).trim()) {
+    return res.status(201).json({
+      comment: {
+        id: 'ok',
+        board: boardKey,
+        contentKey: key,
+        nickname: String(nickname || '').trim() || '익명',
+        body: String(body || '').trim().slice(0, 100),
+        date: new Date().toISOString(),
+      },
+    });
+  }
+
+  const checked = validateCommentFields({ nickname, body, password });
+  if (!checked.ok) return res.status(400).json({ error: checked.error });
+
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return;
+
+  if (checked.reservedNick || isReservedAdminNickname(checked.nickname)) {
+    const adminPw = getAdminPassword();
+    if (!adminPw || !safeEqualString(adminPasswordInput, adminPw)) {
+      recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
+      return res.status(403).json({ error: 'admin / 관리자 / 주인장 닉네임은 관리자 비밀번호가 필요해요.' });
+    }
+    clearIpAuthFail(ip);
+  }
+
+  const limitKey = `${boardKey}::${key}`;
+  const last = oneSentenceCommentIpCooldown.get(ip) || 0;
+  if (Date.now() - last < COMMENT_CREATE_COOLDOWN_MS) {
+    return res.status(429).json({ error: '잠시 후 다시 작성해 주세요. (60초에 1개)' });
+  }
+
+  const limitState = checkCommentCreateLimits(ip, limitKey, checked.body);
+  if (!limitState.ok) {
+    return res.status(limitState.status).json({ error: limitState.error });
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(checked.password, BCRYPT_ROUNDS);
+    const doc = new BoardComment({
+      board: boardKey,
+      contentKey: key,
+      title: String(title || '').trim().slice(0, 200),
+      nickname: checked.nickname,
+      body: checked.body,
+      passwordHash,
+    });
+    await doc.save();
+    recordCommentCreateSuccess(ip, limitState);
+    res.status(201).json({ comment: publicBoardComment(doc) });
+  } catch (error) {
+    console.error('Board comment create 오류:', error);
+    res.status(500).json({ error: 'Error saving comment' });
+  }
+});
+
+app.post('/board-comments/delete', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return;
+  const { id, password } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  const pw = String(password == null ? '' : password);
+  if (!pw || pw.length < 4 || pw.length > 14 || /\s/.test(pw)) {
+    return res.status(400).json({ error: '비밀번호는 4~14자로 입력해 주세요.' });
+  }
+  try {
+    const doc = await BoardComment.findById(id);
+    if (!doc) return res.status(404).json({ error: 'Comment not found' });
+    const verified = await verifyOneSentenceCommentPassword(doc, pw, ip);
+    if (!verified.ok) return res.status(verified.status).json({ error: verified.error });
+    await BoardComment.findByIdAndDelete(id);
+    res.json({ message: 'Comment deleted' });
+  } catch (error) {
+    console.error('Board comment delete 오류:', error);
+    res.status(500).json({ error: 'Error deleting comment' });
+  }
+});
+
+app.post('/board-comments/edit', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'MongoDB에 연결되지 않았습니다.' });
+  }
+  const ip = getRequestIp(req);
+  if (rejectIfIpAuthLocked(ip, res)) return;
+  const { id, password, nickname, body, adminPasswordInput } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  const checked = validateCommentFields({ nickname, body, password });
+  if (!checked.ok) return res.status(400).json({ error: checked.error });
+  if (checked.reservedNick || isReservedAdminNickname(checked.nickname)) {
+    const adminPw = getAdminPassword();
+    if (!adminPw || !safeEqualString(adminPasswordInput, adminPw)) {
+      recordIpAuthFail(ip, { maxFails: AUTH_ADMIN_MAX_FAILS, lockMs: AUTH_LOCK_MS });
+      return res.status(403).json({ error: 'admin / 관리자 / 주인장 닉네임은 관리자 비밀번호가 필요해요.' });
+    }
+    clearIpAuthFail(ip);
+  }
+  try {
+    const doc = await BoardComment.findById(id);
+    if (!doc) return res.status(404).json({ error: 'Comment not found' });
+    const verified = await verifyOneSentenceCommentPassword(doc, checked.password, ip);
+    if (!verified.ok) return res.status(verified.status).json({ error: verified.error });
+    doc.nickname = checked.nickname;
+    doc.body = checked.body;
+    await doc.save();
+    res.json({ comment: publicBoardComment(doc) });
+  } catch (error) {
+    console.error('Board comment edit 오류:', error);
+    res.status(500).json({ error: 'Error updating comment' });
+  }
+});
+
+app.post('/board-comments/admin/delete', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id is required' });
+  try {
+    const doc = await BoardComment.findById(id);
+    if (!doc) return res.status(404).json({ error: 'Comment not found' });
+    await BoardComment.findByIdAndDelete(id);
+    res.json({ message: 'Comment deleted by admin' });
+  } catch (error) {
+    console.error('Board comment admin delete 오류:', error);
     res.status(500).json({ error: 'Error deleting comment' });
   }
 });
