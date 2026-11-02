@@ -1,12 +1,11 @@
-# Cloudtype 자동 배포 (공식 Actions)
+# Cloudtype CLI 탭 설정 기준
+# project: isleofsky76/englishwitheasyword-backend
 #
-# 한 번만 설정:
-# 1) Secrets: CLOUDTYPE_TOKEN 또는 CLOUDTYPE_API_KEY = Cloudtype API Key
-# 2) Variables: CLOUDTYPE_PROJECT = 스페이스/프로젝트
-#    (Cloudtype 서비스 → CLI 탭의 project 값)
-#    또는 저장소 루트 `.cloudtype/project` 파일에 같은 값을 한 줄로 넣어도 됩니다.
+# Secrets (GitHub → Settings → Secrets → Actions):
+#   CLOUDTYPE_TOKEN  = Cloudtype API Key  (또는 기존 CLOUDTYPE_API_KEY)
+#   GHP_TOKEN        = GitHub PAT (repo, admin:public_key) — 없으면 github.token 사용
 #
-name: Deploy to Cloudtype
+name: Deploy to cloudtype
 
 on:
   push:
@@ -24,50 +23,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Resolve Cloudtype credentials
-        id: ct
-        env:
-          TOKEN_A: ${{ secrets.CLOUDTYPE_TOKEN }}
-          TOKEN_B: ${{ secrets.CLOUDTYPE_API_KEY }}
-          PROJECT_VAR: ${{ vars.CLOUDTYPE_PROJECT }}
-        run: |
-          set -euo pipefail
-          TOKEN="${TOKEN_A:-}"
-          if [ -z "$TOKEN" ]; then TOKEN="${TOKEN_B:-}"; fi
-
-          PROJECT="${PROJECT_VAR:-}"
-          if [ -z "$PROJECT" ] && [ -f .cloudtype/project ]; then
-            PROJECT="$(tr -d ' \t\r\n' < .cloudtype/project)"
-          fi
-
-          if [ -z "$TOKEN" ]; then
-            echo "::error::CLOUDTYPE_TOKEN 또는 CLOUDTYPE_API_KEY 시크릿이 필요합니다."
-            exit 1
-          fi
-          if [ -z "$PROJECT" ]; then
-            echo "::error::CLOUDTYPE_PROJECT Variable 또는 .cloudtype/project 파일에 스페이스/프로젝트명을 넣어 주세요."
-            exit 1
-          fi
-          {
-            echo "token=$TOKEN"
-            echo "project=$PROJECT"
-          } >> "$GITHUB_OUTPUT"
-          echo "Deploying to project: $PROJECT"
-
       - name: Connect deploy key
         uses: cloudtype-github-actions/connect@v1
         with:
-          token: ${{ steps.ct.outputs.token }}
-          ghtoken: ${{ github.token }}
+          token: ${{ secrets.CLOUDTYPE_TOKEN || secrets.CLOUDTYPE_API_KEY }}
+          ghtoken: ${{ secrets.GHP_TOKEN || github.token }}
           endpoint: https://api.cloudtype.io
-          repo: ${{ github.repository }}
 
       - name: Deploy
         uses: cloudtype-github-actions/deploy@v1
         with:
-          token: ${{ steps.ct.outputs.token }}
+          token: ${{ secrets.CLOUDTYPE_TOKEN || secrets.CLOUDTYPE_API_KEY }}
           endpoint: https://api.cloudtype.io
-          project: ${{ steps.ct.outputs.project }}
+          project: isleofsky76/englishwitheasyword-backend
           stage: main
           yaml: |
             name: englishwitheasyword-backend
