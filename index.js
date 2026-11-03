@@ -1,5 +1,4 @@
 import OpenAI from 'openai';
-import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -7,6 +6,7 @@ import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { validateCommentFields, isReservedAdminNickname } from './comment-filter.js';
+import { app } from './runtime.js';
 
 async function safeBcryptCompare(plain, hash) {
   if (plain == null || typeof plain !== 'string' || hash == null || typeof hash !== 'string') return false;
@@ -43,14 +43,10 @@ import fs from 'fs';
 import { promisify } from 'util';
 import session from 'express-session';
 
-// .env 파일의 환경 변수를 로드합니다.
+// .env 는 server.js 에서 먼저 로드. (node index.js 직접 실행 대비)
 dotenv.config();
 
-// Initialize the Express app 로컬용.
-const app = express();
-
-// Trust proxy 설정 (IP 주소를 올바르게 가져오기 위해)
-app.set('trust proxy', true);
+// app / trust proxy / /healthz / listen 은 server.js(+runtime.js)에서 처리
 
 // CORS 설정 — 브라우저에서 프론트(다른 origin)가 이 API를 호출할 때 허용할 주소
 const CORS_ALLOWED_ORIGINS = [
@@ -571,57 +567,6 @@ app.get('/generate-audio', async (req, res) => {
 
 // 환경 변수에서 MongoDB URI 읽기
 const uri = process.env.MONGO_URI;
-
-// HTTP 서버는 먼저 listen — K8s/Cloudtype readiness probe(/healthz)가 Mongo보다 먼저 와도 응답 가능
-function startServer() {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log('Endpoints:');
-    console.log(`- English Study: http://localhost:${PORT}/englishstudy`);
-    console.log(`- Business Advice: http://localhost:${PORT}/business-advice`);
-    console.log(`- English Chat: http://localhost:${PORT}/english-chat`);
-    console.log(`- Health Check: http://localhost:${PORT}/healthz`);
-    console.log(`- Root: http://localhost:${PORT}/`);
-    console.log(`- Speaking Practice: http://localhost:${PORT}/speaking-practice`);
-    console.log(`- Speaking Practice2: http://localhost:${PORT}/speaking-practice2`);
-    console.log(`- Quiz: http://localhost:${PORT}/quiz`);
-    console.log(`- Quiz Check: http://localhost:${PORT}/quiz/check`);
-    console.log(`- Show Answer: http://localhost:${PORT}/quiz/show`);
-    console.log(`- Get Hint: http://localhost:${PORT}/get-hint`);
-    console.log(`- Get Random Item: http://localhost:${PORT}/get-random-item`);
-    console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences`);
-    console.log(`- Generate Short Text: http://localhost:${PORT}/generate-short-text`);
-    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-translation-explanation`);
-    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-synonyms`);
-    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/ask-question`);
-    console.log(`- Get Translation and Explanation: http://localhost:${PORT}/get-fortune`);
-    console.log(`- Generate Sentences: http://localhost:${PORT}/generate-sentences-routines`);
-    console.log(`- Weather: http://localhost:${PORT}/weather`);
-    console.log(`- Guestbook: http://localhost:${PORT}/guestbook`);
-    console.log(`- Vocabulary (Synonym): http://localhost:${PORT}/vocabulary`);
-    console.log(`- Opinions: http://localhost:${PORT}/opinions`);
-    console.log(`- Calm Mind: http://localhost:${PORT}/calm-mind`);
-    console.log(`- English Quotes: http://localhost:${PORT}/english-quotes`);
-    console.log(`- Easy Voca: http://localhost:${PORT}/easy-voca`);
-    console.log(`- Situational English: http://localhost:${PORT}/situational-english`);
-    console.log(`- Pros & Cons: http://localhost:${PORT}/pros-cons`);
-    console.log(`- Photo English: http://localhost:${PORT}/photo-english`);
-    console.log(`- Ranking News: http://localhost:${PORT}/ranking-news`);
-    console.log(`- Cooking Voca: http://localhost:${PORT}/cooking-voca`);
-    console.log(`- Culture Voca: http://localhost:${PORT}/culture-voca`);
-    console.log(`- Defense News: http://localhost:${PORT}/defense-news`);
-    console.log(`- Economy News: http://localhost:${PORT}/economy-news`);
-    console.log(`- Travel News: http://localhost:${PORT}/travel-news`);
-    console.log(`- Sports News: http://localhost:${PORT}/sports-news`);
-    for (const board of EXTRA_NEWS_BOARDS) {
-      console.log(`- ${board.labelFull}: http://localhost:${PORT}/${board.key}`);
-    }
-    console.log(`- Korea News: http://localhost:${PORT}/korea-news`);
-    console.log(`- Ads.txt: http://localhost:${PORT}/ads.txt`);
-    console.log(`- Generate Audio: http://localhost:${PORT}/generate-audio`);
-  });
-}
 
 // mydatabase 아래 컬렉션 3개: newsvoca, synonyms, popularvoca
 
@@ -1377,11 +1322,6 @@ app.get('/', (req, res) => {
   res.send('Welcome to the English With Easy Word Backend!');
 });
 
-// 헬스 체크 엔드포인트 추가
-app.get('/healthz', (req, res) => {
-  res.status(200).send('OK');
-});
-
 // Open-Meteo 날씨 프록시 (브라우저 CORS 회피)
 const weatherCache = new Map();
 const WEATHER_CACHE_MS = 30 * 60 * 1000;
@@ -1888,14 +1828,6 @@ function getRandomWord() {
   const randomIndex = Math.floor(Math.random() * words.length);
   return words[randomIndex];
 }
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the English With Easy Word Backend!');
-});
-
-app.get('/healthz', (req, res) => {
-  res.status(200).send('OK');
-});
 
 //=================page16html
 // Function to get a random word (renamed to getRandomWord2)
@@ -6187,10 +6119,22 @@ app.get('/rss', async (req, res) => {
   }
 });
 
-// 모든 라우트·미들웨어 등록 후 listen (이전에 listen이 먼저면 /healthz 미등록 → readiness probe EOF)
-// Mongo 연결은 비동기로 진행 — 프로브는 DB 없이도 OK 응답 가능
-startServer();
+/* node index.js 직접 실행 시에만 listen (Cloudtype은 server.js 진입) */
+if (!globalThis.__EES_BOOTED_BY_SERVER && !app.__eesListening) {
+  app.set('trust proxy', true);
+  app.get('/healthz', (req, res) => {
+    res.status(200).type('text/plain').send('OK');
+  });
+  const directPort = Number(process.env.PORT) || 3000;
+  const s = app.listen(directPort, '0.0.0.0', () => {
+    console.log(`Server is running on port ${directPort} (index.js direct)`);
+  });
+  s.keepAliveTimeout = 65_000;
+  s.headersTimeout = 66_000;
+  app.__eesListening = true;
+}
 
+// Mongo는 비동기 — /healthz는 DB 없이 OK
 if (uri) {
   mongoose
     .connect(uri, { serverSelectionTimeoutMS: 20000 })

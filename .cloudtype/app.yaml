@@ -6,7 +6,9 @@ app: node@20
 options:
   ports: 3000
   install: npm ci --omit=dev
-  start: node index.js
+  start: node server.js
+  # Liveness가 /healthz headers 타임아웃 나지 않도록 기동·경로 명시
+  healthcheck: /healthz
 context:
   git:
     url: https://github.com/isleofsky76/englishwitheasyword_backend.git
