@@ -6,6 +6,8 @@ import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { validateCommentFields, isReservedAdminNickname } from './comment-filter.js';
+import { registerExpressionsApi } from './expressions-api.js';
+import express from 'express';
 import { app } from './runtime.js';
 
 async function safeBcryptCompare(plain, hash) {
@@ -2784,6 +2786,9 @@ app.post('/wordofday-admin/deletepost', async (req, res) => {
     res.status(500).json({ error: 'Error deleting post' });
   }
 });
+
+//================================== 생활 영어 한 줄 (expressions)
+registerExpressionsApi(app, { requireAdmin });
 
 //================================== One Sentence API (onesentence 컬렉션)
 app.get('/onesentence', async (req, res) => {
@@ -6172,7 +6177,14 @@ if (uri) {
         } catch (e) {
           if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('englishquotes 컬렉션:', e.message);
         }
-      }
+      
+        try {
+          await db.createCollection('expressions');
+          console.log('expressions 컬렉션 생성됨');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('expressions 컬렉션:', e.message);
+        }
+}
     })
     .catch((error) => {
       console.error('MongoDB 연결 실패:', error);
