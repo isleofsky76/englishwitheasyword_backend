@@ -1,5 +1,6 @@
 /**
- * 사이트 랭킹 대시보드 — 댓글 단어 / 다운로드 / 검색어
+ * 사이트 랭킹 대시보드 — 댓글(본 단어) / 다운로드 / 검색어
+ * 댓글 랭킹 = 학습자가 보고 댓글을 단 표제어(word). 본문 추출 아님.
  * registerRankingApi(app, { getRequestIp })
  */
 import crypto from 'crypto';
@@ -9,7 +10,7 @@ const KINDS = new Set(['comment', 'download', 'search']);
 const PERIODS = new Set(['today', '7d', '30d', 'all']);
 const MAX_TERM = 64;
 const MAX_BATCH = 40;
-const EVENT_COOLDOWN_MS = 800;
+const EVENT_COOLDOWN_MS = 200;
 
 const ipLastWrite = new Map(); // ip -> ms
 
@@ -33,14 +34,21 @@ function periodSince(period) {
   return null;
 }
 
-/** 영어 단어·짧은 구 정규화 */
+/** 영어 단어·짧은 구 정규화 (생활영어 구·슬래시 대안 표현 포함) */
 export function normalizeRankTerm(raw) {
   let t = String(raw == null ? '' : raw).trim().toLowerCase();
+  /* "A / B" → 앞쪽 표현만 */
+  t = (t.split(/\s*\/\s*/)[0] || '').trim();
   t = t.replace(/[“”"']/g, "'").replace(/\s+/g, ' ');
-  t = t.replace(/^[^a-z]+|[^a-z]+$/gi, '');
+  /* 중간 문장부호 제거 후 알파벳·숫자·공백·하이픈·아포스트로피만 */
+  t = t.replace(/[^a-z0-9' \-]+/gi, ' ').replace(/\s+/g, ' ').trim();
   if (!t) return '';
-  if (!/^[a-z][a-z0-9' \-]{0,62}$/i.test(t)) return '';
-  if (t.length < 2 || t.length > MAX_TERM) return '';
+  if (!/^[a-z][a-z0-9' \-]{0,80}$/i.test(t)) return '';
+  if (t.length < 2) return '';
+  if (t.length > MAX_TERM) {
+    t = t.slice(0, MAX_TERM).replace(/\s+\S*$/, '').trim();
+  }
+  if (t.length < 2) return '';
   return t;
 }
 
@@ -229,9 +237,12 @@ export function registerRankingApi(app, deps = {}) {
     }
   });
 
-  /** 댓글 저장 후 호출 — 단일 영어 단어면 랭킹 반영 */
-  async function recordCommentWord({ body, ip, source, date }) {
-    const term = extractCommentWord(body);
+  /**
+   * 댓글 저장 후 호출 — 학습자가 본 표제어(word)만 랭킹.
+   * body는 무시(한글 뜻·메모 등). word가 영어 표제어일 때만 집계.
+   */
+  async function recordCommentWord({ word, ip, source, date }) {
+    const term = normalizeRankTerm(word);
     if (!term) return null;
     const actorKey = sha8(String(ip || 'x') + '|' + dayKey(date || new Date()) + '|' + term);
     return recordEvent({
@@ -243,16 +254,14 @@ export function registerRankingApi(app, deps = {}) {
     });
   }
 
-  /** 기존 댓글 백필 (관리용 — 공개 아님, 내부 스크립트/부트) */
+  /** 기존 댓글 → 본 단어 백필 (문장 댓글의 word 필드만) */
   async function backfillFromComments(models) {
-    const { OneSentenceComment, BoardComment } = models || {};
+    const { OneSentenceComment } = models || {};
     let n = 0;
     if (OneSentenceComment) {
-      const rows = await OneSentenceComment.find({}).select('body word date').lean();
+      const rows = await OneSentenceComment.find({}).select('word date').lean();
       for (const row of rows) {
-        const fromBody = extractCommentWord(row.body);
-        const fromWord = normalizeRankTerm(row.word);
-        const term = fromBody || fromWord;
+        const term = normalizeRankTerm(row.word);
         if (!term) continue;
         const actorKey = sha8('backfill|os|' + String(row._id));
         const r = await recordEvent({
@@ -265,24 +274,21 @@ export function registerRankingApi(app, deps = {}) {
         if (r.ok) n += 1;
       }
     }
-    if (BoardComment) {
-      const rows = await BoardComment.find({}).select('body date board').lean();
-      for (const row of rows) {
-        const term = extractCommentWord(row.body);
-        if (!term) continue;
-        const actorKey = sha8('backfill|bc|' + String(row._id));
-        const r = await recordEvent({
-          kind: 'comment',
-          term,
-          source: row.board || 'board',
-          actorKey,
-          date: row.date || new Date(),
-        });
-        if (r.ok) n += 1;
-      }
-    }
     return n;
   }
 
-  return { recordCommentWord, backfillFromComments, SiteEvent, normalizeRankTerm, extractCommentWord };
+  /** 댓글 이벤트 전부 지우고 본 단어 기준으로 재구축 */
+  async function rebuildCommentEventsFromViewedWords(models) {
+    await SiteEvent.deleteMany({ kind: 'comment' });
+    return backfillFromComments(models);
+  }
+
+  return {
+    recordCommentWord,
+    backfillFromComments,
+    rebuildCommentEventsFromViewedWords,
+    SiteEvent,
+    normalizeRankTerm,
+    extractCommentWord,
+  };
 }
