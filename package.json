@@ -5,7 +5,12 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "quiz:migrate": "node scripts/word-meaning-quiz-migrate.js",
+    "quiz:sync-sources": "node scripts/word-meaning-quiz-sync-sources.js",
+    "quiz:fill-meanings": "node scripts/word-meaning-quiz-fill-meanings.js",
+    "quiz:export-review": "node scripts/word-meaning-quiz-export-review.js",
+    "quiz:import-review": "node scripts/word-meaning-quiz-import-review.js"
   },
   "author": "",
   "license": "ISC",
