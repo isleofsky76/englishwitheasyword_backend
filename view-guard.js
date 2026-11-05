@@ -10,14 +10,12 @@ const viewLogSchema = new mongoose.Schema(
     ip: { type: String, required: true },
     board: { type: String, required: true },
     postId: { type: String, required: true },
-    /** floor(now / 1h) — 같은 시간 버킷이면 중복 */
-    hourBucket: { type: Number, required: true },
     at: { type: Date, required: true, default: Date.now },
   },
   { collection: 'postviewlogs' }
 );
 
-viewLogSchema.index({ ip: 1, board: 1, postId: 1, hourBucket: 1 }, { unique: true });
+viewLogSchema.index({ ip: 1, board: 1, postId: 1, at: -1 });
 viewLogSchema.index({ at: 1 }, { expireAfterSeconds: Math.ceil(VIEW_DEDUP_MS / 1000) + 120 });
 
 const PostViewLog =
@@ -38,6 +36,11 @@ function pruneIpTimes(ip, now) {
   const next = (ipViewTimes.get(ip) || []).filter((t) => t >= since);
   ipViewTimes.set(ip, next);
   return next;
+}
+
+function rememberMem(memKey, now) {
+  memDedupe.set(memKey, now);
+  setTimeout(() => memDedupe.delete(memKey), VIEW_DEDUP_MS);
 }
 
 /**
@@ -71,34 +74,37 @@ export async function allowViewIncrement(ipRaw, board, postId) {
     };
   }
 
-  const hourBucket = Math.floor(now / VIEW_DEDUP_MS);
-
   if (mongoose.connection.readyState === 1) {
     try {
-      await PostViewLog.create({
+      const since = new Date(now - VIEW_DEDUP_MS);
+      const existing = await PostViewLog.findOne({
         ip,
         board: boardKey,
         postId: id,
-        hourBucket,
-        at: new Date(now),
-      });
-    } catch (err) {
-      if (err && (err.code === 11000 || String(err.message || '').includes('E11000'))) {
-        memDedupe.set(memKey, now);
-        setTimeout(() => memDedupe.delete(memKey), VIEW_DEDUP_MS);
+        at: { $gte: since },
+      })
+        .select('_id')
+        .lean();
+      if (existing) {
+        rememberMem(memKey, now);
         return {
           ok: false,
           reason: 'duplicate',
           message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)',
         };
       }
-      // DB 일시 오류 시 메모리 가드로만 진행 (완전 차단하지 않음)
+      await PostViewLog.create({
+        ip,
+        board: boardKey,
+        postId: id,
+        at: new Date(now),
+      });
+    } catch (err) {
       console.warn('PostViewLog write warning:', err?.message || err);
     }
   }
 
-  memDedupe.set(memKey, now);
-  setTimeout(() => memDedupe.delete(memKey), VIEW_DEDUP_MS);
+  rememberMem(memKey, now);
   recent.push(now);
   ipViewTimes.set(ip, recent);
   return { ok: true };
