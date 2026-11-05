@@ -134,6 +134,9 @@ function publicQuestions(session) {
   return (session.questions || []).map((q) => ({
     index: q.index,
     word: q.word,
+    posSource: q.posSource || '',
+    example: q.example || '',
+    exampleKo: q.exampleKo || '',
     options: (q.options || []).map((o) => ({ key: o.key, text: o.text })),
     answered: Boolean(q.answered),
     /* 답한 뒤에만 결과 필드 */
@@ -262,6 +265,9 @@ export function registerWordMeaningQuizApi(app) {
           index: i,
           wordQuizInfoId: correct._id,
           word: correct.word,
+          posSource: String(correct.pos_source || '').trim(),
+          example: String(correct.example || '').trim(),
+          exampleKo: String(correct.example_ko || '').trim(),
           options: optionRows,
           correctKey,
           correctMeaning: String(correct.quiz_meaning).trim(),
@@ -287,11 +293,7 @@ export function registerWordMeaningQuizApi(app) {
         sessionId,
         total: count,
         level,
-        questions: questions.map((q) => ({
-          index: q.index,
-          word: q.word,
-          options: q.options.map((o) => ({ key: o.key, text: o.text })),
-        })),
+        questions: publicQuestions({ questions }),
       });
     } catch (err) {
       console.error('[word-meaning-quiz/start]', err);
