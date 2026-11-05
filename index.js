@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import { validateCommentFields, isReservedAdminNickname } from './comment-filter.js';
 import { registerExpressionsApi } from './expressions-api.js';
 import { registerRankingApi } from './ranking-api.js';
+import { allowViewIncrement, getViewClientIp } from './view-guard.js';
 import express from 'express';
 import { app } from './runtime.js';
 
@@ -1199,29 +1200,7 @@ function registerSimpleNewsBoard(app, { key, label, viewPrefix, Model }) {
     }
   });
 
-  app.post(`${base}/:id/view`, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-      const viewKey = `${viewPrefix}${clientIp}_${id}`;
-      const lastViewTime = viewTracker.get(viewKey);
-      const now = Date.now();
-      const oneHour = 60 * 60 * 1000;
-      if (lastViewTime && now - lastViewTime < oneHour) {
-        const entry = await Model.findById(id);
-        if (!entry) return res.status(404).json({ error: 'Post not found' });
-        return res.json({ entry, views: entry.views, message: '조회수가 증가하지 않았습니다.' });
-      }
-      const entry = await Model.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-      if (!entry) return res.status(404).json({ error: 'Post not found' });
-      viewTracker.set(viewKey, now);
-      setTimeout(() => viewTracker.delete(viewKey), oneHour);
-      res.json({ entry, views: entry.views });
-    } catch (error) {
-      console.error(`${label} view 오류:`, error);
-      res.status(500).json({ error: 'Error incrementing view count' });
-    }
-  });
+  app.post(`${base}/:id/view`, (req, res) => handlePostView(req, res, Model, key, `${label} view`));
 
   app.post(`${base}/:id/like`, (req, res) => incrementEntryLike(req, res, Model));
 
@@ -2454,8 +2433,31 @@ app.post('/guestbook', requireWriteToken, async (req, res) => {
   }
 });
 
-// 조회수 증가 엔드포인트 (동일 IP 체크 포함)
-const viewTracker = new Map(); // IP와 게시글 ID를 추적하는 맵
+// 조회수 증가 엔드포인트 (DB 1시간 중복 + IP 분당 rate limit)
+
+async function handlePostView(req, res, Model, boardKey, logLabel = 'view') {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid post id' });
+    }
+    const entry = await Model.findById(id);
+    if (!entry) return res.status(404).json({ error: 'Post not found' });
+
+    const decision = await allowViewIncrement(getViewClientIp(req), boardKey, id);
+    if (!decision.ok) {
+      return res.json({ entry, views: entry.views || 0, message: decision.message });
+    }
+
+    const updated = await Model.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    if (!updated) return res.status(404).json({ error: 'Post not found' });
+    return res.json({ entry: updated, views: updated.views });
+  } catch (error) {
+    console.error(`${logLabel} 오류:`, error);
+    return res.status(500).json({ error: 'Error incrementing view count' });
+  }
+}
+
 
 async function incrementEntryLike(req, res, Model) {
   try {
@@ -2482,53 +2484,7 @@ async function incrementEntryLike(req, res, Model) {
   }
 }
 
-app.post('/guestbook/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    
-    // 동일 IP에서 같은 게시글을 1시간 내에 조회한 경우 조회수 증가하지 않음
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000; // 1시간 (밀리초)
-    
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      // 1시간 내에 이미 조회한 경우 조회수 증가하지 않음
-      const entry = await GuestbookEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-    
-    // 조회수 증가
-    const entry = await GuestbookEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-    
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-    
-    // 조회 기록 저장 (1시간 후 자동 삭제)
-    viewTracker.set(viewKey, now);
-    setTimeout(() => {
-      viewTracker.delete(viewKey);
-    }, oneHour);
-    
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/guestbook/:id/view', (req, res) => handlePostView(req, res, GuestbookEntry, 'guestbook'));
 
 app.post('/guestbook/:id/like', (req, res) => incrementEntryLike(req, res, GuestbookEntry));
 
@@ -2699,35 +2655,7 @@ app.post('/wordofday', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/wordofday/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `wod_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await WordOfDayEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await WordOfDayEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Word of day view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/wordofday/:id/view', (req, res) => handlePostView(req, res, WordOfDayEntry, 'wordofday'));
 
 app.post('/wordofday/:id/like', (req, res) => incrementEntryLike(req, res, WordOfDayEntry));
 
@@ -3442,35 +3370,7 @@ app.post('/photo-english', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/photo-english/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `pe_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await PhotoEnglishEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await PhotoEnglishEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Photo English view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/photo-english/:id/view', (req, res) => handlePostView(req, res, PhotoEnglishEntry, 'photo-english'));
 
 app.post('/photo-english/:id/like', (req, res) => incrementEntryLike(req, res, PhotoEnglishEntry));
 
@@ -3571,35 +3471,7 @@ app.post('/ranking-news', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/ranking-news/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `rn_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await RankingNewsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await RankingNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Ranking News view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/ranking-news/:id/view', (req, res) => handlePostView(req, res, RankingNewsEntry, 'ranking-news'));
 
 app.post('/ranking-news/:id/like', (req, res) => incrementEntryLike(req, res, RankingNewsEntry));
 
@@ -3701,35 +3573,7 @@ app.post('/cooking-voca', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/cooking-voca/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `cv_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await CookingVocaEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await CookingVocaEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Cooking Voca view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/cooking-voca/:id/view', (req, res) => handlePostView(req, res, CookingVocaEntry, 'cooking-voca'));
 
 app.post('/cooking-voca/:id/like', (req, res) => incrementEntryLike(req, res, CookingVocaEntry));
 
@@ -3831,35 +3675,7 @@ app.post('/culture-voca', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/culture-voca/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `clv_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await CultureVocaEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await CultureVocaEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Culture Voca view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/culture-voca/:id/view', (req, res) => handlePostView(req, res, CultureVocaEntry, 'culture-voca'));
 
 app.post('/culture-voca/:id/like', (req, res) => incrementEntryLike(req, res, CultureVocaEntry));
 
@@ -3961,35 +3777,7 @@ app.post('/defense-news', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/defense-news/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `dfn_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await DefenseNewsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await DefenseNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Defense News view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/defense-news/:id/view', (req, res) => handlePostView(req, res, DefenseNewsEntry, 'defense-news'));
 
 app.post('/defense-news/:id/like', (req, res) => incrementEntryLike(req, res, DefenseNewsEntry));
 
@@ -4113,35 +3901,7 @@ app.post('/economy-news', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/economy-news/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `ecn_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await EconomyNewsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await EconomyNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Economy News view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/economy-news/:id/view', (req, res) => handlePostView(req, res, EconomyNewsEntry, 'economy-news'));
 
 app.post('/economy-news/:id/like', (req, res) => incrementEntryLike(req, res, EconomyNewsEntry));
 
@@ -4265,35 +4025,7 @@ app.post('/travel-news', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/travel-news/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `tvn_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await TravelNewsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await TravelNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Travel News view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/travel-news/:id/view', (req, res) => handlePostView(req, res, TravelNewsEntry, 'travel-news'));
 
 app.post('/travel-news/:id/like', (req, res) => incrementEntryLike(req, res, TravelNewsEntry));
 
@@ -4417,35 +4149,7 @@ app.post('/sports-news', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/sports-news/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `spn_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await SportsNewsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await SportsNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Sports News view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/sports-news/:id/view', (req, res) => handlePostView(req, res, SportsNewsEntry, 'sports-news'));
 
 app.post('/sports-news/:id/like', (req, res) => incrementEntryLike(req, res, SportsNewsEntry));
 
@@ -4585,35 +4289,7 @@ app.post('/korea-news', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/korea-news/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `kn_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await KoreaNewsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await KoreaNewsEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Korea News view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/korea-news/:id/view', (req, res) => handlePostView(req, res, KoreaNewsEntry, 'korea-news'));
 
 app.post('/korea-news/:id/like', (req, res) => incrementEntryLike(req, res, KoreaNewsEntry));
 
@@ -4740,35 +4416,7 @@ app.post('/shorts-bg-image', requireWriteToken, async (req, res) => {
   }
 });
 
-app.post('/shorts-bg-image/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `sbgi_${clientIp}_${id}`;
-    const lastViewTime = viewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await ShortsBgImageEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다.'
-      });
-    }
-    const entry = await ShortsBgImageEntry.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!entry) return res.status(404).json({ error: 'Post not found' });
-    viewTracker.set(viewKey, now);
-    setTimeout(() => viewTracker.delete(viewKey), oneHour);
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Shorts bg image view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/shorts-bg-image/:id/view', (req, res) => handlePostView(req, res, ShortsBgImageEntry, 'shorts-bg-image'));
 
 app.post('/shorts-bg-image/:id/like', (req, res) => incrementEntryLike(req, res, ShortsBgImageEntry));
 
@@ -4907,51 +4555,7 @@ app.post('/vocabulary', requireWriteToken, async (req, res) => {
 });
 
 // Vocabulary 조회수 증가 엔드포인트
-const vocabularyViewTracker = new Map();
-
-app.post('/vocabulary/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = vocabularyViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await VocabularyEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await VocabularyEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-    
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-    
-    vocabularyViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      vocabularyViewTracker.delete(viewKey);
-    }, oneHour);
-    
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/vocabulary/:id/view', (req, res) => handlePostView(req, res, VocabularyEntry, 'vocabulary'));
 
 app.post('/vocabulary/:id/like', (req, res) => incrementEntryLike(req, res, VocabularyEntry));
 
@@ -5089,51 +4693,7 @@ app.post('/opinions', requireWriteToken, async (req, res) => {
   }
 });
 
-const opinionsViewTracker = new Map();
-
-app.post('/opinions/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = opinionsViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await OpinionEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await OpinionEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    opinionsViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      opinionsViewTracker.delete(viewKey);
-    }, oneHour);
-
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/opinions/:id/view', (req, res) => handlePostView(req, res, OpinionEntry, 'opinions'));
 
 app.post('/opinions/:id/like', (req, res) => incrementEntryLike(req, res, OpinionEntry));
 
@@ -5267,51 +4827,7 @@ app.post('/calm-mind', requireWriteToken, async (req, res) => {
   }
 });
 
-const calmMindViewTracker = new Map();
-
-app.post('/calm-mind/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = calmMindViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await CalmMindEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await CalmMindEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    calmMindViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      calmMindViewTracker.delete(viewKey);
-    }, oneHour);
-
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/calm-mind/:id/view', (req, res) => handlePostView(req, res, CalmMindEntry, 'calm-mind'));
 
 app.post('/calm-mind/:id/like', (req, res) => incrementEntryLike(req, res, CalmMindEntry));
 
@@ -5445,51 +4961,7 @@ app.post('/english-quotes', requireWriteToken, async (req, res) => {
   }
 });
 
-const englishQuotesViewTracker = new Map();
-
-app.post('/english-quotes/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-
-    const viewKey = `eq_${clientIp}_${id}`;
-    const lastViewTime = englishQuotesViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await EnglishQuotesEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await EnglishQuotesEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    englishQuotesViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      englishQuotesViewTracker.delete(viewKey);
-    }, oneHour);
-
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('English Quotes view 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/english-quotes/:id/view', (req, res) => handlePostView(req, res, EnglishQuotesEntry, 'english-quotes'));
 
 app.post('/english-quotes/:id/like', (req, res) => incrementEntryLike(req, res, EnglishQuotesEntry));
 
@@ -5623,50 +5095,7 @@ app.post('/easy-voca', requireWriteToken, async (req, res) => {
   }
 });
 
-const easyVocaViewTracker = new Map();
-
-app.post('/easy-voca/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = easyVocaViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await EasyVocaEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await EasyVocaEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    easyVocaViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      easyVocaViewTracker.delete(viewKey);
-    }, oneHour);
-
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Easy Voca 조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/easy-voca/:id/view', (req, res) => handlePostView(req, res, EasyVocaEntry, 'easy-voca'));
 
 app.post('/easy-voca/:id/like', (req, res) => incrementEntryLike(req, res, EasyVocaEntry));
 
@@ -5806,50 +5235,7 @@ app.post('/situational-english', requireWriteToken, async (req, res) => {
   }
 });
 
-const situationalEnglishViewTracker = new Map();
-
-app.post('/situational-english/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = situationalEnglishViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await SituationalEnglishEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await SituationalEnglishEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    situationalEnglishViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      situationalEnglishViewTracker.delete(viewKey);
-    }, oneHour);
-
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Situational English 조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/situational-english/:id/view', (req, res) => handlePostView(req, res, SituationalEnglishEntry, 'situational-english'));
 
 app.post('/situational-english/:id/like', (req, res) => incrementEntryLike(req, res, SituationalEnglishEntry));
 
@@ -5989,50 +5375,7 @@ app.post('/pros-cons', requireWriteToken, async (req, res) => {
   }
 });
 
-const prosConsViewTracker = new Map();
-
-app.post('/pros-cons/:id/view', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const viewKey = `${clientIp}_${id}`;
-    const lastViewTime = prosConsViewTracker.get(viewKey);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-
-    if (lastViewTime && (now - lastViewTime) < oneHour) {
-      const entry = await ProsConsEntry.findById(id);
-      if (!entry) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      return res.json({
-        entry,
-        views: entry.views,
-        message: '조회수가 증가하지 않았습니다 (동일 IP, 1시간 내 중복 조회)'
-      });
-    }
-
-    const entry = await ProsConsEntry.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
-
-    if (!entry) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    prosConsViewTracker.set(viewKey, now);
-    setTimeout(() => {
-      prosConsViewTracker.delete(viewKey);
-    }, oneHour);
-
-    res.json({ entry, views: entry.views });
-  } catch (error) {
-    console.error('Pros & Cons 조회수 증가 오류:', error);
-    res.status(500).json({ error: 'Error incrementing view count' });
-  }
-});
+app.post('/pros-cons/:id/view', (req, res) => handlePostView(req, res, ProsConsEntry, 'pros-cons'));
 
 app.post('/pros-cons/:id/like', (req, res) => incrementEntryLike(req, res, ProsConsEntry));
 
