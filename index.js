@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { validateCommentFields, isReservedAdminNickname } from './comment-filter.js';
 import { registerExpressionsApi } from './expressions-api.js';
+import { registerRankingApi } from './ranking-api.js';
 import express from 'express';
 import { app } from './runtime.js';
 
@@ -2790,6 +2791,9 @@ app.post('/wordofday-admin/deletepost', async (req, res) => {
 //================================== 생활 영어 한 줄 (expressions)
 registerExpressionsApi(app, { requireAdmin });
 
+//================================== 댓글/다운로드/검색 랭킹 대시보드
+const rankingApi = registerRankingApi(app, { getRequestIp });
+
 //================================== One Sentence API (onesentence 컬렉션)
 app.get('/onesentence', async (req, res) => {
   try {
@@ -3031,6 +3035,24 @@ app.post('/onesentence/comments', async (req, res) => {
     });
     await doc.save();
     recordCommentCreateSuccess(ip, limitState);
+    try {
+      await rankingApi.recordCommentWord({
+        body: checked.body,
+        ip,
+        source: 'onesentence',
+        date: doc.date,
+      });
+      if (doc.word) {
+        await rankingApi.recordCommentWord({
+          body: doc.word,
+          ip,
+          source: 'onesentence-word',
+          date: doc.date,
+        });
+      }
+    } catch (e) {
+      console.warn('ranking comment hook skipped', e.message);
+    }
     res.status(201).json({ comment: publicComment(doc) });
   } catch (error) {
     console.error('One Sentence comment create 오류:', error);
@@ -3227,6 +3249,16 @@ app.post('/board-comments', async (req, res) => {
     });
     await doc.save();
     recordCommentCreateSuccess(ip, limitState);
+    try {
+      await rankingApi.recordCommentWord({
+        body: checked.body,
+        ip,
+        source: boardKey || 'board',
+        date: doc.date,
+      });
+    } catch (e) {
+      console.warn('ranking board-comment hook skipped', e.message);
+    }
     res.status(201).json({ comment: publicBoardComment(doc) });
   } catch (error) {
     console.error('Board comment create 오류:', error);
@@ -6164,6 +6196,23 @@ if (uri) {
           console.log('onesentencecomments 컬렉션 생성됨');
         } catch (e) {
           if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('onesentencecomments 컬렉션:', e.message);
+        }
+        try {
+          await db.createCollection('siteevents');
+        } catch (e) {
+          if (e.code !== 48 && e.codeName !== 'NamespaceExists') console.error('siteevents 컬렉션:', e.message);
+        }
+        try {
+          const existing = await db.collection('siteevents').estimatedDocumentCount();
+          if (existing === 0 && rankingApi?.backfillFromComments) {
+            const n = await rankingApi.backfillFromComments({
+              OneSentenceComment,
+              BoardComment,
+            });
+            console.log('ranking backfill comments →', n);
+          }
+        } catch (e) {
+          console.warn('ranking backfill skipped', e.message);
         }
         try {
           await db.createCollection('photoenglish');
