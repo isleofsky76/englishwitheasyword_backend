@@ -16,7 +16,11 @@ import OpenAI from 'openai';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getWordQuizInfoModel, LEVELS, QUIZ_POS } from '../models/word-quiz-schemas.js';
-import { countChars, validateExistingMeaning } from '../lib/word-quiz-meaning-validate.js';
+import {
+  countChars,
+  validateExistingMeaning,
+  MAX_EXISTING_MEANING_LEN,
+} from '../lib/word-quiz-meaning-validate.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '..', '.env') });
@@ -56,7 +60,9 @@ function validateItem(item, allowedIds) {
     .replace(/\s+/g, ' ')
     .trim();
   if (!quiz_meaning) return { ok: false, reason: 'empty_meaning' };
-  if (countChars(quiz_meaning) > 12) return { ok: false, reason: 'meaning_too_long' };
+  if (countChars(quiz_meaning) > MAX_EXISTING_MEANING_LEN) {
+    return { ok: false, reason: 'meaning_too_long' };
+  }
   if (!/[가-힣]/.test(quiz_meaning)) return { ok: false, reason: 'no_hangul' };
   const pos = String(item?.pos || '').trim();
   if (!QUIZ_POS.includes(pos)) return { ok: false, reason: 'bad_pos' };
@@ -68,18 +74,21 @@ function validateItem(item, allowedIds) {
   if (words.length > 12) {
     example = words.slice(0, 12).join(' ');
   }
-  /* existing 재사용 규칙과 충돌하지 않게 한 번 더 */
   const v = validateExistingMeaning(quiz_meaning);
-  if (!v.ok && v.reason !== 'too_long') {
-    /* GPT 12자 이하는 too_long 아님 — sentence_like 등은 거절 */
-    if (v.reason === 'sentence_like' || v.reason === 'too_many_senses' || v.reason === 'latin_heavy') {
+  if (!v.ok) {
+    if (
+      v.reason === 'sentence_like' ||
+      v.reason === 'too_many_senses' ||
+      v.reason === 'latin_heavy' ||
+      String(v.reason || '').startsWith('too_long')
+    ) {
       return { ok: false, reason: v.reason };
     }
   }
   return {
     ok: true,
     id,
-    quiz_meaning,
+    quiz_meaning: v.ok ? v.normalized : quiz_meaning,
     pos,
     level: level || null,
     example: example || null,
@@ -98,12 +107,12 @@ function buildPrompt(batch) {
     raw_example_ko: d.example_ko || '',
   }));
   return `당신은 한국 중고등학생용 영단어 뜻 편집자입니다.
-아래 단어마다 가장 흔한 한국어 뜻 하나만 만드세요.
+아래 단어마다 한국어 뜻을 만드세요. 뜻이 여러 개면 쉼표로 모두 적으세요.
 
 규칙:
 - id 값은 목록의 n1, n2… 를 그대로 쓰세요. 임의 id를 만들지 마세요.
-- quiz_meaning: 공백 포함 12자 이내, 설명 없이 뜻만. 동사는 "~하다/~되다", 형용사는 "~한/~운/~은", 명사는 명사.
-- 꼭 필요하면 쉼표로 최대 2개 뜻.
+- quiz_meaning: 공백 포함 ${MAX_EXISTING_MEANING_LEN}자 이내, 설명 없이 뜻만. 동사는 "~하다/~되다", 형용사는 "~한/~운/~은", 명사는 명사.
+- 여러 뜻이면 쉼표로 최대 4개까지 (예: "판결하다, 심판하다, 심사하다").
 - pos: noun|verb|adjective|adverb|other 중 하나 (pos_hint 우선).
 - level: beginner(중학 기본)|intermediate(고교·수능)|advanced(그 이상).
 - example: 12단어 이내 쉬운 영어 문장, example_ko: 자연스러운 해석.

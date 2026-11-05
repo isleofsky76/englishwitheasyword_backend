@@ -9,6 +9,7 @@
     "quiz:migrate": "node scripts/word-meaning-quiz-migrate.js",
     "quiz:sync-sources": "node scripts/word-meaning-quiz-sync-sources.js",
     "quiz:fill-meanings": "node scripts/word-meaning-quiz-fill-meanings.js",
+    "quiz:refresh-meanings": "node scripts/word-meaning-quiz-refresh-meanings.js",
     "quiz:export-review": "node scripts/word-meaning-quiz-export-review.js",
     "quiz:import-review": "node scripts/word-meaning-quiz-import-review.js"
   },
