@@ -102,7 +102,6 @@ export function registerRankingApi(app, deps = {}) {
       source: String(source || '').slice(0, 40),
       actorKey: actor || 'anon',
       day,
-      date: when,
     };
     try {
       /* 검색·다운로드: 같은 날에도 횟수 누적 / 댓글: 하루 1회 */
@@ -121,7 +120,7 @@ export function registerRankingApi(app, deps = {}) {
       await SiteEvent.updateOne(
         filter,
         {
-          $setOnInsert: Object.assign({ hits: 1 }, baseInsert),
+          $setOnInsert: Object.assign({ hits: 1, date: when }, baseInsert),
         },
         { upsert: true }
       );
