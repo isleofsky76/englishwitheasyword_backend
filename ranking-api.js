@@ -75,6 +75,7 @@ export function registerRankingApi(app, deps = {}) {
       source: { type: String, default: '' },
       actorKey: { type: String, default: '', index: true },
       day: { type: String, default: '', index: true },
+      hits: { type: Number, default: 1 },
       date: { type: Date, default: Date.now, index: true },
     },
     { collection: 'siteevents', timestamps: false }
@@ -85,25 +86,42 @@ export function registerRankingApi(app, deps = {}) {
   const SiteEvent =
     mongoose.models.SiteEvent || mongoose.model('SiteEvent', siteEventSchema);
 
+  const hitsExpr = { $ifNull: ['$hits', 1] };
+
   async function recordEvent({ kind, term, source, actorKey, date }) {
     const termNorm = normalizeRankTerm(term);
     if (!KINDS.has(kind) || !termNorm) return { ok: false, reason: 'invalid' };
     const when = date instanceof Date ? date : new Date();
     const day = dayKey(when);
     const actor = String(actorKey || '').slice(0, 40);
+    const filter = { kind, termNorm, actorKey: actor || 'anon', day };
+    const baseInsert = {
+      kind,
+      term: termNorm,
+      termNorm,
+      source: String(source || '').slice(0, 40),
+      actorKey: actor || 'anon',
+      day,
+      date: when,
+    };
     try {
-      await SiteEvent.updateOne(
-        { kind, termNorm, actorKey: actor || 'anon', day },
-        {
-          $setOnInsert: {
-            kind,
-            term: termNorm,
-            termNorm,
-            source: String(source || '').slice(0, 40),
-            actorKey: actor || 'anon',
-            day,
-            date: when,
+      /* 검색·다운로드: 같은 날에도 횟수 누적 / 댓글: 하루 1회 */
+      if (kind === 'search' || kind === 'download') {
+        await SiteEvent.updateOne(
+          filter,
+          {
+            $setOnInsert: baseInsert,
+            $inc: { hits: 1 },
+            $set: { date: when },
           },
+          { upsert: true }
+        );
+        return { ok: true, term: termNorm };
+      }
+      await SiteEvent.updateOne(
+        filter,
+        {
+          $setOnInsert: Object.assign({ hits: 1 }, baseInsert),
         },
         { upsert: true }
       );
@@ -123,7 +141,7 @@ export function registerRankingApi(app, deps = {}) {
       {
         $group: {
           _id: '$termNorm',
-          count: { $sum: 1 },
+          count: { $sum: hitsExpr },
           lastAt: { $max: '$date' },
           term: { $first: '$term' },
         },
@@ -145,7 +163,13 @@ export function registerRankingApi(app, deps = {}) {
     const [byKind, uniqueActors, todayComments] = await Promise.all([
       SiteEvent.aggregate([
         { $match: matchBase },
-        { $group: { _id: '$kind', count: { $sum: 1 }, terms: { $addToSet: '$termNorm' } } },
+        {
+          $group: {
+            _id: '$kind',
+            count: { $sum: hitsExpr },
+            terms: { $addToSet: '$termNorm' },
+          },
+        },
       ]),
       SiteEvent.aggregate([
         { $match: { ...matchBase, kind: 'comment' } },
