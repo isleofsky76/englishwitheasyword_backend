@@ -156,12 +156,9 @@ export function registerWordMeaningQuizApi(app) {
   app.get('/api/word-meaning-quiz/preview', async (req, res) => {
     try {
       const limit = Math.max(1, Math.min(8, Number(req.query.limit) || 5));
-      const WordQuizInfo = getWordQuizInfoModel();
-      const items = await WordQuizInfo.find(baseCandidateFilter())
-        .sort({ updatedAt: -1 })
-        .limit(limit)
-        .select('word pos quiz_meaning content_url')
-        .lean();
+      const base = baseCandidateFilter();
+      let items = await pickRandomDocs({ ...base, level: 'beginner' }, limit);
+      if (items.length < limit) items = await pickRandomDocs(base, limit);
       res.json({
         items: items.map((d) => ({
           word: String(d.word || '').trim(),
