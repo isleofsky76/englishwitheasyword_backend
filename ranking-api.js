@@ -6,7 +6,7 @@
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 
-const KINDS = new Set(['comment', 'download', 'search']);
+const KINDS = new Set(['comment', 'download', 'search', 'view']);
 const PERIODS = new Set(['today', '7d', '30d', 'all']);
 const MAX_TERM = 64;
 const MAX_BATCH = 40;
@@ -69,7 +69,7 @@ export function registerRankingApi(app, deps = {}) {
 
   const siteEventSchema = new mongoose.Schema(
     {
-      kind: { type: String, required: true, enum: ['comment', 'download', 'search'], index: true },
+      kind: { type: String, required: true, enum: ['comment', 'download', 'search', 'view'], index: true },
       term: { type: String, required: true },
       termNorm: { type: String, required: true, index: true },
       source: { type: String, default: '' },
@@ -104,8 +104,8 @@ export function registerRankingApi(app, deps = {}) {
       day,
     };
     try {
-      /* 검색·다운로드: 같은 날에도 횟수 누적 / 댓글: 하루 1회 */
-      if (kind === 'search' || kind === 'download') {
+      /* 검색·다운로드·조회: 같은 날에도 횟수 누적 / 댓글: 하루 1회 */
+      if (kind === 'search' || kind === 'download' || kind === 'view') {
         await SiteEvent.updateOne(
           filter,
           {
@@ -189,6 +189,7 @@ export function registerRankingApi(app, deps = {}) {
       uniqueWords: map.comment?.uniqueTerms || 0,
       downloads: map.download?.events || 0,
       searches: map.search?.events || 0,
+      views: map.view?.events || 0,
       learners: uniqueActors[0]?.n || 0,
       todayComments,
     };
@@ -204,16 +205,17 @@ export function registerRankingApi(app, deps = {}) {
         ? String(req.query.period)
         : '7d';
       const limit = Math.min(100, Math.max(5, parseInt(req.query.limit, 10) || 20));
-      const [stats, comments, downloads, searches] = await Promise.all([
+      const [stats, comments, downloads, searches, views] = await Promise.all([
         summary(period),
         rankForKind('comment', period, limit),
         rankForKind('download', period, limit),
         rankForKind('search', period, limit),
+        rankForKind('view', period, limit),
       ]);
       res.json({
         period,
         stats,
-        rankings: { comments, downloads, searches },
+        rankings: { comments, downloads, searches, views },
       });
     } catch (error) {
       console.error('stats dashboard 오류:', error);
@@ -244,7 +246,7 @@ export function registerRankingApi(app, deps = {}) {
         terms = [req.body.term];
       }
       if (!KINDS.has(kind) || kind === 'comment') {
-        return res.status(400).json({ error: 'kind must be download|search' });
+        return res.status(400).json({ error: 'kind must be download|search|view' });
       }
 
       const actorKey = sha8(ip + '|' + dayKey());
@@ -264,8 +266,8 @@ export function registerRankingApi(app, deps = {}) {
    * 댓글 저장 후 호출 — 학습자가 본 표제어(word)만 랭킹.
    * body는 무시(한글 뜻·메모 등). word가 영어 표제어일 때만 집계.
    */
-  async function recordCommentWord({ word, ip, source, date }) {
-    const term = normalizeRankTerm(word);
+  async function recordCommentWord({ word, body, ip, source, date }) {
+    const term = normalizeRankTerm(word) || extractCommentWord(body);
     if (!term) return null;
     const actorKey = sha8(String(ip || 'x') + '|' + dayKey(date || new Date()) + '|' + term);
     return recordEvent({

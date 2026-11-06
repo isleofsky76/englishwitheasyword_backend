@@ -703,6 +703,17 @@ const oneSentenceEntrySchema = new mongoose.Schema({
 
 const OneSentenceEntry = mongoose.model('OneSentenceEntry', oneSentenceEntrySchema);
 
+const englishWritingSchema = new mongoose.Schema({
+  key: { type: String, default: 'latest', unique: true },
+  title: { type: String, default: '' },
+  text: { type: String, default: '' },
+  source: { type: String, default: '' },
+  url: { type: String, default: '' },
+  videoId: { type: String, default: '' },
+  updatedAt: { type: Date, default: Date.now },
+});
+const EnglishWriting = mongoose.model('EnglishWriting', englishWritingSchema);
+
 // 문장 피드 단어별 익명 댓글 → 컬렉션 onesentencecomments
 const oneSentenceCommentSchema = new mongoose.Schema({
   wordKey: { type: String, required: true, index: true },
@@ -2725,6 +2736,67 @@ registerWordMeaningQuizApi(app);
 //================================== 댓글/다운로드/검색 랭킹 대시보드
 const rankingApi = registerRankingApi(app, { getRequestIp });
 
+//================================== 영작 (최신 1편, 유튜브 `영작 | 제목`)
+app.get('/english-writing', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const doc = await EnglishWriting.findOne({ key: 'latest' }).lean();
+    if (!doc) return res.status(200).json({ title: '', text: '' });
+    res.status(200).json({
+      title: doc.title || '',
+      text: doc.text || '',
+      source: doc.source || '',
+      url: doc.url || '',
+      videoId: doc.videoId || '',
+      updatedAt: doc.updatedAt || null,
+    });
+  } catch (error) {
+    console.error('English writing read 오류:', error);
+    res.status(500).json({ error: 'Error retrieving english writing' });
+  }
+});
+
+app.post('/english-writing', requireWriteToken, async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
+    }
+    const title = String(req.body?.title || '')
+      .replace(/^\s*영작\s*[|｜]\s*/, '')
+      .trim()
+      .slice(0, 200);
+    const text = String(req.body?.text || '').trim().slice(0, 20000);
+    if (!title || !text) {
+      return res.status(400).json({ error: 'title and text are required' });
+    }
+    const doc = await EnglishWriting.findOneAndUpdate(
+      { key: 'latest' },
+      {
+        $set: {
+          title,
+          text,
+          source: String(req.body?.source || '').slice(0, 300),
+          url: String(req.body?.url || '').slice(0, 500),
+          videoId: String(req.body?.videoId || '').slice(0, 40),
+          updatedAt: new Date(),
+        },
+        $setOnInsert: { key: 'latest' },
+      },
+      { upsert: true, new: true }
+    );
+    res.status(200).json({
+      ok: true,
+      title: doc.title,
+      updatedAt: doc.updatedAt,
+    });
+  } catch (error) {
+    console.error('English writing save 오류:', error);
+    res.status(500).json({ error: 'Error saving english writing' });
+  }
+});
+
 //================================== One Sentence API (onesentence 컬렉션)
 app.get('/onesentence', async (req, res) => {
   try {
@@ -2968,19 +3040,12 @@ app.post('/onesentence/comments', async (req, res) => {
     recordCommentCreateSuccess(ip, limitState);
     try {
       await rankingApi.recordCommentWord({
+        word: doc.word,
         body: checked.body,
         ip,
         source: 'onesentence',
         date: doc.date,
       });
-      if (doc.word) {
-        await rankingApi.recordCommentWord({
-          body: doc.word,
-          ip,
-          source: 'onesentence-word',
-          date: doc.date,
-        });
-      }
     } catch (e) {
       console.warn('ranking comment hook skipped', e.message);
     }
@@ -3182,6 +3247,7 @@ app.post('/board-comments', async (req, res) => {
     recordCommentCreateSuccess(ip, limitState);
     try {
       await rankingApi.recordCommentWord({
+        word: String(req.body?.word || '').trim(),
         body: checked.body,
         ip,
         source: boardKey || 'board',
