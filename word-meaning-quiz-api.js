@@ -153,6 +153,29 @@ function publicQuestions(session) {
 }
 
 export function registerWordMeaningQuizApi(app) {
+  app.get('/api/word-meaning-quiz/preview', async (req, res) => {
+    try {
+      const limit = Math.max(1, Math.min(8, Number(req.query.limit) || 5));
+      const WordQuizInfo = getWordQuizInfoModel();
+      const items = await WordQuizInfo.find(baseCandidateFilter())
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .select('word pos quiz_meaning content_url')
+        .lean();
+      res.json({
+        items: items.map((d) => ({
+          word: String(d.word || '').trim(),
+          pos: String(d.pos || '').trim(),
+          meaning: String(d.quiz_meaning || '').trim(),
+          url: d.content_url ? String(d.content_url) : '',
+        })),
+      });
+    } catch (err) {
+      console.error('[word-meaning-quiz/preview]', err);
+      res.status(500).json({ error: '미리보기를 불러오지 못했습니다.' });
+    }
+  });
+
   app.get('/api/word-meaning-quiz/meta', async (req, res) => {
     try {
       const counts = await countByLevel();
