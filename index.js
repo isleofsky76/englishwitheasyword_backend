@@ -2736,21 +2736,65 @@ registerWordMeaningQuizApi(app);
 //================================== 댓글/다운로드/검색 랭킹 대시보드
 const rankingApi = registerRankingApi(app, { getRequestIp });
 
-//================================== 영작 (최신 1편, 유튜브 `영작 | 제목`)
+//================================== 영작 (여러 편, 유튜브 `영작 | 제목`)
+function englishWritingPublic(doc) {
+  return {
+    id: doc.key && doc.key !== 'latest' ? doc.key : (doc.videoId || doc.key || ''),
+    title: doc.title || '',
+    text: doc.text || '',
+    source: doc.source || '',
+    url: doc.url || '',
+    videoId: doc.videoId || '',
+    updatedAt: doc.updatedAt || null,
+  };
+}
+
+function englishWritingKey(videoId, title) {
+  const id = String(videoId || '').trim().slice(0, 40);
+  if (id) return id;
+  const slug = String(title || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^0-9A-Za-z가-힣]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+  return slug || 'latest';
+}
+
+async function foldLatestEnglishWriting() {
+  const latest = await EnglishWriting.findOne({ key: 'latest' });
+  if (!latest) return;
+  const key = String(latest.videoId || '').trim();
+  if (!key) return;
+  const other = await EnglishWriting.findOne({ key });
+  if (!other) {
+    await EnglishWriting.updateOne({ _id: latest._id }, { $set: { key } });
+  } else {
+    await EnglishWriting.deleteOne({ _id: latest._id });
+  }
+}
+
 app.get('/english-writing', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
     }
-    const doc = await EnglishWriting.findOne({ key: 'latest' }).lean();
-    if (!doc) return res.status(200).json({ title: '', text: '' });
+    await foldLatestEnglishWriting();
+    const id = String(req.query.id || '').trim();
+    if (id) {
+      const doc =
+        (await EnglishWriting.findOne({ key: id }).lean()) ||
+        (await EnglishWriting.findOne({ videoId: id }).lean());
+      if (!doc) return res.status(404).json({ error: '영작을 찾지 못했습니다.' });
+      return res.status(200).json(englishWritingPublic(doc));
+    }
+    const docs = await EnglishWriting.find().sort({ updatedAt: -1 }).lean();
     res.status(200).json({
-      title: doc.title || '',
-      text: doc.text || '',
-      source: doc.source || '',
-      url: doc.url || '',
-      videoId: doc.videoId || '',
-      updatedAt: doc.updatedAt || null,
+      items: docs.map((doc) => {
+        const row = englishWritingPublic(doc);
+        delete row.text;
+        return row;
+      }),
     });
   } catch (error) {
     console.error('English writing read 오류:', error);
@@ -2764,30 +2808,36 @@ app.post('/english-writing', requireWriteToken, async (req, res) => {
       return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
     }
     const title = String(req.body?.title || '')
-      .replace(/^\s*영작\s*[|｜]\s*/, '')
+      .replace(/^\s*(영작|영어작문)\s*[|｜]\s*/, '')
       .trim()
       .slice(0, 200);
     const text = String(req.body?.text || '').trim().slice(0, 20000);
     if (!title || !text) {
       return res.status(400).json({ error: 'title and text are required' });
     }
+    const videoId = String(req.body?.videoId || '').slice(0, 40);
+    const key = englishWritingKey(videoId, title);
     const doc = await EnglishWriting.findOneAndUpdate(
-      { key: 'latest' },
+      { key },
       {
         $set: {
           title,
           text,
           source: String(req.body?.source || '').slice(0, 300),
           url: String(req.body?.url || '').slice(0, 500),
-          videoId: String(req.body?.videoId || '').slice(0, 40),
+          videoId,
           updatedAt: new Date(),
         },
-        $setOnInsert: { key: 'latest' },
+        $setOnInsert: { key },
       },
       { upsert: true, new: true }
     );
+    if (key !== 'latest') {
+      await EnglishWriting.deleteOne({ key: 'latest', videoId: videoId || '__none__' });
+    }
     res.status(200).json({
       ok: true,
+      id: doc.key,
       title: doc.title,
       updatedAt: doc.updatedAt,
     });
