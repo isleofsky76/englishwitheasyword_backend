@@ -90,10 +90,12 @@ async function ensureCategories() {
     const doc = await ExamCategory.findOneAndUpdate(
       { slug: c.slug },
       {
-        $setOnInsert: {
-          slug: c.slug,
+        $set: {
           name: c.name,
           sort_order: c.sort_order,
+        },
+        $setOnInsert: {
+          slug: c.slug,
           is_active: c.is_active,
         },
       },

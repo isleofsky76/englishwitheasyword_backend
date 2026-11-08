@@ -83,11 +83,13 @@ export function getExamWordCategoryModel() {
 }
 
 export const DEFAULT_EXAM_CATEGORIES = [
-  { slug: 'elem', name: '초등영어', sort_order: 10, is_active: true },
-  { slug: 'middle', name: '중등영어', sort_order: 20, is_active: true },
-  { slug: 'high', name: '고등영어', sort_order: 30, is_active: true },
-  /* 확장용 — 단어 연결 전엔 탭에 안 보이게 비활성 */
-  { slug: 'univ', name: '대학영어', sort_order: 40, is_active: false },
+  { slug: 'elem', name: '초등', sort_order: 10, is_active: true },
+  { slug: 'middle', name: '중등', sort_order: 20, is_active: true },
+  { slug: 'high', name: '고등', sort_order: 30, is_active: true },
+  /* 확장용 — 단어 연결 전엔 탭에 안 보이게 비활성 (검정·공무원 등 행만 추가) */
+  { slug: 'univ', name: '대학', sort_order: 40, is_active: false },
   { slug: 'suneung', name: '수능', sort_order: 50, is_active: false },
+  { slug: 'gongmuwon', name: '공무원', sort_order: 60, is_active: false },
+  { slug: 'geomjung', name: '검정', sort_order: 70, is_active: false },
   { slug: 'etc', name: '기타', sort_order: 90, is_active: false },
 ];

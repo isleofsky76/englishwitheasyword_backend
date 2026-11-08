@@ -4,11 +4,13 @@
 
 ## API
 
-- `GET /api/exam/categories` → `{ categories: [{ slug, name }] }`
-- `GET /api/exam/words?cat=elem&limit=40` → `{ words: [{ id, word, meaning, ... }] }`
+- `GET /api/exam/categories` → `{ categories: [{ slug, name }] }` (+ 가상 탭 `all` = 랜덤 혼합)
+- `GET /api/exam/words?cat=elem&limit=10&page=1&order=seq|random`  
+  → `{ words, total, page, pageSize, pages, order, cat }`
+- `cat=all` : 활성 분류 전체 혼합
 - 잘못된/비활성 `cat` → `404 { "error": "category_not_found" }`
 
-프런트: `exam-words.html` (API 실패 시 예비 단어로 동작)
+프런트: `exam-words.html` — **10문제 = 1세트 = 100점**, 페이지 1…n, 순서대로/랜덤. API 실패 시 예비 단어로 동작.
 
 ## 분류 추가
 
