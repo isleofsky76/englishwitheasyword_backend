@@ -1,0 +1,3001 @@
+﻿no,word,meaning,category,category_name,spelling_variants,derived_forms,is_active,original
+1,a,하나의,elem,초등영어,,an,0,a* (an)
+2,abandon,"버리다, 포기하다",high,고등영어,,,1,abandon
+3,able,~할 수 있는,middle,중등영어,,disabled,1,able** (disabled)
+4,aboard,탑승하여,high,고등영어,,,1,aboard
+5,abort,"중단하다, 낙태하다",high,고등영어,,abortion,1,abort (abortion)
+6,abound,풍부하다,high,고등영어,,abundant,1,abound (abundant)
+7,about,~에 대하여,elem,초등영어,,,1,about*
+8,above,~ 위에,elem,초등영어,,,1,above*
+9,abroad,해외에,high,고등영어,,,1,abroad
+10,absent,결석한,high,고등영어,,,1,absent
+11,absolute,절대적인,middle,중등영어,,,1,absolute**
+12,absorb,흡수하다,high,고등영어,,,1,absorb
+13,abstract,추상적인,high,고등영어,,,1,abstract
+14,absurd,터무니없는,high,고등영어,,,1,absurd
+15,abuse,"남용, 학대",high,고등영어,,,1,abuse
+16,academy,"학원, 학회",high,고등영어,,,1,academy
+17,accelerate,가속하다,high,고등영어,,,1,accelerate
+18,accent,"억양, 말투",middle,중등영어,,,1,accent**
+19,accept,받아들이다,middle,중등영어,,,1,accept**
+20,access,접근,middle,중등영어,,,1,access**
+21,accident,사고,middle,중등영어,,,1,accident**
+22,accommodate,수용하다,high,고등영어,,,1,accommodate
+23,accompany,동반하다,high,고등영어,,,1,accompany
+24,accomplish,"성취하다, 완수하다",high,고등영어,,,1,accomplish
+25,accord,"일치, 협정",high,고등영어,,,1,accord
+26,account,"계좌, 설명",middle,중등영어,,,1,account**
+27,accumulate,축적하다,high,고등영어,,,1,accumulate
+28,accurate,정확한,high,고등영어,,,1,accurate
+29,accuse,"고발하다, 비난하다",middle,중등영어,,,1,accuse**
+30,ache,"아프다, 통증",high,고등영어,,headache,1,ache (headache)
+31,achieve,성취하다,middle,중등영어,,,1,achieve**
+32,acid,"산, 산성의",high,고등영어,,,1,acid
+33,acknowledge,인정하다,high,고등영어,,,1,acknowledge
+34,acquire,습득하다,high,고등영어,,,1,acquire
+35,acquisition,"획득, 인수",high,고등영어,,,1,acquisition
+36,across,가로질러,elem,초등영어,,,1,across*
+37,act,행동하다,elem,초등영어,,"actual, interact",1,"act* (actual, interact)"
+38,adapt,적응하다,middle,중등영어,,,1,adapt**
+39,add,더하다,elem,초등영어,,,1,add*
+40,addict,"중독자, 중독시키다",high,고등영어,,,1,addict
+41,address,주소,elem,초등영어,,,1,address*
+42,adequate,"적절한, 충분한",high,고등영어,,,1,adequate
+43,adjust,조정하다,high,고등영어,,,1,adjust
+44,administer,"관리하다, 집행하다",high,고등영어,,administration,1,administer (administration)
+45,admire,"감탄하다, 존경하다",middle,중등영어,,,1,admire**
+46,admit,인정하다,middle,중등영어,,admission,1,admit** (admission)
+47,adolescent,청소년,high,고등영어,,,1,adolescent
+48,adopt,"입양하다, 채택하다",middle,중등영어,,,1,adopt**
+49,adult,어른,elem,초등영어,,,1,adult*
+50,advance,"전진, 발전",middle,중등영어,,,1,advance**
+51,advantage,"이점, 장점",middle,중등영어,,disadvantage,1,advantage** (disadvantage)
+52,adventure,모험,middle,중등영어,,,1,adventure**
+53,adverse,"불리한, 부정적인",high,고등영어,,,1,adverse
+54,advertize,광고하다,middle,중등영어,advertise,,1,advertize** / advertise**
+55,advice,충고,middle,중등영어,,,1,advice**
+56,advise,조언하다,middle,중등영어,,,1,advise**
+57,advocate,옹호하다,high,고등영어,,,1,advocate
+58,aesthetic,미적인,high,고등영어,,,1,aesthetic
+59,affair,"일, 사건",middle,중등영어,,,1,affair**
+60,affect,영향을 미치다,middle,중등영어,,affection,1,affect** (affection)
+61,afford,~할 여유가 있다,middle,중등영어,,,1,afford**
+62,afraid,두려워하는,elem,초등영어,,,1,afraid*
+63,after,~ 후에,elem,초등영어,,,1,after*
+64,afternoon,오후,elem,초등영어,,,1,afternoon*
+65,again,다시,elem,초등영어,,,1,again*
+66,against,~에 반대하여,elem,초등영어,,,1,against*
+67,age,나이,elem,초등영어,,,1,age*
+68,agency,"대리점, 기관",high,고등영어,,,1,agency
+69,agenda,"의제, 안건",high,고등영어,,,1,agenda
+70,agent,"대리인, 요원",middle,중등영어,,,1,agent**
+71,aggress,공격하다,high,고등영어,,aggressive,1,aggress (aggressive)
+72,ago,~ 전에,elem,초등영어,,,1,ago*
+73,agree,동의하다,elem,초등영어,,disagree,1,agree* (disagree)
+74,agriculture,농업,high,고등영어,,,1,agriculture
+75,ahead,"앞으로, 앞에",elem,초등영어,,,1,ahead*
+76,aid,"도움, 원조",middle,중등영어,,,1,aid**
+77,aim,"목표, 겨누다",middle,중등영어,,,1,aim**
+78,air,공기,elem,초등영어,,,1,air*
+79,airline,항공사,middle,중등영어,,,1,airline**
+80,airplane,비행기,elem,초등영어,aeroplane,,1,airplane* / aeroplane*
+81,airport,공항,middle,중등영어,,,1,airport**
+82,alarm,"경보, 자명종",middle,중등영어,,,1,alarm**
+83,album,앨범,elem,초등영어,,,1,album*
+84,alcohol,"술, 알코올",middle,중등영어,,,1,alcohol**
+85,alert,경계하는,high,고등영어,,,1,alert
+86,alien,"외계인, 이질적인",high,고등영어,,,1,alien
+87,alike,비슷한,high,고등영어,,,1,alike
+88,alive,살아 있는,middle,중등영어,,,1,alive**
+89,all,모든,elem,초등영어,,,1,all*
+90,allocate,할당하다,high,고등영어,,,1,allocate
+91,allow,허락하다,middle,중등영어,,,1,allow**
+92,ally,동맹국,high,고등영어,,,1,ally
+93,almost,거의,elem,초등영어,,,1,almost*
+94,alone,혼자,elem,초등영어,,,1,alone*
+95,along,~을 따라,elem,초등영어,,,1,along*
+96,alongside,"~ 옆에, ~와 함께",high,고등영어,,,1,alongside
+97,aloud,소리 내어,middle,중등영어,,,1,aloud**
+98,already,이미,elem,초등영어,,,1,already*
+99,alright,괜찮은,elem,초등영어,,,1,alright*
+100,also,또한,elem,초등영어,,,1,also*
+101,alter,"바꾸다, 변경하다",middle,중등영어,,,1,alter**
+102,alternate,"번갈아 하다, 대안의",high,고등영어,,alternative,1,alternate (alternative)
+103,although,비록 ~이지만,middle,중등영어,,,1,although**
+104,altogether,"완전히, 전부",middle,중등영어,,,1,altogether**
+105,always,항상,elem,초등영어,,,1,always*
+106,amaze,놀라게 하다,middle,중등영어,,,1,amaze**
+107,ambassador,대사 (외교관),high,고등영어,,,1,ambassador
+108,ambition,야망,high,고등영어,,ambitious,1,ambition (ambitious)
+109,ambulance,구급차,middle,중등영어,,,1,ambulance**
+110,among,~ 사이에 (셋 이상),middle,중등영어,,,1,among**
+111,amount,"양, 총액",middle,중등영어,,,1,amount**
+112,amuse,즐겁게 하다,middle,중등영어,,,1,amuse**
+113,analysis,분석,middle,중등영어,,,1,analysis**
+114,analyze,분석하다,high,고등영어,analyse,,1,analyze / analyse
+115,anchor,닻,high,고등영어,,,1,anchor
+116,ancient,고대의,high,고등영어,,,1,ancient
+117,and,그리고,elem,초등영어,,,0,and*
+118,angel,천사,middle,중등영어,,,1,angel**
+119,anger,분노,middle,중등영어,,,1,anger**
+120,angle,각도,high,고등영어,,,1,angle
+121,animal,동물,elem,초등영어,,,1,animal*
+122,anniversary,기념일,high,고등영어,,,1,anniversary
+123,announce,발표하다,middle,중등영어,,,1,announce**
+124,annoy,짜증 나게 하다,middle,중등영어,,,1,annoy**
+125,annual,매년의,middle,중등영어,,,1,annual**
+126,another,또 다른,elem,초등영어,,,1,another*
+127,answer,대답,elem,초등영어,,,1,answer*
+128,ant,개미,middle,중등영어,,,1,ant**
+129,anticipate,예상하다,high,고등영어,,,1,anticipate
+130,anxiety,불안,high,고등영어,,,1,anxiety
+131,anxious,"불안한, 걱정하는",middle,중등영어,,,1,anxious**
+132,any,"어떤, 아무",elem,초등영어,,,1,any*
+133,apart,"떨어져, 따로",middle,중등영어,,,1,apart**
+134,apartment,아파트,elem,초등영어,,,1,apartment*
+135,apology,사과 (사죄),high,고등영어,,,1,apology
+136,apparent,명백한,high,고등영어,,,1,apparent
+137,appeal,"호소하다, 매력",middle,중등영어,,,1,appeal**
+138,appear,나타나다,middle,중등영어,,disappear,1,appear** (disappear)
+139,apple,사과,elem,초등영어,,,1,apple*
+140,apply,"지원하다, 적용하다",middle,중등영어,,applicant,1,apply** (applicant)
+141,appoint,임명하다,middle,중등영어,,,1,appoint**
+142,appreciate,"감사하다, 진가를 알다",middle,중등영어,,,1,appreciate**
+143,approach,"다가가다, 접근법",middle,중등영어,,,1,approach**
+144,appropriate,적절한,middle,중등영어,,,1,appropriate**
+145,approve,승인하다,high,고등영어,,,1,approve
+146,approximate,대략의,high,고등영어,,,1,approximate
+147,architect,건축가,high,고등영어,,architecture,1,architect (architecture)
+148,area,지역,elem,초등영어,,,1,area*
+149,argue,논쟁하다,middle,중등영어,,,1,argue**
+150,arise,"생기다, 발생하다",high,고등영어,,,1,arise
+151,arm,팔,elem,초등영어,,,1,arm*
+152,army,군대,middle,중등영어,,,1,army**
+153,around,주위에,elem,초등영어,,,1,around*
+154,arrange,"정리하다, 준비하다",middle,중등영어,,,1,arrange**
+155,arrest,체포하다,middle,중등영어,,,1,arrest**
+156,arrive,도착하다,elem,초등영어,,,1,arrive*
+157,arrow,화살,high,고등영어,,,1,arrow
+158,art,"미술, 예술",elem,초등영어,,,1,art*
+159,article,"기사, 글",middle,중등영어,,,1,article**
+160,artifice,"술책, 기교",high,고등영어,,artificial,1,artifice (artificial)
+161,as,"~처럼, ~로서",elem,초등영어,,,0,as*
+162,aside,"옆으로, 따로",middle,중등영어,,,1,aside**
+163,ask,묻다,elem,초등영어,,,1,ask*
+164,asleep,잠든,middle,중등영어,,,1,asleep**
+165,aspect,측면,high,고등영어,,,1,aspect
+166,aspire,열망하다,high,고등영어,,,1,aspire
+167,assault,"폭행, 공격",high,고등영어,,,1,assault
+168,assemble,"조립하다, 모이다",high,고등영어,,,1,assemble
+169,assert,주장하다,high,고등영어,,,1,assert
+170,assess,평가하다,middle,중등영어,,,1,assess**
+171,asset,자산,high,고등영어,,,1,asset
+172,assign,"맡기다, 배정하다",middle,중등영어,,assignment,1,assign** (assignment)
+173,assist,돕다,middle,중등영어,,assistant,1,assist** (assistant)
+174,associate,연관 짓다,middle,중등영어,,,1,associate**
+175,assume,"추정하다, 가정하다",middle,중등영어,,,1,assume**
+176,assure,"장담하다, 보증하다",high,고등영어,,,1,assure
+177,astonish,깜짝 놀라게 하다,high,고등영어,,,1,astonish
+178,at,~에서,elem,초등영어,,,0,at*
+179,athlete,운동선수,high,고등영어,,,1,athlete
+180,atmosphere,"대기, 분위기",middle,중등영어,,,1,atmosphere**
+181,atom,원자,high,고등영어,,,1,atom
+182,attach,"붙이다, 첨부하다",middle,중등영어,,,1,attach**
+183,attack,공격하다,middle,중등영어,,,1,attack**
+184,attempt,시도하다,middle,중등영어,,,1,attempt**
+185,attend,참석하다,middle,중등영어,,,1,attend**
+186,attention,"주의, 관심",middle,중등영어,,,1,attention**
+187,attitude,태도,middle,중등영어,,,1,attitude**
+188,attract,끌어당기다,middle,중등영어,,,1,attract**
+189,attribute,~의 탓으로 돌리다,high,고등영어,,,1,attribute
+190,auction,경매,high,고등영어,,,1,auction
+191,audience,"청중, 관객",middle,중등영어,,,1,audience**
+192,aunt,"이모, 고모",elem,초등영어,,,1,aunt*
+193,authentic,"진짜의, 진품의",high,고등영어,,,1,authentic
+194,author,"작가, 저자",high,고등영어,,,1,author
+195,automatic,자동의,middle,중등영어,,,1,automatic**
+196,autumn,가을,elem,초등영어,,,1,autumn*
+197,avail,"도움이 되다, 이익",high,고등영어,,available,1,avail (available)
+198,average,평균,middle,중등영어,,,1,average**
+199,avoid,피하다,middle,중등영어,,,1,avoid**
+200,await,기다리다,high,고등영어,,,1,await
+201,awake,깨어 있는,middle,중등영어,,,1,awake**
+202,award,상,middle,중등영어,,,1,award**
+203,aware,"알고 있는, 의식하는",middle,중등영어,,unaware,1,aware** (unaware)
+204,away,"떨어져, 멀리",elem,초등영어,,,1,away*
+205,awe,경외심,high,고등영어,,awful,1,awe (awful)
+206,awkward,어색한,middle,중등영어,,,1,awkward**
+207,baby,아기,elem,초등영어,,,1,baby*
+208,back,"뒤, 등",elem,초등영어,,,1,back*
+209,background,배경,middle,중등영어,,,1,background**
+210,bacon,베이컨,middle,중등영어,,,1,bacon**
+211,bad,나쁜,elem,초등영어,,,1,bad*
+212,badminton,배드민턴,elem,초등영어,,,1,badminton*
+213,bag,가방,elem,초등영어,,,1,bag*
+214,bake,굽다,elem,초등영어,,,1,bake*
+215,balance,균형,middle,중등영어,,,1,balance**
+216,ball,공,elem,초등영어,,,1,ball*
+217,balloon,풍선,middle,중등영어,,,1,balloon**
+218,ban,금지하다,high,고등영어,,,1,ban
+219,banana,바나나,elem,초등영어,,,1,banana*
+220,band,"악단, 띠",middle,중등영어,,,1,band**
+221,bang,쾅 (소리),middle,중등영어,,,1,bang**
+222,bank,은행,elem,초등영어,,,1,bank*
+223,bankrupt,파산한,high,고등영어,,,1,bankrupt
+224,bar,"막대, 술집",middle,중등영어,,,1,bar**
+225,bare,"벌거벗은, 맨-",middle,중등영어,,,1,bare**
+226,bargain,"흥정하다, 싼 물건",high,고등영어,,,1,bargain
+227,bark,짖다,middle,중등영어,,,1,bark**
+228,barrier,장벽,high,고등영어,,,1,barrier
+229,base,"기초, 기반",elem,초등영어,,,1,base*
+230,baseball,야구,elem,초등영어,,,1,baseball*
+231,basis,"기초, 근거",middle,중등영어,,,1,basis**
+232,basket,바구니,elem,초등영어,,,1,basket*
+233,basketball,농구,elem,초등영어,,,1,basketball*
+234,bat,"방망이, 박쥐",elem,초등영어,,,1,bat*
+235,bath,목욕,elem,초등영어,,,1,bath*
+236,battery,건전지,middle,중등영어,,,1,battery**
+237,battle,전투,middle,중등영어,,,1,battle**
+238,bay,만 (바다),middle,중등영어,,,1,bay**
+239,be,"~이다, 있다",elem,초등영어,,,0,be*
+240,beach,해변,elem,초등영어,,,1,beach*
+241,beam,"광선, 들보",high,고등영어,,,1,beam
+242,bean,콩,middle,중등영어,,,1,bean**
+243,bear,곰,elem,초등영어,,,1,bear*
+244,beard,턱수염,high,고등영어,,,1,beard
+245,beast,짐승,high,고등영어,,,1,beast
+246,beat,"이기다, 두드리다",middle,중등영어,,,1,beat**
+247,beauty,아름다움,elem,초등영어,,,1,beauty*
+248,because,~ 때문에,elem,초등영어,,,1,because*
+249,become,~이 되다,elem,초등영어,,,1,become*
+250,bed,침대,elem,초등영어,,,1,bed*
+251,bee,벌,elem,초등영어,,,1,bee*
+252,beef,소고기,elem,초등영어,,,1,beef*
+253,beer,맥주,middle,중등영어,,,1,beer**
+254,before,~ 전에,elem,초등영어,,,1,before*
+255,beg,"간청하다, 구걸하다",middle,중등영어,,,1,beg**
+256,begin,시작하다,elem,초등영어,,,1,begin*
+257,behalf,"이익, 대신 (on behalf of)",high,고등영어,,,1,behalf
+258,behave,행동하다,high,고등영어,,behavior / behaviour,1,behave (behavior / behaviour)
+259,behind,~ 뒤에,elem,초등영어,,,1,behind*
+260,belief,믿음,middle,중등영어,,,1,belief**
+261,believe,믿다,elem,초등영어,,,1,believe*
+262,bell,종,elem,초등영어,,,1,bell*
+263,belong,~에 속하다,middle,중등영어,,,1,belong**
+264,below,~ 아래에,elem,초등영어,,,1,below*
+265,belt,허리띠,elem,초등영어,,,1,belt*
+266,bench,긴 의자,middle,중등영어,,,1,bench**
+267,bend,구부리다,middle,중등영어,,,1,bend**
+268,beneath,"~ 아래에, 밑에",middle,중등영어,,,1,beneath**
+269,benefit,"이익, 혜택",middle,중등영어,,,1,benefit**
+270,beside,~ 옆에,elem,초등영어,,,1,beside*
+271,bet,내기하다,middle,중등영어,,,1,bet**
+272,betray,배신하다,high,고등영어,,,1,betray
+273,between,~ 사이에,elem,초등영어,,,1,between*
+274,beyond,~ 너머,middle,중등영어,,,1,beyond**
+275,bias,편견,high,고등영어,,,1,bias
+276,big,큰,elem,초등영어,,,1,big*
+277,bike,자전거,elem,초등영어,,,1,bike*
+278,bill,"계산서, 지폐",elem,초등영어,,,1,bill*
+279,billion,10억,middle,중등영어,,,1,billion**
+280,bin,쓰레기통,middle,중등영어,,,1,bin**
+281,bind,묶다,middle,중등영어,,,1,bind**
+282,biography,전기 (일대기),high,고등영어,,,1,biography
+283,biology,생물학,high,고등영어,,,1,biology
+284,bird,새,elem,초등영어,,,1,bird*
+285,birth,탄생,elem,초등영어,,,1,birth*
+286,biscuit,비스킷,elem,초등영어,,,1,biscuit*
+287,bit,"조금, 약간",middle,중등영어,,,1,bit**
+288,bite,물다,middle,중등영어,,,1,bite**
+289,bitter,"쓴, 쓰라린",middle,중등영어,,,1,bitter**
+290,black,검은색,elem,초등영어,,,1,black*
+291,blame,탓하다,middle,중등영어,,,1,blame**
+292,blank,"빈칸, 빈",middle,중등영어,,,1,blank**
+293,blanket,담요,middle,중등영어,,,1,blanket**
+294,blast,폭발,high,고등영어,,,1,blast
+295,blend,"섞다, 혼합",high,고등영어,,,1,blend
+296,bless,축복하다,middle,중등영어,,,1,bless**
+297,blind,눈먼,middle,중등영어,,,1,blind**
+298,blink,눈을 깜박이다,high,고등영어,,,1,blink
+299,block,"막다, 블록",middle,중등영어,,,1,block**
+300,blonde,금발의,middle,중등영어,,,1,blonde**
+301,blood,피,elem,초등영어,,,1,blood*
+302,bloom,꽃이 피다,middle,중등영어,,,1,bloom**
+303,blossom,꽃 (과수의),high,고등영어,,,1,blossom
+304,blow,불다,middle,중등영어,,,1,blow**
+305,blue,파란색,elem,초등영어,,,1,blue*
+306,board,"판, 게시판",elem,초등영어,,,1,board*
+307,boat,"배, 보트",elem,초등영어,,,1,boat*
+308,body,몸,elem,초등영어,,embody,1,body* (embody)
+309,boil,"끓다, 끓이다",middle,중등영어,,,1,boil**
+310,bold,대담한,high,고등영어,,,1,bold
+311,bomb,폭탄,middle,중등영어,,,1,bomb**
+312,bond,"유대, 결속",middle,중등영어,,,1,bond**
+313,bone,뼈,elem,초등영어,,,1,bone*
+314,book,책,elem,초등영어,,,1,book*
+315,boom,"호황, 쾅 소리",middle,중등영어,,,1,boom**
+316,boost,증진시키다,high,고등영어,,,1,boost
+317,boot,"장화, 부츠",middle,중등영어,,,1,boot**
+318,border,국경,high,고등영어,,,1,border
+319,bore,지루하게 하다,middle,중등영어,,,1,bore**
+320,borrow,빌리다,elem,초등영어,,,1,borrow*
+321,boss,상사,middle,중등영어,,,1,boss**
+322,both,둘 다,elem,초등영어,,,1,both*
+323,bother,귀찮게 하다,middle,중등영어,,,1,bother**
+324,bottle,병,elem,초등영어,,,1,bottle*
+325,bottom,"맨 아래, 바닥",elem,초등영어,,,1,bottom*
+326,bounce,튀다,middle,중등영어,,,1,bounce**
+327,boundary,경계,high,고등영어,,,1,boundary
+328,bow,"절하다, 활",middle,중등영어,,,1,bow**
+329,bowl,그릇,middle,중등영어,,,1,bowl**
+330,box,상자,elem,초등영어,,,1,box*
+331,boy,소년,elem,초등영어,,,1,boy*
+332,brain,뇌,middle,중등영어,,,1,brain**
+333,brake,"브레이크, 제동 장치",middle,중등영어,,,1,brake**
+334,branch,"나뭇가지, 지점",middle,중등영어,,,1,branch**
+335,brand,"상표, 브랜드",middle,중등영어,,,1,brand**
+336,brave,용감한,elem,초등영어,,,1,brave*
+337,bread,빵,elem,초등영어,,,1,bread*
+338,break,"깨다, 부수다",elem,초등영어,,,1,break*
+339,breakfast,아침 식사,elem,초등영어,,,1,breakfast*
+340,breast,가슴,middle,중등영어,,,1,breast**
+341,breath,"숨, 호흡",middle,중등영어,,,1,breath**
+342,breathe,숨 쉬다,middle,중등영어,,,1,breathe**
+343,breed,"기르다, 품종",high,고등영어,,,1,breed
+344,breeze,산들바람,high,고등영어,,,1,breeze
+345,brick,벽돌,middle,중등영어,,,1,brick**
+346,bridge,다리 (건축물),elem,초등영어,,,1,bridge*
+347,brief,"짧은, 간단한",middle,중등영어,,,1,brief**
+348,bright,밝은,elem,초등영어,,,1,bright*
+349,brilliant,"훌륭한, 빛나는",middle,중등영어,,,1,brilliant**
+350,bring,가져오다,elem,초등영어,,,1,bring*
+351,broad,넓은,middle,중등영어,,,1,broad**
+352,broadcast,방송하다,high,고등영어,,,1,broadcast
+353,brother,남자 형제,elem,초등영어,,,1,brother*
+354,brown,갈색,elem,초등영어,,,1,brown*
+355,brush,"붓, 솔",elem,초등영어,,,1,brush*
+356,brute,"짐승 같은, 야수",high,고등영어,,brutal,1,brute (brutal)
+357,bubble,거품,middle,중등영어,,,1,bubble**
+358,budget,예산,middle,중등영어,,,1,budget**
+359,bug,벌레,middle,중등영어,,,1,bug**
+360,build,짓다,elem,초등영어,,,1,build*
+361,bulk,"대부분, 부피",high,고등영어,,,1,bulk
+362,bull,황소,high,고등영어,,,1,bull
+363,bully,괴롭히다,high,고등영어,,,1,bully
+364,bump,부딪치다,middle,중등영어,,,1,bump**
+365,bunch,"다발, 송이",middle,중등영어,,,1,bunch**
+366,bundle,"묶음, 꾸러미",high,고등영어,,,1,bundle
+367,burden,"짐, 부담",high,고등영어,,,1,burden
+368,burn,"타다, 태우다",elem,초등영어,,,1,burn*
+369,burst,터지다,middle,중등영어,,,1,burst**
+370,bury,"묻다, 매장하다",middle,중등영어,,,1,bury**
+371,bus,버스,elem,초등영어,,,1,bus*
+372,bush,덤불,middle,중등영어,,,1,bush**
+373,business,사업,elem,초등영어,,,1,business*
+374,busy,바쁜,elem,초등영어,,,1,busy*
+375,but,그러나,elem,초등영어,,,0,but*
+376,butcher,정육점 주인,high,고등영어,,,1,butcher
+377,butter,버터,elem,초등영어,,,1,butter*
+378,button,단추,elem,초등영어,,,1,button*
+379,buy,사다,elem,초등영어,,,1,buy*
+380,buzz,윙윙거리다,high,고등영어,,,1,buzz
+381,by,"~ 옆에, ~에 의해",elem,초등영어,,,0,by*
+382,cable,"전선, 케이블",middle,중등영어,,,1,cable**
+383,cage,"새장, 우리",middle,중등영어,,,1,cage**
+384,cake,케이크,elem,초등영어,,,1,cake*
+385,calculate,계산하다,middle,중등영어,,calculator,1,calculate** (calculator)
+386,calendar,달력,middle,중등영어,,,1,calendar**
+387,call,"부르다, 전화하다",elem,초등영어,,,1,call*
+388,calm,"침착한, 고요한",middle,중등영어,,,1,calm**
+389,camera,카메라,elem,초등영어,,,1,camera*
+390,camp,"야영, 캠프",elem,초등영어,,,1,camp*
+391,campaign,"캠페인, 운동",elem,초등영어,,,1,campaign*
+392,can,~할 수 있다,elem,초등영어,,,0,can*
+393,cancel,취소하다,high,고등영어,,,1,cancel
+394,cancer,암,high,고등영어,,,1,cancer
+395,candidate,후보자,high,고등영어,,,1,candidate
+396,candy,사탕,elem,초등영어,,,1,candy*
+397,canvas,"캔버스, 화폭",high,고등영어,,,1,canvas
+398,cap,모자 (챙 달린),elem,초등영어,,,1,cap*
+399,capable,"유능한, ~할 수 있는",middle,중등영어,,,1,capable**
+400,cape,"곶, 망토",middle,중등영어,,,1,cape**
+401,capital,"수도, 자본",middle,중등영어,,,1,capital**
+402,captain,"선장, 주장",middle,중등영어,,,1,captain**
+403,capture,"붙잡다, 포착하다",high,고등영어,,,1,capture
+404,car,자동차,elem,초등영어,,,1,car*
+405,card,카드,elem,초등영어,,,1,card*
+406,care,"돌봄, 주의",elem,초등영어,,,1,care*
+407,career,"직업, 경력",middle,중등영어,,,1,career**
+408,carpet,양탄자,middle,중등영어,,,1,carpet**
+409,carrot,당근,elem,초등영어,,,1,carrot*
+410,carry,나르다,elem,초등영어,,,1,carry*
+411,cart,"수레, 카트",middle,중등영어,,,1,cart**
+412,carve,조각하다,high,고등영어,,,1,carve
+413,case,"경우, 상자",elem,초등영어,,casual,1,case* (casual)
+414,cash,현금,elem,초등영어,,,1,cash*
+415,cast,"던지다, 출연진",middle,중등영어,,,1,cast**
+416,castle,성,middle,중등영어,,,1,castle**
+417,cat,고양이,elem,초등영어,,,1,cat*
+418,catalogue,"목록, 카탈로그",middle,중등영어,catalog,,1,catalogue** / catalog**
+419,catch,잡다,elem,초등영어,,,1,catch*
+420,category,범주,middle,중등영어,,,1,category**
+421,cater,음식을 공급하다,high,고등영어,,,1,cater
+422,cattle,소 (가축),high,고등영어,,,1,cattle
+423,cause,"원인, 일으키다",middle,중등영어,,causal,1,cause** (causal)
+424,caution,"주의, 조심",high,고등영어,,,1,caution
+425,cave,동굴,high,고등영어,,,1,cave
+426,cease,그만두다,high,고등영어,,,1,cease
+427,ceiling,천장,middle,중등영어,,,1,ceiling**
+428,celebrate,축하하다,high,고등영어,,,1,celebrate
+429,celebrity,유명 인사,high,고등영어,,,1,celebrity
+430,cell,"세포, 칸",middle,중등영어,,,1,cell**
+431,censor,검열하다,high,고등영어,,,1,censor
+432,center,중심,elem,초등영어,,,1,center*
+433,century,"세기, 100년",middle,중등영어,,,1,century**
+434,certain,확실한,elem,초등영어,,,1,certain*
+435,certificate,증명서,high,고등영어,,,1,certificate
+436,chain,사슬,middle,중등영어,,,1,chain**
+437,chair,의자,elem,초등영어,,,1,chair*
+438,chairman,"의장, 회장",middle,중등영어,,,1,chairman**
+439,challenge,도전,middle,중등영어,,,1,challenge**
+440,chamber,"방, 회의실",high,고등영어,,,1,chamber
+441,champion,우승자,middle,중등영어,,,1,champion**
+442,chance,기회,elem,초등영어,,,1,chance*
+443,change,바꾸다,elem,초등영어,,,1,change*
+444,channel,"채널, 경로",middle,중등영어,,,1,channel**
+445,chaos,혼돈,high,고등영어,,,1,chaos
+446,character,"성격, 등장인물",middle,중등영어,,,1,character**
+447,characteristic,특징,middle,중등영어,,,1,characteristic**
+448,charge,"요금, 청구하다",middle,중등영어,,discharge,1,charge** (discharge)
+449,charity,자선,high,고등영어,,,1,charity
+450,charm,매력,middle,중등영어,,,1,charm**
+451,chart,도표,middle,중등영어,,,1,chart**
+452,chase,뒤쫓다,middle,중등영어,,,1,chase**
+453,chat,잡담하다,middle,중등영어,,,1,chat**
+454,cheap,값싼,elem,초등영어,,,1,cheap*
+455,check,확인하다,elem,초등영어,cheque,,1,check* / cheque*
+456,cheek,"볼, 뺨",middle,중등영어,,,1,cheek**
+457,cheer,"환호하다, 응원하다",middle,중등영어,,,1,cheer**
+458,cheese,치즈,elem,초등영어,,,1,cheese*
+459,chef,요리사,high,고등영어,,,1,chef
+460,chemical,"화학의, 화학 물질",high,고등영어,,,1,chemical
+461,chest,"가슴, 상자",middle,중등영어,,,1,chest**
+462,chew,씹다,middle,중등영어,,,1,chew**
+463,chicken,닭,elem,초등영어,,,1,chicken*
+464,chief,"우두머리, 주된",middle,중등영어,,,1,chief**
+465,child,아이,elem,초등영어,,,1,child*
+466,chill,"냉기, 오싹함",high,고등영어,,,1,chill
+467,chin,턱 (끝),high,고등영어,,,1,chin
+468,chip,"조각, 칩",middle,중등영어,,,1,chip**
+469,chocolate,초콜릿,elem,초등영어,,,1,chocolate*
+470,choice,선택,middle,중등영어,,,1,choice**
+471,choir,합창단,high,고등영어,,,1,choir
+472,choose,고르다,elem,초등영어,,,1,choose*
+473,chop,"썰다, 자르다",middle,중등영어,,,1,chop**
+474,chorus,"합창, 후렴",high,고등영어,,,1,chorus
+475,chronic,만성적인,high,고등영어,,,1,chronic
+476,church,교회,elem,초등영어,,,1,church*
+477,cigarette,담배,middle,중등영어,,,1,cigarette**
+478,cinema,영화관,middle,중등영어,,,1,cinema**
+479,circle,"원, 동그라미",elem,초등영어,,,1,circle*
+480,circulate,순환하다,high,고등영어,,,1,circulate
+481,circumstance,"상황, 환경",middle,중등영어,,,1,circumstance**
+482,cite,인용하다,high,고등영어,,,1,cite
+483,citizen,시민,middle,중등영어,,,1,citizen**
+484,city,도시,elem,초등영어,,,1,city*
+485,civil,시민의,middle,중등영어,,,1,civil**
+486,claim,주장하다,middle,중등영어,,,1,claim**
+487,clap,박수를 치다,high,고등영어,,,1,clap
+488,clash,충돌하다,high,고등영어,,,1,clash
+489,class,"수업, 학급",elem,초등영어,,"classic, classify",1,"class* (classic, classify)"
+490,clause,"조항, 절",high,고등영어,,,1,clause
+491,clay,"점토, 진흙",high,고등영어,,,1,clay
+492,clean,깨끗한,elem,초등영어,,,1,clean*
+493,clear,"맑은, 분명한",elem,초등영어,,clarify,1,clear* (clarify)
+494,clerk,"점원, 사무원",middle,중등영어,,,1,clerk**
+495,clever,영리한,elem,초등영어,,,1,clever*
+496,click,"클릭하다, 딸깍 소리",middle,중등영어,,,1,click**
+497,client,"고객, 의뢰인",middle,중등영어,,,1,client**
+498,cliff,절벽,middle,중등영어,,,1,cliff**
+499,climate,기후,middle,중등영어,,,1,climate**
+500,climb,오르다,elem,초등영어,,,1,climb*
+501,cling,매달리다,high,고등영어,,,1,cling
+502,clinic,"병원, 진료소",high,고등영어,,,1,clinic
+503,clip,"클립, 짧은 영상",middle,중등영어,,,1,clip**
+504,clock,시계 (벽시계),elem,초등영어,,,1,clock*
+505,close,닫다,elem,초등영어,,"disclose, enclose",1,"close* (disclose, enclose)"
+506,clothes,옷,elem,초등영어,,,1,clothes*
+507,cloud,구름,elem,초등영어,,,1,cloud*
+508,club,동아리,elem,초등영어,,,1,club*
+509,clue,단서,middle,중등영어,,,1,clue**
+510,cluster,"무리, 송이",high,고등영어,,,1,cluster
+511,coach,"코치, 감독",middle,중등영어,,,1,coach**
+512,coal,석탄,middle,중등영어,,,1,coal**
+513,coast,해안,middle,중등영어,,,1,coast**
+514,coat,외투,elem,초등영어,,,1,coat*
+515,code,"암호, 규정",middle,중등영어,,,1,code**
+516,coffee,커피,elem,초등영어,,,1,coffee*
+517,coin,동전,middle,중등영어,,,1,coin**
+518,coincide,동시에 일어나다,high,고등영어,,,1,coincide
+519,cold,"추운, 차가운",elem,초등영어,,,1,cold*
+520,collaborate,협력하다,high,고등영어,,,1,collaborate
+521,collapse,붕괴하다,high,고등영어,,,1,collapse
+522,collar,옷깃,high,고등영어,,,1,collar
+523,colleague,동료,high,고등영어,,,1,colleague
+524,collect,모으다,elem,초등영어,,,1,collect*
+525,college,대학,elem,초등영어,,,1,college*
+526,colony,식민지,high,고등영어,,,1,colony
+527,color,색깔,elem,초등영어,colour,,1,color* / colour*
+528,column,"기둥, 칼럼",high,고등영어,,,1,column
+529,combat,전투,high,고등영어,,,1,combat
+530,combine,결합하다,middle,중등영어,,,1,combine**
+531,come,오다,elem,초등영어,,,1,come*
+532,comedy,"희극, 코미디",middle,중등영어,,,1,comedy**
+533,comfort,"위로, 편안함",middle,중등영어,,comfortable,1,comfort** (comfortable)
+534,comic,"만화의, 웃기는",elem,초등영어,,,1,comic*
+535,command,명령하다,middle,중등영어,,,1,command**
+536,comment,"논평, 의견",middle,중등영어,,,1,comment**
+537,commerce,상업,middle,중등영어,,,1,commerce**
+538,commit,"저지르다, 전념하다",high,고등영어,,commission,1,commit (commission)
+539,committee,위원회,middle,중등영어,,,1,committee**
+540,commodity,"상품, 원자재",high,고등영어,,,1,commodity
+541,common,"흔한, 공통의",middle,중등영어,,,1,common**
+542,communicate,의사소통하다,middle,중등영어,,communication,1,communicate** (communication)
+543,communist,공산주의자,high,고등영어,,,1,communist
+544,community,"지역 사회, 공동체",middle,중등영어,,,1,community**
+545,companion,동반자,high,고등영어,,,1,companion
+546,company,회사,elem,초등영어,,,1,company*
+547,compare,비교하다,middle,중등영어,,,1,compare**
+548,compatible,양립할 수 있는,high,고등영어,,,1,compatible
+549,compel,강요하다,high,고등영어,,,1,compel
+550,compensate,보상하다,high,고등영어,,,1,compensate
+551,compete,경쟁하다,high,고등영어,,competent,1,compete (competent)
+552,compile,"편집하다, 엮다",high,고등영어,,,1,compile
+553,complain,불평하다,middle,중등영어,,,1,complain**
+554,complement,보완하다,high,고등영어,,,1,complement
+555,complete,"완성하다, 완전한",middle,중등영어,,,1,complete**
+556,complex,복잡한,middle,중등영어,,complexity,1,complex** (complexity)
+557,complicate,복잡하게 하다,middle,중등영어,,,1,complicate**
+558,component,구성 요소,high,고등영어,,,1,component
+559,compose,"구성하다, 작곡하다",high,고등영어,,,1,compose
+560,compound,"화합물, 합성의",high,고등영어,,,1,compound
+561,comprehend,이해하다,high,고등영어,,comprehensive,1,comprehend (comprehensive)
+562,comprise,구성되다,high,고등영어,,,1,comprise
+563,compromise,타협하다,high,고등영어,,,1,compromise
+564,compute,계산하다,elem,초등영어,,computer,1,compute* (computer)
+565,conceal,숨기다,high,고등영어,,,1,conceal
+566,conceive,"상상하다, 착상하다",high,고등영어,,,1,conceive
+567,concentrate,집중하다,middle,중등영어,,,1,concentrate**
+568,concept,개념,middle,중등영어,,,1,concept**
+569,concern,"걱정, 관심사",middle,중등영어,,,1,concern**
+570,concert,음악회,middle,중등영어,,,1,concert**
+571,conclude,결론을 내리다,high,고등영어,,,1,conclude
+572,concrete,"구체적인, 콘크리트",high,고등영어,,,1,concrete
+573,condemn,비난하다,high,고등영어,,,1,condemn
+574,condition,"상태, 조건",elem,초등영어,,,1,condition*
+575,conduct,"수행하다, 지휘하다",high,고등영어,,,1,conduct
+576,confer,"수여하다, 상의하다",high,고등영어,,,1,confer
+577,confess,고백하다,high,고등영어,,,1,confess
+578,confide,털어놓다,high,고등영어,,confident,1,confide (confident)
+579,confine,"제한하다, 가두다",high,고등영어,,,1,confine
+580,confirm,확인하다,middle,중등영어,,,1,confirm**
+581,conflict,갈등,middle,중등영어,,,1,conflict**
+582,conform,"따르다, 순응하다",high,고등영어,,,1,conform
+583,confront,맞서다,high,고등영어,,,1,confront
+584,confuse,혼란시키다,middle,중등영어,,,1,confuse**
+585,congratulate,축하하다,elem,초등영어,,,1,congratulate*
+586,congress,의회,high,고등영어,,,1,congress
+587,connect,연결하다,middle,중등영어,,,1,connect**
+588,conscience,양심,high,고등영어,,,1,conscience
+589,conscious,의식하는,middle,중등영어,,,1,conscious**
+590,consent,동의,high,고등영어,,,1,consent
+591,conserve,"보존하다, 아끼다",high,고등영어,,,1,conserve
+592,consider,고려하다,middle,중등영어,,,1,consider**
+593,consist,구성되다,high,고등영어,,consistent,1,consist (consistent)
+594,constant,끊임없는,middle,중등영어,,,1,constant**
+595,constitute,구성하다,high,고등영어,,constitution,1,constitute (constitution)
+596,constrain,제약하다,high,고등영어,,,1,constrain
+597,construct,건설하다,high,고등영어,,construction,1,construct (construction)
+598,consult,상담하다,high,고등영어,,,1,consult
+599,consume,소비하다,middle,중등영어,,"consumer, consumption",1,"consume** (consumer, consumption)"
+600,contact,"연락, 접촉",middle,중등영어,,,1,contact**
+601,contain,포함하다,middle,중등영어,,,1,contain**
+602,contemporary,"동시대의, 현대의",high,고등영어,,,1,contemporary
+603,contend,"다투다, 주장하다",high,고등영어,,,1,contend
+604,content,"내용, 만족하는",middle,중등영어,,,1,content**
+605,contest,대회,middle,중등영어,,,1,contest**
+606,context,"맥락, 문맥",middle,중등영어,,,1,context**
+607,continent,대륙,high,고등영어,,,1,continent
+608,continue,계속하다,middle,중등영어,,,1,continue**
+609,contract,계약,middle,중등영어,,,1,contract**
+610,contradict,"모순되다, 반박하다",high,고등영어,,,1,contradict
+611,contrary,반대의,high,고등영어,,,1,contrary
+612,contrast,대조,high,고등영어,,,1,contrast
+613,contribute,기여하다,middle,중등영어,,,1,contribute**
+614,control,"조절하다, 통제하다",elem,초등영어,,,1,control*
+615,controversy,논란,high,고등영어,,,1,controversy
+616,convene,소집하다,high,고등영어,,"convenient, convention",1,"convene (convenient, convention)"
+617,converse,대화하다,middle,중등영어,,conversation,1,converse** (conversation)
+618,convert,전환하다,high,고등영어,,,1,convert
+619,convey,전달하다,high,고등영어,,,1,convey
+620,convict,유죄를 선고하다,high,고등영어,,,1,convict
+621,convince,확신시키다,middle,중등영어,,,1,convince**
+622,cook,요리하다,elem,초등영어,,,1,cook*
+623,cookie,쿠키,elem,초등영어,cooky,,1,cookie* / cooky*
+624,cool,시원한,elem,초등영어,,,1,cool*
+625,cooperate,협력하다,high,고등영어,,,1,cooperate
+626,coordinate,조정하다,high,고등영어,,,1,coordinate
+627,cop,경찰관,middle,중등영어,,,1,cop**
+628,cope,대처하다,middle,중등영어,,,1,cope**
+629,copy,복사하다,middle,중등영어,,,1,copy**
+630,copyright,저작권,high,고등영어,,,1,copyright
+631,cord,"줄, 끈",high,고등영어,,,1,cord
+632,core,핵심,high,고등영어,,,1,core
+633,corn,옥수수,high,고등영어,,,1,corn
+634,corner,모퉁이,elem,초등영어,,,1,corner*
+635,corporate,기업의,high,고등영어,,corporation,1,corporate (corporation)
+636,correct,"정확한, 고치다",middle,중등영어,,,1,correct**
+637,correspond,"일치하다, 서신을 주고받다",high,고등영어,,,1,correspond
+638,corridor,복도,high,고등영어,,,1,corridor
+639,corrupt,부패한,high,고등영어,,,1,corrupt
+640,cost,비용,elem,초등영어,,,1,cost*
+641,costume,의상,high,고등영어,,,1,costume
+642,cottage,작은 시골집,middle,중등영어,,,1,cottage**
+643,cotton,"면, 목화",middle,중등영어,,,1,cotton**
+644,cough,기침하다,middle,중등영어,,,1,cough**
+645,could,~할 수 있었다,elem,초등영어,,,0,could*
+646,council,"의회, 위원회",middle,중등영어,,,1,council**
+647,counsel,"상담하다, 조언",high,고등영어,,,1,counsel
+648,count,세다,middle,중등영어,,"discount, counter",1,"count** (discount, counter)"
+649,counterpart,"상대방, 대응물",high,고등영어,,,1,counterpart
+650,country,나라,elem,초등영어,,,1,country*
+651,countryside,시골,middle,중등영어,,,1,countryside**
+652,county,"군, 자치주",middle,중등영어,,,1,county**
+653,couple,"한 쌍, 부부",elem,초등영어,,,1,couple*
+654,coupon,쿠폰,high,고등영어,,,1,coupon
+655,courage,용기,high,고등영어,,"discourage, encourage",1,"courage (discourage, encourage)"
+656,course,"과정, 강좌",elem,초등영어,,,1,course*
+657,court,"법정, 코트",elem,초등영어,,,1,court*
+658,cousin,사촌,elem,초등영어,,,1,cousin*
+659,cover,덮다,elem,초등영어,,discover,1,cover* (discover)
+660,cow,소,elem,초등영어,,,1,cow*
+661,crack,금이 가다,middle,중등영어,,,1,crack**
+662,craft,"공예, 기술",high,고등영어,,,1,craft
+663,crash,충돌하다,middle,중등영어,,,1,crash**
+664,crawl,기어가다,middle,중등영어,,,1,crawl**
+665,crayon,크레용,elem,초등영어,,,1,crayon*
+666,craze,"열풍, 대유행",high,고등영어,,crazy,1,craze (crazy)
+667,cream,크림,elem,초등영어,,,1,cream*
+668,create,창조하다,middle,중등영어,,creature,1,create** (creature)
+669,credible,믿을 수 있는,high,고등영어,,incredible,1,credible (incredible)
+670,credit,"신용, 학점",middle,중등영어,,,1,credit**
+671,creep,"기다, 살금살금 움직이다",high,고등영어,,,1,creep
+672,crew,승무원,high,고등영어,,,1,crew
+673,crime,범죄,middle,중등영어,,criminal,1,crime** (criminal)
+674,crisis,위기,middle,중등영어,,,1,crisis**
+675,crisp,바삭바삭한,middle,중등영어,,,1,crisp**
+676,criterion,기준,high,고등영어,,,1,criterion
+677,critic,비평가,high,고등영어,,"criticize / criticise, criticism",1,"critic (criticize / criticise, criticism)"
+678,crop,농작물,high,고등영어,,,1,crop
+679,cross,건너다,elem,초등영어,,,1,cross*
+680,crowd,군중,middle,중등영어,,,1,crowd**
+681,crown,왕관,middle,중등영어,,,1,crown**
+682,crucial,결정적인,high,고등영어,,,1,crucial
+683,cruel,잔인한,middle,중등영어,,,1,cruel**
+684,cruise,유람선 여행,high,고등영어,,,1,cruise
+685,crush,으깨다,high,고등영어,,,1,crush
+686,cry,울다,elem,초등영어,,,1,cry*
+687,crystal,"수정, 결정체",high,고등영어,,,1,crystal
+688,cultivate,경작하다,high,고등영어,,,1,cultivate
+689,culture,문화,elem,초등영어,,,1,culture*
+690,cup,컵,elem,초등영어,,,1,cup*
+691,cure,치료하다,middle,중등영어,,,1,cure**
+692,curious,호기심 많은,middle,중등영어,,curiosity,1,curious** (curiosity)
+693,curl,곱슬곱슬하게 하다,middle,중등영어,,,1,curl**
+694,currency,"통화, 화폐",high,고등영어,,,1,currency
+695,current,"현재의, 흐름",middle,중등영어,,,1,current**
+696,curriculum,교육과정,high,고등영어,,,1,curriculum
+697,curry,카레,high,고등영어,,,1,curry
+698,curse,저주,high,고등영어,,,1,curse
+699,curtain,커튼,elem,초등영어,,,1,curtain*
+700,curve,곡선,high,고등영어,,,1,curve
+701,custody,"양육권, 구금",high,고등영어,,,1,custody
+702,custom,관습,high,고등영어,,,1,custom
+703,customer,손님,elem,초등영어,,,1,customer*
+704,cut,자르다,elem,초등영어,,,1,cut*
+705,cute,귀여운,middle,중등영어,,,1,cute**
+706,cycle,"순환, 자전거를 타다",middle,중등영어,,"recycle, cyclist",1,"cycle** (recycle, cyclist)"
+707,cynical,냉소적인,high,고등영어,,,1,cynical
+708,dairy,유제품의,high,고등영어,,,1,dairy
+709,damage,"손상, 피해",middle,중등영어,,,1,damage**
+710,damp,축축한,high,고등영어,,,1,damp
+711,dance,춤추다,elem,초등영어,,,1,dance*
+712,danger,위험,elem,초등영어,,,1,danger*
+713,dare,감히 ~하다,middle,중등영어,,,1,dare**
+714,dark,어두운,elem,초등영어,,,1,dark*
+715,darling,"사랑하는 사람, 여보",middle,중등영어,,,1,darling**
+716,dash,돌진하다,high,고등영어,,,1,dash
+717,database,데이터베이스,high,고등영어,,,1,database
+718,date,날짜,elem,초등영어,,,1,date*
+719,datum,"자료, 데이터",high,고등영어,,data,1,datum (data)
+720,daughter,딸,elem,초등영어,,,1,daughter*
+721,dawn,새벽,middle,중등영어,,,1,dawn**
+722,day,"날, 낮",elem,초등영어,,,1,day*
+723,dead,죽은,elem,초등영어,,,1,dead*
+724,deal,"거래, 다루다",middle,중등영어,,,1,deal**
+725,death,죽음,elem,초등영어,,,1,death*
+726,debate,토론,middle,중등영어,,,1,debate**
+727,debt,빚,middle,중등영어,,,1,debt**
+728,decade,10년,high,고등영어,,,1,decade
+729,decay,부패하다,high,고등영어,,,1,decay
+730,decent,"괜찮은, 품위 있는",high,고등영어,,,1,decent
+731,decide,결정하다,elem,초등영어,,decision,1,decide* (decision)
+732,deck,갑판,middle,중등영어,,,1,deck**
+733,declare,선언하다,high,고등영어,,,1,declare
+734,decline,"감소하다, 거절하다",high,고등영어,,declension,1,decline (declension)
+735,decorate,장식하다,middle,중등영어,,,1,decorate**
+736,decrease,감소하다,high,고등영어,,,1,decrease
+737,dedicate,"바치다, 헌신하다",high,고등영어,,,1,dedicate
+738,deep,깊은,elem,초등영어,,,1,deep*
+739,defeat,패배시키다,high,고등영어,,,1,defeat
+740,defend,방어하다,high,고등영어,,defendant,1,defend (defendant)
+741,defense,방어,middle,중등영어,defence,,1,defense** / defence**
+742,deficiency,결핍,high,고등영어,,,1,deficiency
+743,deficit,적자,high,고등영어,,,1,deficit
+744,define,정의하다,middle,중등영어,,,1,define**
+745,definite,분명한,middle,중등영어,,,1,definite**
+746,degree,"정도, 학위",middle,중등영어,,,1,degree**
+747,delay,"지연, 미루다",middle,중등영어,,,1,delay**
+748,delegate,"대표, 위임하다",high,고등영어,,,1,delegate
+749,delete,삭제하다,high,고등영어,,,1,delete
+750,deliberate,고의적인,high,고등영어,,,1,deliberate
+751,delicate,섬세한,high,고등영어,,,1,delicate
+752,delicious,맛있는,elem,초등영어,,,1,delicious*
+753,delight,기쁨,middle,중등영어,,,1,delight**
+754,deliver,배달하다,middle,중등영어,,,1,deliver**
+755,demand,요구하다,middle,중등영어,,,1,demand**
+756,democracy,민주주의,high,고등영어,,,1,democracy
+757,democrat,민주주의자,high,고등영어,,,1,democrat
+758,demon,악마,high,고등영어,,,1,demon
+759,demonstrate,"증명하다, 시위하다",middle,중등영어,,,1,demonstrate**
+760,dense,빽빽한,high,고등영어,,,1,dense
+761,dentist,치과 의사,middle,중등영어,,,1,dentist**
+762,deny,부인하다,middle,중등영어,,,1,deny**
+763,depart,출발하다,high,고등영어,,"department, departure",1,"depart (department, departure)"
+764,depend,의존하다,middle,중등영어,,"dependence, independent",1,"depend** (dependence, independent)"
+765,depict,묘사하다,high,고등영어,,,1,depict
+766,deposit,"예금, 보증금",high,고등영어,,,1,deposit
+767,depress,우울하게 하다,middle,중등영어,,,1,depress**
+768,deprive,빼앗다,high,고등영어,,,1,deprive
+769,derive,"끌어내다, 유래하다",high,고등영어,,,1,derive
+770,descend,내려가다,high,고등영어,,,1,descend
+771,describe,묘사하다,middle,중등영어,,description,1,describe** (description)
+772,desert,사막,middle,중등영어,,,1,desert**
+773,deserve,~을 받을 만하다,middle,중등영어,,,1,deserve**
+774,design,"디자인, 설계",elem,초등영어,,,1,design*
+775,designate,지정하다,high,고등영어,,,1,designate
+776,desire,"욕구, 바라다",middle,중등영어,,,1,desire**
+777,desk,책상,elem,초등영어,,,1,desk*
+778,despair,절망,high,고등영어,,,1,despair
+779,desperate,"필사적인, 절망적인",middle,중등영어,,,1,desperate**
+780,despite,~에도 불구하고,middle,중등영어,,,1,despite**
+781,destine,운명 짓다,high,고등영어,,destination,1,destine (destination)
+782,destiny,운명,high,고등영어,,,1,destiny
+783,destroy,파괴하다,middle,중등영어,,,1,destroy**
+784,destruct,파괴하다,high,고등영어,,destruction,1,destruct (destruction)
+785,detach,떼어 내다,high,고등영어,,,1,detach
+786,detail,세부 사항,middle,중등영어,,,1,detail**
+787,detect,"감지하다, 발견하다",middle,중등영어,,,1,detect**
+788,determine,결정하다,middle,중등영어,,,1,determine**
+789,develop,발달시키다,middle,중등영어,,,1,develop**
+790,device,장치,high,고등영어,,,1,device
+791,devil,"악마, 마귀",high,고등영어,,,1,devil
+792,devise,고안하다,high,고등영어,,,1,devise
+793,devote,헌신하다,high,고등영어,,,1,devote
+794,diabetes,당뇨병,high,고등영어,,,1,diabetes
+795,dialogue,대화,elem,초등영어,dialog,,1,dialogue* / dialog*
+796,diary,일기,middle,중등영어,,,1,diary**
+797,dictate,"받아쓰게 하다, 지시하다",high,고등영어,,,1,dictate
+798,dictionary,사전,middle,중등영어,,,1,dictionary**
+799,die,죽다,elem,초등영어,,,1,die*
+800,diet,"식단, 다이어트",middle,중등영어,,,1,diet**
+801,differ,다르다,high,고등영어,,different,1,differ (different)
+802,difficult,어려운,elem,초등영어,,,1,difficult*
+803,dig,파다,middle,중등영어,,,1,dig**
+804,dignity,존엄성,high,고등영어,,,1,dignity
+805,dimension,"차원, 크기",high,고등영어,,,1,dimension
+806,diminish,줄어들다,high,고등영어,,,1,diminish
+807,dine,식사하다,high,고등영어,,,1,dine
+808,dinner,저녁 식사,elem,초등영어,,,1,dinner*
+809,dip,담그다,high,고등영어,,,1,dip
+810,diplomat,외교관,high,고등영어,,,1,diplomat
+811,direct,"직접적인, 지도하다",middle,중등영어,,,1,direct**
+812,dirt,"흙, 먼지",middle,중등영어,,dirty,1,dirt** (dirty)
+813,disappoint,실망시키다,middle,중등영어,,,1,disappoint**
+814,disaster,재난,high,고등영어,,,1,disaster
+815,disc,"원반, 디스크",middle,중등영어,,disk,1,disc** (disk)
+816,discipline,"규율, 훈련",middle,중등영어,,,1,discipline**
+817,discourse,담화,high,고등영어,,,1,discourse
+818,discriminate,차별하다,high,고등영어,,,1,discriminate
+819,discuss,토론하다,elem,초등영어,,,1,discuss*
+820,disgust,혐오감,middle,중등영어,,,1,disgust**
+821,dish,"접시, 요리",middle,중등영어,,,1,dish**
+822,dismiss,"해산시키다, 묵살하다",high,고등영어,,,1,dismiss
+823,display,전시하다,middle,중등영어,,,1,display**
+824,dispute,분쟁,high,고등영어,,,1,dispute
+825,disrupt,방해하다,high,고등영어,,,1,disrupt
+826,distance,거리 (간격),middle,중등영어,,,1,distance**
+827,distinct,뚜렷한,high,고등영어,,,1,distinct
+828,distinguish,구별하다,high,고등영어,,,1,distinguish
+829,distort,왜곡하다,high,고등영어,,,1,distort
+830,distract,주의를 흐트러뜨리다,high,고등영어,,,1,distract
+831,distribute,분배하다,high,고등영어,,,1,distribute
+832,district,"지역, 구역",middle,중등영어,,,1,district**
+833,disturb,방해하다,middle,중등영어,,,1,disturb**
+834,dive,잠수하다,middle,중등영어,,,1,dive**
+835,diverse,다양한,high,고등영어,,,1,diverse
+836,divide,나누다,middle,중등영어,,,1,divide**
+837,divine,신성한,high,고등영어,,,1,divine
+838,divorce,이혼,middle,중등영어,,,1,divorce**
+839,do,하다,elem,초등영어,,,0,do*
+840,doctor,의사,elem,초등영어,,,1,doctor*
+841,document,문서,middle,중등영어,,,1,document**
+842,dog,개,elem,초등영어,,,1,dog*
+843,doll,인형,elem,초등영어,,,1,doll*
+844,dolphin,돌고래,middle,중등영어,,,1,dolphin**
+845,domain,영역,high,고등영어,,,1,domain
+846,domestic,"국내의, 가정의",middle,중등영어,,,1,domestic**
+847,dominate,지배하다,high,고등영어,,dominant,1,dominate (dominant)
+848,donate,기부하다,middle,중등영어,,,1,donate**
+849,door,문,elem,초등영어,,,1,door*
+850,dose,복용량,high,고등영어,,,1,dose
+851,dot,점,high,고등영어,,,1,dot
+852,double,두 배의,elem,초등영어,,,1,double*
+853,doubt,의심하다,middle,중등영어,,,1,doubt**
+854,doughnut,도넛,elem,초등영어,,,1,doughnut*
+855,down,아래로,elem,초등영어,,,1,down*
+856,dozen,"12개, 다스",middle,중등영어,,,1,dozen**
+857,draft,초안,high,고등영어,,,1,draft
+858,drag,끌다,middle,중등영어,,,1,drag**
+859,drain,배수하다,high,고등영어,,,1,drain
+860,drama,"연극, 드라마",middle,중등영어,,,1,drama**
+861,draw,그리다,elem,초등영어,,drawer,1,draw* (drawer)
+862,dread,두려워하다,high,고등영어,,,1,dread
+863,dream,꿈,elem,초등영어,,,1,dream*
+864,dress,"드레스, 옷을 입다",elem,초등영어,,,1,dress*
+865,drill,"훈련, 드릴",high,고등영어,,,1,drill
+866,drink,마시다,elem,초등영어,,,1,drink*
+867,drive,운전하다,elem,초등영어,,,1,drive*
+868,drop,떨어뜨리다,elem,초등영어,,,1,drop*
+869,drown,익사하다,high,고등영어,,,1,drown
+870,drug,"약, 마약",middle,중등영어,,,1,drug**
+871,drum,"북, 드럼",elem,초등영어,,,1,drum*
+872,dry,마른,elem,초등영어,,,1,dry*
+873,dual,이중의,high,고등영어,,,1,dual
+874,duck,오리,elem,초등영어,,,1,duck*
+875,due,"~ 때문에, 예정된",middle,중등영어,,,1,due**
+876,dull,"지루한, 무딘",high,고등영어,,,1,dull
+877,dump,버리다,middle,중등영어,,,1,dump**
+878,during,~ 동안,elem,초등영어,,,1,during*
+879,dust,먼지,middle,중등영어,,,1,dust**
+880,duty,의무,middle,중등영어,,,1,duty**
+881,dwell,"살다, 거주하다",high,고등영어,,,1,dwell
+882,dynamic,역동적인,high,고등영어,,,1,dynamic
+883,each,각각의,middle,중등영어,,,1,each**
+884,eager,열망하는,high,고등영어,,,1,eager
+885,ear,귀,elem,초등영어,,,1,ear*
+886,early,일찍,elem,초등영어,,,1,early*
+887,earn,벌다,middle,중등영어,,,1,earn**
+888,earth,지구,elem,초등영어,,,1,earth*
+889,ease,"쉬움, 덜어 주다",middle,중등영어,,"disease, easy",1,"ease** (disease, easy)"
+890,east,동쪽,elem,초등영어,,,1,east*
+891,eat,먹다,elem,초등영어,,,1,eat*
+892,economy,경제,middle,중등영어,,,1,economy**
+893,edge,가장자리,middle,중등영어,,,1,edge**
+894,edit,편집하다,middle,중등영어,,,1,edit**
+895,educate,교육하다,middle,중등영어,,,1,educate**
+896,effect,"효과, 결과",middle,중등영어,,effective,1,effect** (effective)
+897,efficient,효율적인,high,고등영어,,,1,efficient
+898,effort,노력,middle,중등영어,,,1,effort**
+899,egg,달걀,elem,초등영어,,,1,egg*
+900,eight,"8, 여덟",elem,초등영어,,,1,eight*
+901,either,둘 중 하나,middle,중등영어,,,1,either**
+902,elaborate,정교한,high,고등영어,,,1,elaborate
+903,elect,선출하다,middle,중등영어,,,1,elect**
+904,electric,전기의,middle,중등영어,,,1,electric**
+905,electronic,전자의,high,고등영어,,,1,electronic
+906,elegant,우아한,high,고등영어,,,1,elegant
+907,element,요소,middle,중등영어,,elementary,1,element** (elementary)
+908,elephant,코끼리,elem,초등영어,,,1,elephant*
+909,elevate,높이다,high,고등영어,,elevator,1,elevate (elevator)
+910,eleven,"11, 열하나",elem,초등영어,,,1,eleven*
+911,eliminate,제거하다,high,고등영어,,,1,eliminate
+912,elite,"엘리트, 정예",high,고등영어,,,1,elite
+913,else,그 밖의,middle,중등영어,,,1,else**
+914,embarrass,당황하게 하다,middle,중등영어,,,1,embarrass**
+915,embassy,대사관,high,고등영어,,,1,embassy
+916,embrace,"포옹하다, 받아들이다",high,고등영어,,,1,embrace
+917,emerge,나타나다,high,고등영어,,emergence,1,emerge (emergence)
+918,emergency,비상사태,high,고등영어,,,1,emergency
+919,emit,방출하다,high,고등영어,,emission,1,emit (emission)
+920,emotion,감정,middle,중등영어,,,1,emotion**
+921,emphasis,강조,high,고등영어,,,1,emphasis
+922,emphasize,강조하다,middle,중등영어,,,1,emphasize**
+923,empire,제국,middle,중등영어,,,1,empire**
+924,employ,고용하다,middle,중등영어,,,1,employ**
+925,empty,비어 있는,middle,중등영어,,,1,empty**
+926,encounter,마주치다,high,고등영어,,,1,encounter
+927,end,끝,elem,초등영어,,,1,end*
+928,endure,견디다,high,고등영어,,,1,endure
+929,enemy,적,middle,중등영어,,,1,enemy**
+930,energy,"에너지, 기운",elem,초등영어,,,1,energy*
+931,engage,"참여하다, 약혼시키다",middle,중등영어,,,1,engage**
+932,engine,엔진,middle,중등영어,,,1,engine**
+933,engineer,기술자,middle,중등영어,,,1,engineer**
+934,enhance,향상시키다,high,고등영어,,,1,enhance
+935,enormous,거대한,middle,중등영어,,,1,enormous**
+936,enough,충분한,elem,초등영어,,,1,enough*
+937,enter,들어가다,elem,초등영어,,,1,enter*
+938,enterprise,기업,high,고등영어,,,1,enterprise
+939,entertain,즐겁게 하다,middle,중등영어,,,1,entertain**
+940,enthusiastic,열정적인,high,고등영어,,,1,enthusiastic
+941,entire,전체의,middle,중등영어,,,1,entire**
+942,entry,"입장, 참가",high,고등영어,,,1,entry
+943,envelope,봉투,middle,중등영어,,,1,envelope**
+944,environ,둘러싸다,high,고등영어,,environment,1,environ (environment)
+945,envy,부러워하다,high,고등영어,,,1,envy
+946,equal,"같은, 동등한",middle,중등영어,,,1,equal**
+947,equip,장비를 갖추다,high,고등영어,,equipment,1,equip (equipment)
+948,era,시대,high,고등영어,,,1,era
+949,erase,지우다,high,고등영어,,eraser,1,erase (eraser)
+950,erect,세우다,high,고등영어,,,1,erect
+951,err,실수하다,high,고등영어,,error,1,err (error)
+952,escape,탈출하다,middle,중등영어,,,1,escape**
+953,especial,특별한,middle,중등영어,,especially,1,especial** (especially)
+954,essay,"수필, 에세이",middle,중등영어,,,1,essay**
+955,essence,본질,high,고등영어,,essential,1,essence (essential)
+956,establish,설립하다,middle,중등영어,,,1,establish**
+957,estate,"토지, 재산",high,고등영어,,,1,estate
+958,estimate,추정하다,middle,중등영어,,,1,estimate**
+959,ethic,윤리,high,고등영어,,ethical,1,ethic (ethical)
+960,ethnic,민족의,high,고등영어,,,1,ethnic
+961,evacuate,대피시키다,high,고등영어,,,1,evacuate
+962,evaluate,평가하다 (가치를),high,고등영어,,,1,evaluate
+963,even,"~조차, 평평한",middle,중등영어,,,1,even**
+964,evening,저녁,elem,초등영어,,,1,evening*
+965,event,"행사, 사건",middle,중등영어,,eventually,1,event** (eventually)
+966,ever,"언제나, 한 번이라도",middle,중등영어,,,1,ever**
+967,every,"모든, 매",elem,초등영어,,,1,every*
+968,evidence,증거,middle,중등영어,,,1,evidence**
+969,evil,사악한,middle,중등영어,,,1,evil**
+970,evitable,피할 수 있는,high,고등영어,,inevitable,1,evitable (inevitable)
+971,evolution,진화,high,고등영어,,,1,evolution
+972,evolve,진화하다,high,고등영어,,,1,evolve
+973,exact,정확한,middle,중등영어,,,1,exact**
+974,exaggerate,과장하다,high,고등영어,,,1,exaggerate
+975,examine,"조사하다, 검사하다",middle,중등영어,,examination / exam,1,examine** (examination / exam)
+976,example,"예, 보기",elem,초등영어,,,1,example*
+977,exceed,초과하다,high,고등영어,,,1,exceed
+978,excel,뛰어나다,high,고등영어,,excellent,1,excel (excellent)
+979,except,~을 제외하고,middle,중등영어,,,1,except**
+980,excess,"초과, 과잉",high,고등영어,,,1,excess
+981,exchange,교환하다,middle,중등영어,,,1,exchange**
+982,excite,흥분시키다,middle,중등영어,,,1,excite**
+983,exclude,제외하다,high,고등영어,,exclusive,1,exclude (exclusive)
+984,excuse,"변명, 용서하다",middle,중등영어,,,1,excuse**
+985,executive,"임원, 경영진",high,고등영어,,,1,executive
+986,exercise,운동,elem,초등영어,,,1,exercise*
+987,exhaust,지치게 하다,middle,중등영어,,,1,exhaust**
+988,exhibit,전시하다,high,고등영어,,,1,exhibit
+989,exist,존재하다,middle,중등영어,,,1,exist**
+990,exit,출구,middle,중등영어,,,1,exit**
+991,exotic,이국적인,high,고등영어,,,1,exotic
+992,expand,확장하다,middle,중등영어,,,1,expand**
+993,expect,기대하다,middle,중등영어,,,1,expect**
+994,expense,비용,middle,중등영어,,expensive,1,expense** (expensive)
+995,experience,경험,middle,중등영어,,,1,experience**
+996,experiment,실험,middle,중등영어,,,1,experiment**
+997,expert,전문가,middle,중등영어,,,1,expert**
+998,expertise,전문 지식,high,고등영어,,,1,expertise
+999,explain,설명하다,middle,중등영어,,,1,explain**
+1000,explicit,명시적인,high,고등영어,,,1,explicit
+1001,explode,폭발하다,high,고등영어,,,1,explode
+1002,explore,탐험하다,high,고등영어,,,1,explore
+1003,export,수출하다,high,고등영어,,,1,export
+1004,expose,노출시키다,middle,중등영어,,,1,expose**
+1005,express,표현하다,middle,중등영어,,,1,express**
+1006,extend,연장하다,middle,중등영어,,,1,extend**
+1007,extent,"정도, 범위",high,고등영어,,,1,extent
+1008,external,외부의,high,고등영어,,,1,external
+1009,extinct,멸종된,high,고등영어,,,1,extinct
+1010,extra,추가의,middle,중등영어,,,1,extra**
+1011,extract,추출하다,high,고등영어,,,1,extract
+1012,extraordinary,비범한,high,고등영어,,,1,extraordinary
+1013,extreme,극단적인,middle,중등영어,,,1,extreme**
+1014,eye,눈 (신체),elem,초등영어,,,1,eye*
+1015,eyebrow,눈썹,high,고등영어,,,1,eyebrow
+1016,fabric,"직물, 천",high,고등영어,,,1,fabric
+1017,face,얼굴,elem,초등영어,,,1,face*
+1018,facilitate,촉진하다,high,고등영어,,,1,facilitate
+1019,facility,시설,high,고등영어,,,1,facility
+1020,fact,사실,elem,초등영어,,factual,1,fact* (factual)
+1021,factor,요인,middle,중등영어,,,1,factor**
+1022,factory,공장,middle,중등영어,,,1,factory**
+1023,faculty,"능력, 교수진",high,고등영어,,,1,faculty
+1024,fade,희미해지다,high,고등영어,,,1,fade
+1025,fail,실패하다,elem,초등영어,,,1,fail*
+1026,faint,"희미한, 기절하다",middle,중등영어,,,1,faint**
+1027,fair,공정한,middle,중등영어,,,1,fair**
+1028,faith,"믿음, 신앙",middle,중등영어,,,1,faith**
+1029,fall,"떨어지다, 가을",elem,초등영어,,,1,fall*
+1030,false,거짓의,high,고등영어,,,1,false
+1031,fame,명성,high,고등영어,,famous,1,fame (famous)
+1032,familiar,친숙한,middle,중등영어,,,1,familiar**
+1033,family,가족,elem,초등영어,,,1,family*
+1034,fan,"선풍기, 팬",elem,초등영어,,,1,fan*
+1035,fancy,"화려한, 상상",middle,중등영어,,,1,fancy**
+1036,fantastic,환상적인,middle,중등영어,,,1,fantastic**
+1037,far,먼,elem,초등영어,,,1,far*
+1038,fare,요금 (교통),high,고등영어,,,1,fare
+1039,farm,농장,elem,초등영어,,,1,farm*
+1040,fascinate,매혹하다,middle,중등영어,,,1,fascinate**
+1041,fashion,"유행, 패션",middle,중등영어,,,1,fashion**
+1042,fast,빠른,elem,초등영어,,,1,fast*
+1043,fasten,"매다, 고정하다",high,고등영어,,,1,fasten
+1044,fat,"뚱뚱한, 지방",elem,초등영어,,,1,fat*
+1045,fate,운명 (숙명),high,고등영어,,fatal,1,fate (fatal)
+1046,father,아버지,elem,초등영어,,"dad, daddy",1,"father* (dad, daddy)"
+1047,fault,"잘못, 결점",middle,중등영어,,,1,fault**
+1048,favor,"호의, 부탁",middle,중등영어,favour,,1,favor** / favour**
+1049,favorite,가장 좋아하는,elem,초등영어,favourite,,1,favorite* / favourite*
+1050,fear,두려움,middle,중등영어,,,1,fear**
+1051,feature,특징,middle,중등영어,,,1,feature**
+1052,federal,연방의,high,고등영어,,,1,federal
+1053,fee,"요금, 수수료",middle,중등영어,,,1,fee**
+1054,feed,먹이를 주다,middle,중등영어,,,1,feed**
+1055,feel,느끼다,elem,초등영어,,,1,feel*
+1056,fellow,동료,middle,중등영어,,,1,fellow**
+1057,female,여성의,middle,중등영어,,,1,female**
+1058,fence,울타리,middle,중등영어,,,1,fence**
+1059,ferry,여객선,high,고등영어,,,1,ferry
+1060,fertile,비옥한,high,고등영어,,,1,fertile
+1061,festival,축제,elem,초등영어,,,1,festival*
+1062,fever,열 (병),middle,중등영어,,,1,fever**
+1063,few,"거의 없는, 몇몇의",middle,중등영어,,,1,few**
+1064,fiber,섬유,high,고등영어,fibre,,1,fiber / fibre
+1065,fiction,"소설, 허구",high,고등영어,,,1,fiction
+1066,field,들판,elem,초등영어,,,1,field*
+1067,fierce,사나운,high,고등영어,,,1,fierce
+1068,fight,싸우다,elem,초등영어,,,1,fight*
+1069,figure,"숫자, 인물",middle,중등영어,,,1,figure**
+1070,file,"파일, 서류철",elem,초등영어,,,1,file*
+1071,fill,채우다,elem,초등영어,,,1,fill*
+1072,film,영화,elem,초등영어,,,1,film*
+1073,filter,거르다,high,고등영어,,,1,filter
+1074,final,마지막의,middle,중등영어,,,1,final**
+1075,finance,"재정, 금융",middle,중등영어,,,1,finance**
+1076,find,찾다,elem,초등영어,,,1,find*
+1077,fine,"좋은, 괜찮은",elem,초등영어,,,1,fine*
+1078,finger,손가락,elem,초등영어,,,1,finger*
+1079,finish,끝내다,elem,초등영어,,,1,finish*
+1080,finite,유한한,high,고등영어,,,1,finite
+1081,fire,불,elem,초등영어,,,1,fire*
+1082,firm,"회사, 단단한",middle,중등영어,,,1,firm**
+1083,first,첫 번째의,elem,초등영어,,,1,first*
+1084,fish,물고기,elem,초등영어,,,1,fish*
+1085,fit,"맞다, 건강한",middle,중등영어,,,1,fit**
+1086,five,"5, 다섯",elem,초등영어,,,1,five*
+1087,fix,고치다,elem,초등영어,,,1,fix*
+1088,flag,깃발,middle,중등영어,,,1,flag**
+1089,flame,불꽃,middle,중등영어,,,1,flame**
+1090,flash,번쩍임,middle,중등영어,,,1,flash**
+1091,flat,평평한,middle,중등영어,,,1,flat**
+1092,flavor,"맛, 풍미",high,고등영어,flavour,,1,flavor / flavour
+1093,flaw,결함,high,고등영어,,,1,flaw
+1094,flee,달아나다,high,고등영어,,,1,flee
+1095,flesh,"살, 육체",high,고등영어,,,1,flesh
+1096,flexible,유연한,high,고등영어,,,1,flexible
+1097,flight,비행,middle,중등영어,,,1,flight**
+1098,flip,뒤집다,high,고등영어,,,1,flip
+1099,float,뜨다,middle,중등영어,,,1,float**
+1100,flock,떼,high,고등영어,,,1,flock
+1101,flood,홍수,middle,중등영어,,,1,flood**
+1102,floor,"바닥, 층",elem,초등영어,,,1,floor*
+1103,flourish,번창하다,high,고등영어,,,1,flourish
+1104,flow,흐르다,middle,중등영어,,,1,flow**
+1105,flower,꽃,elem,초등영어,,,1,flower*
+1106,flush,"붉어지다, 물을 내리다",high,고등영어,,,1,flush
+1107,fly,날다,elem,초등영어,,,1,fly*
+1108,focus,집중하다,elem,초등영어,,,1,focus*
+1109,fog,안개,middle,중등영어,,,1,fog**
+1110,fold,접다,middle,중등영어,,,1,fold**
+1111,folk,"사람들, 민속의",middle,중등영어,,,1,folk**
+1112,follow,따르다,middle,중등영어,,,1,follow**
+1113,fond,좋아하는,high,고등영어,,,1,fond
+1114,food,음식,elem,초등영어,,,1,food*
+1115,fool,바보,elem,초등영어,,,1,fool*
+1116,foot,발,elem,초등영어,,,1,foot*
+1117,football,"축구, 미식축구",elem,초등영어,,,1,football*
+1118,for,~을 위해,elem,초등영어,,,0,for*
+1119,forbid,금지하다 (명령으로),high,고등영어,,,1,forbid
+1120,force,"힘, 강요하다",middle,중등영어,,enforce,1,force** (enforce)
+1121,forecast,예보,high,고등영어,,,1,forecast
+1122,forehead,이마,high,고등영어,,,1,forehead
+1123,foreign,외국의,middle,중등영어,,,1,foreign**
+1124,forest,숲,elem,초등영어,,,1,forest*
+1125,forever,영원히,middle,중등영어,,,1,forever**
+1126,forget,잊다,elem,초등영어,,,1,forget*
+1127,forgive,용서하다,middle,중등영어,,,1,forgive**
+1128,fork,포크,elem,초등영어,,,1,fork*
+1129,form,"형태, 양식",elem,초등영어,,"formal, formation, informal",1,"form* (formal, formation, informal)"
+1130,format,형식,high,고등영어,,,1,format
+1131,former,이전의,high,고등영어,,,1,former
+1132,formula,공식,high,고등영어,,,1,formula
+1133,forth,앞으로,middle,중등영어,,,1,forth**
+1134,fortunate,운 좋은,middle,중등영어,,,1,fortunate**
+1135,fortune,"재산, 운",middle,중등영어,,,1,fortune**
+1136,forward,앞으로,middle,중등영어,,,1,forward**
+1137,foster,"기르다, 육성하다",high,고등영어,,,1,foster
+1138,found,설립하다,middle,중등영어,,foundation,1,found** (foundation)
+1139,fountain,분수,high,고등영어,,,1,fountain
+1140,four,"4, 넷",elem,초등영어,,,1,four*
+1141,fox,여우,elem,초등영어,,,1,fox*
+1142,fraction,"일부, 분수 (수학)",high,고등영어,,,1,fraction
+1143,frame,"틀, 액자",middle,중등영어,,,1,frame**
+1144,framework,"틀, 체계",high,고등영어,,,1,framework
+1145,frankly,솔직히,middle,중등영어,,,1,frankly**
+1146,free,"자유로운, 무료의",elem,초등영어,,,1,free*
+1147,freeze,얼다,middle,중등영어,,,1,freeze**
+1148,frequent,빈번한,high,고등영어,,,1,frequent
+1149,fresh,신선한,elem,초등영어,,,1,fresh*
+1150,friend,친구,elem,초등영어,,friendship,1,friend* (friendship)
+1151,fright,"공포, 놀람",middle,중등영어,,,1,fright**
+1152,frog,개구리,middle,중등영어,,,1,frog**
+1153,from,~로부터,elem,초등영어,,,0,from*
+1154,front,앞,elem,초등영어,,,1,front*
+1155,frost,서리,high,고등영어,,,1,frost
+1156,frown,얼굴을 찌푸리다,high,고등영어,,,1,frown
+1157,fruit,과일,elem,초등영어,,,1,fruit*
+1158,frustrate,좌절시키다,middle,중등영어,,,1,frustrate**
+1159,fry,튀기다,middle,중등영어,,,1,fry**
+1160,fuel,연료,high,고등영어,,,1,fuel
+1161,fulfil,"이행하다, 성취하다",high,고등영어,,,1,fulfil
+1162,full,가득 찬,elem,초등영어,,,1,full*
+1163,fun,재미,elem,초등영어,,,1,fun*
+1164,function,기능,middle,중등영어,,,1,function**
+1165,fund,"기금, 자금",middle,중등영어,,,1,fund**
+1166,fundamental,근본적인,high,고등영어,,,1,fundamental
+1167,funeral,장례식,high,고등영어,,,1,funeral
+1168,fur,"털, 모피",middle,중등영어,,,1,fur**
+1169,furnish,가구를 비치하다,high,고등영어,,,1,furnish
+1170,furniture,가구,middle,중등영어,,,1,furniture**
+1171,furthermore,게다가,high,고등영어,,,1,furthermore
+1172,fury,격노,high,고등영어,,furious,1,fury (furious)
+1173,fuse,"융합하다, 퓨즈",high,고등영어,,,1,fuse
+1174,future,미래,elem,초등영어,,,1,future*
+1175,gain,얻다,middle,중등영어,,,1,gain**
+1176,gallery,미술관,high,고등영어,,,1,gallery
+1177,gamble,도박하다,high,고등영어,,,1,gamble
+1178,game,"게임, 경기",elem,초등영어,,,1,game*
+1179,gang,패거리,high,고등영어,,,1,gang
+1180,gap,"틈, 격차",high,고등영어,,,1,gap
+1181,garage,차고,middle,중등영어,,,1,garage**
+1182,garden,정원,elem,초등영어,,,1,garden*
+1183,gas,"가스, 기체",elem,초등영어,,,1,gas*
+1184,gasoline,휘발유,high,고등영어,petrol,,1,gasoline / petrol
+1185,gate,"대문, 출입구",middle,중등영어,,,1,gate**
+1186,gather,"모으다, 모이다",middle,중등영어,,,1,gather**
+1187,gaze,응시하다 (가만히),high,고등영어,,,1,gaze
+1188,gear,"장비, 기어",middle,중등영어,,,1,gear**
+1189,gender,성별,high,고등영어,,,1,gender
+1190,gene,유전자,high,고등영어,,genetic,1,gene (genetic)
+1191,general,일반적인,middle,중등영어,,,1,general**
+1192,generate,생성하다,high,고등영어,,generation,1,generate (generation)
+1193,generous,관대한,high,고등영어,,,1,generous
+1194,genius,천재,high,고등영어,,,1,genius
+1195,gentle,"부드러운, 온화한",middle,중등영어,,,1,gentle**
+1196,gentleman,신사,elem,초등영어,,,1,gentleman*
+1197,genuine,진짜의,high,고등영어,,,1,genuine
+1198,geography,지리학,high,고등영어,,,1,geography
+1199,geology,지질학,high,고등영어,,,1,geology
+1200,gesture,몸짓,middle,중등영어,,,1,gesture**
+1201,get,얻다,elem,초등영어,,,1,get*
+1202,ghost,유령,middle,중등영어,,,1,ghost**
+1203,giant,거인,middle,중등영어,,,1,giant**
+1204,gift,"선물, 재능",middle,중등영어,,,1,gift**
+1205,giraffe,기린,middle,중등영어,,,1,giraffe**
+1206,girl,소녀,elem,초등영어,,,1,girl*
+1207,give,주다,elem,초등영어,,,1,give*
+1208,glad,기쁜,elem,초등영어,,,1,glad*
+1209,glance,흘끗 보다,middle,중등영어,,,1,glance**
+1210,glare,"노려보다, 눈부심",high,고등영어,,,1,glare
+1211,glass,"유리, 유리잔",elem,초등영어,,,1,glass*
+1212,globe,"지구, 지구본",high,고등영어,,global,1,globe (global)
+1213,glory,영광,middle,중등영어,,,1,glory**
+1214,glove,장갑,middle,중등영어,,,1,glove**
+1215,glow,"빛나다, 은은한 빛",high,고등영어,,,1,glow
+1216,glue,"풀, 접착제",middle,중등영어,,,1,glue**
+1217,go,가다,elem,초등영어,,,1,go*
+1218,goal,"목표, 골",elem,초등영어,,,1,goal*
+1219,goat,염소,high,고등영어,,,1,goat
+1220,god,신,elem,초등영어,,,1,god*
+1221,gold,금,elem,초등영어,,,1,gold*
+1222,golf,골프,middle,중등영어,,,1,golf**
+1223,good,좋은,elem,초등영어,,goods,1,good* (goods)
+1224,goodbye,안녕 (헤어질 때),elem,초등영어,,bye,1,goodbye* (bye)
+1225,gorgeous,아주 멋진,middle,중등영어,,,1,gorgeous**
+1226,govern,통치하다,middle,중등영어,,government,1,govern** (government)
+1227,grab,움켜잡다,middle,중등영어,,,1,grab**
+1228,grace,"우아함, 은총",middle,중등영어,,,1,grace**
+1229,grade,"학년, 성적",middle,중등영어,,gradual,1,grade** (gradual)
+1230,graduate,졸업하다,high,고등영어,,,1,graduate
+1231,grain,"곡물, 낟알",high,고등영어,,,1,grain
+1232,grand,웅장한,middle,중등영어,,,1,grand**
+1233,grandfather,할아버지,elem,초등영어,,,1,grandfather*
+1234,grant,"주다, 보조금",middle,중등영어,,,1,grant**
+1235,grape,포도,elem,초등영어,,,1,grape*
+1236,graph,그래프,middle,중등영어,,graphic,1,graph** (graphic)
+1237,grasp,"꽉 잡다, 이해하다",high,고등영어,,,1,grasp
+1238,grass,"풀, 잔디",elem,초등영어,,,1,grass*
+1239,grateful,감사하는,high,고등영어,,,1,grateful
+1240,grave,"무덤, 심각한",high,고등영어,,,1,grave
+1241,gray,회색,elem,초등영어,grey,,1,gray* / grey*
+1242,great,훌륭한,elem,초등영어,,,1,great*
+1243,greed,탐욕,high,고등영어,,,1,greed
+1244,green,초록색,elem,초등영어,,,1,green*
+1245,greet,인사하다,middle,중등영어,,,1,greet**
+1246,grief,슬픔 (깊은),high,고등영어,,,1,grief
+1247,grip,꽉 쥐다,high,고등영어,,,1,grip
+1248,grocery,식료품 (가게),middle,중등영어,,,1,grocery**
+1249,gross,"총-, 역겨운",high,고등영어,,,1,gross
+1250,ground,땅,elem,초등영어,,,1,ground*
+1251,group,"무리, 집단",elem,초등영어,,,1,group*
+1252,grow,자라다,elem,초등영어,,,1,grow*
+1253,guarantee,보장하다,middle,중등영어,,,1,guarantee**
+1254,guard,"경비원, 지키다",middle,중등영어,,,1,guard**
+1255,guardian,보호자,high,고등영어,,,1,guardian
+1256,guess,추측하다,elem,초등영어,,,1,guess*
+1257,guest,손님,middle,중등영어,,,1,guest**
+1258,guide,안내하다,middle,중등영어,,,1,guide**
+1259,guideline,지침,high,고등영어,,,1,guideline
+1260,guilt,죄책감,middle,중등영어,,guilty,1,guilt** (guilty)
+1261,guitar,기타 (악기),elem,초등영어,,,1,guitar*
+1262,gulf,만 (큰 만),high,고등영어,,,1,gulf
+1263,gum,껌,elem,초등영어,,,1,gum*
+1264,gun,총,middle,중등영어,,,1,gun**
+1265,guy,"녀석, 남자",elem,초등영어,,,1,guy*
+1266,gymnasium,체육관,high,고등영어,gym,,1,gymnasium / gym
+1267,habit,습관,elem,초등영어,,,1,habit*
+1268,habitat,서식지,high,고등영어,,,1,habitat
+1269,hair,머리카락,elem,초등영어,,,1,hair*
+1270,half,절반,middle,중등영어,,,1,half**
+1271,hall,"홀, 복도",middle,중등영어,,,1,hall**
+1272,halt,멈추다 (정지),high,고등영어,,,1,halt
+1273,hamburger,햄버거,elem,초등영어,,,1,hamburger*
+1274,hammer,망치,high,고등영어,,,1,hammer
+1275,hand,손,elem,초등영어,,,1,hand*
+1276,handicap,장애,high,고등영어,,,1,handicap
+1277,handle,"다루다, 손잡이",middle,중등영어,,,1,handle**
+1278,handsome,잘생긴,middle,중등영어,,,1,handsome**
+1279,hang,"걸다, 매달다",elem,초등영어,,,1,hang*
+1280,happen,일어나다,middle,중등영어,,,1,happen**
+1281,happy,행복한,elem,초등영어,,,1,happy*
+1282,harbor,"항구, 항만",high,고등영어,harbour,,1,harbor / harbour
+1283,hard,"단단한, 어려운",elem,초등영어,,hardly,1,hard* (hardly)
+1284,harm,"해, 손해",middle,중등영어,,,1,harm**
+1285,harmony,조화,high,고등영어,,harmonious,1,harmony (harmonious)
+1286,harsh,가혹한,high,고등영어,,,1,harsh
+1287,harvest,수확,high,고등영어,,,1,harvest
+1288,hat,모자,elem,초등영어,,,1,hat*
+1289,hate,싫어하다,elem,초등영어,,,1,hate*
+1290,haunt,출몰하다,high,고등영어,,,1,haunt
+1291,have,가지다,elem,초등영어,,,0,have*
+1292,hazard,위험 요소,high,고등영어,,,1,hazard
+1293,he,그 (남자),elem,초등영어,,,1,he*
+1294,head,머리,elem,초등영어,,,1,head*
+1295,headquarters,본부,high,고등영어,,,1,headquarters
+1296,heal,치유하다,high,고등영어,,,1,heal
+1297,health,건강,middle,중등영어,,healthy,1,health** (healthy)
+1298,hear,듣다 (들리다),middle,중등영어,,,1,hear**
+1299,heart,"심장, 마음",elem,초등영어,,,1,heart*
+1300,heat,열,elem,초등영어,,,1,heat*
+1301,heaven,천국,middle,중등영어,,,1,heaven**
+1302,heavy,무거운,elem,초등영어,,,1,heavy*
+1303,heel,발뒤꿈치,high,고등영어,,,1,heel
+1304,height,"높이, 키",middle,중등영어,,,1,height**
+1305,heir,상속인,high,고등영어,,,1,heir
+1306,helicopter,헬리콥터,middle,중등영어,,,1,helicopter**
+1307,hell,지옥,middle,중등영어,,,1,hell**
+1308,hello,안녕 (만났을 때),elem,초등영어,hey / hi,,1,hello* / hey* / hi*
+1309,helmet,헬멧,elem,초등영어,,,1,helmet*
+1310,help,돕다,elem,초등영어,,,1,help*
+1311,hence,"그러므로, 이런 이유로",high,고등영어,,,1,hence
+1312,here,여기,elem,초등영어,,,1,here*
+1313,heritage,유산,high,고등영어,,,1,heritage
+1314,hero,영웅,elem,초등영어,,,1,hero*
+1315,hesitate,망설이다,middle,중등영어,,,1,hesitate**
+1316,hide,"숨다, 숨기다",middle,중등영어,,,1,hide**
+1317,hierarchy,계층,high,고등영어,,,1,hierarchy
+1318,high,높은,elem,초등영어,,,1,high*
+1319,highlight,강조하다,high,고등영어,,,1,highlight
+1320,highway,고속도로,middle,중등영어,,,1,highway**
+1321,hike,도보 여행하다,elem,초등영어,,,1,hike*
+1322,hill,언덕,elem,초등영어,,,1,hill*
+1323,hint,"힌트, 암시",middle,중등영어,,,1,hint**
+1324,hire,고용하다,middle,중등영어,,,1,hire**
+1325,history,역사,elem,초등영어,,,1,history*
+1326,hit,치다,elem,초등영어,,,1,hit*
+1327,hobby,취미,elem,초등영어,,,1,hobby*
+1328,hold,"잡다, 쥐다",elem,초등영어,,,1,hold*
+1329,hole,구멍,middle,중등영어,,,1,hole**
+1330,holiday,휴일,elem,초등영어,,,1,holiday*
+1331,holy,신성한 (거룩한),high,고등영어,,,1,holy
+1332,home,"집, 가정",elem,초등영어,,,1,home*
+1333,homework,숙제,elem,초등영어,,,1,homework*
+1334,honest,정직한,elem,초등영어,,,1,honest*
+1335,honey,꿀,middle,중등영어,,,1,honey**
+1336,honor,명예,middle,중등영어,honour,,1,honor** / honour**
+1337,hook,갈고리,high,고등영어,,,1,hook
+1338,hope,희망하다,elem,초등영어,,,1,hope*
+1339,horizon,"수평선, 지평선",high,고등영어,,,1,horizon
+1340,horror,공포,high,고등영어,,,1,horror
+1341,horse,말 (동물),elem,초등영어,,,1,horse*
+1342,hospital,병원,elem,초등영어,,,1,hospital*
+1343,host,"주인, 주최하다",high,고등영어,,,1,host
+1344,hostile,적대적인,high,고등영어,,,1,hostile
+1345,hot,"뜨거운, 더운",elem,초등영어,,,1,hot*
+1346,hotel,호텔,middle,중등영어,,,1,hotel**
+1347,hour,시간 (60분),elem,초등영어,,,1,hour*
+1348,house,집,elem,초등영어,,,1,house*
+1349,household,"가정, 가구",high,고등영어,,,1,household
+1350,how,어떻게,elem,초등영어,,,1,how*
+1351,however,"그러나, 하지만",elem,초등영어,,,1,however*
+1352,hug,껴안다,middle,중등영어,,,1,hug**
+1353,huge,거대한,middle,중등영어,,,1,huge**
+1354,human,인간,elem,초등영어,,,1,human*
+1355,humor,유머,middle,중등영어,humour,,1,humor** / humour**
+1356,hundred,"100, 백",elem,초등영어,,,1,hundred*
+1357,hunger,배고픔,middle,중등영어,,hungry,1,hunger** (hungry)
+1358,hunt,사냥하다,elem,초등영어,,,1,hunt*
+1359,hurry,서두르다,elem,초등영어,,,1,hurry*
+1360,hurt,다치게 하다,middle,중등영어,,,1,hurt**
+1361,husband,남편,elem,초등영어,,,1,husband*
+1362,hut,오두막,high,고등영어,,,1,hut
+1363,hypothesis,가설,high,고등영어,,,1,hypothesis
+1364,I,나,elem,초등영어,,,1,I*
+1365,ice,얼음,elem,초등영어,,,1,ice*
+1366,idea,"생각, 아이디어",elem,초등영어,,,1,idea*
+1367,ideal,이상적인,high,고등영어,,,1,ideal
+1368,identical,동일한,high,고등영어,,,1,identical
+1369,identity,"정체성, 신원",middle,중등영어,,identify,1,identity** (identify)
+1370,ideology,이념,high,고등영어,,,1,ideology
+1371,if,만약 ~라면,elem,초등영어,,,1,if*
+1372,ignore,무시하다,middle,중등영어,,,1,ignore**
+1373,ill,아픈,middle,중등영어,,,1,ill**
+1374,illude,"속이다, 착각하게 하다",high,고등영어,,illusion,1,illude (illusion)
+1375,illustrate,"설명하다, 삽화를 넣다",middle,중등영어,,,1,illustrate**
+1376,image,"이미지, 모습",elem,초등영어,,,1,image*
+1377,imagine,상상하다,middle,중등영어,,,1,imagine**
+1378,imitate,모방하다,high,고등영어,,,1,imitate
+1379,immediate,즉각적인,middle,중등영어,,,1,immediate**
+1380,immense,막대한,high,고등영어,,,1,immense
+1381,immigrate,이민 오다,high,고등영어,,,1,immigrate
+1382,immune,면역의,high,고등영어,,,1,immune
+1383,impact,"영향, 충격",high,고등영어,,,1,impact
+1384,imperial,제국의,high,고등영어,,,1,imperial
+1385,implement,시행하다,high,고등영어,,,1,implement
+1386,imply,암시하다,high,고등영어,,,1,imply
+1387,import,수입하다,high,고등영어,,"importance, important",1,"import (importance, important)"
+1388,impose,부과하다,high,고등영어,,,1,impose
+1389,impress,깊은 인상을 주다,middle,중등영어,,,1,impress**
+1390,improve,향상시키다,middle,중등영어,,,1,improve**
+1391,in,~ 안에,elem,초등영어,,,0,in*
+1392,incentive,"장려책, 동기",high,고등영어,,,1,incentive
+1393,incident,사건,high,고등영어,,,1,incident
+1394,incline,"기울다, ~하는 경향이 있다",high,고등영어,,,1,incline
+1395,include,포함하다,middle,중등영어,,,1,include**
+1396,income,소득,middle,중등영어,,,1,income**
+1397,incorporate,"포함하다, 통합하다",high,고등영어,,,1,incorporate
+1398,increase,증가하다,middle,중등영어,,,1,increase**
+1399,indeed,정말로,middle,중등영어,,,1,indeed**
+1400,index,"색인, 지수",high,고등영어,,,1,index
+1401,indicate,나타내다,middle,중등영어,,,1,indicate**
+1402,individual,"개인, 개인의",middle,중등영어,,,1,individual**
+1403,induce,유도하다,high,고등영어,,,1,induce
+1404,industry,산업,middle,중등영어,,,1,industry**
+1405,infant,유아,high,고등영어,,,1,infant
+1406,infect,감염시키다,high,고등영어,,,1,infect
+1407,infer,추론하다,high,고등영어,,inference,1,infer (inference)
+1408,inflate,부풀리다,high,고등영어,,,1,inflate
+1409,influence,영향,middle,중등영어,,,1,influence**
+1410,inform,알리다,middle,중등영어,,,1,inform**
+1411,ingredient,재료,high,고등영어,,,1,ingredient
+1412,inhabit,"거주하다, 서식하다",high,고등영어,,,1,inhabit
+1413,inherent,"고유한, 내재된",high,고등영어,,,1,inherent
+1414,inhibit,억제하다,high,고등영어,,,1,inhibit
+1415,initial,처음의,high,고등영어,,,1,initial
+1416,inject,주사하다,high,고등영어,,,1,inject
+1417,injure,부상을 입히다,middle,중등영어,,,1,injure**
+1418,inn,여관,high,고등영어,,,1,inn
+1419,innocent,"무죄인, 순진한",middle,중등영어,,,1,innocent**
+1420,innovate,혁신하다,high,고등영어,,,1,innovate
+1421,input,입력,high,고등영어,,,1,input
+1422,inquire,"묻다, 문의하다",high,고등영어,enquire,,1,inquire / enquire
+1423,insect,곤충,high,고등영어,,,1,insect
+1424,insert,삽입하다,high,고등영어,,,1,insert
+1425,inside,안쪽에,elem,초등영어,,,1,inside*
+1426,insight,통찰력,high,고등영어,,,1,insight
+1427,insist,주장하다,middle,중등영어,,,1,insist**
+1428,inspect,검사하다,middle,중등영어,,,1,inspect**
+1429,inspire,영감을 주다,high,고등영어,,,1,inspire
+1430,install,설치하다,high,고등영어,,,1,install
+1431,instance,"사례, 경우",middle,중등영어,,,1,instance**
+1432,instant,즉각적인,middle,중등영어,,,1,instant**
+1433,instead,대신에,middle,중등영어,,,1,instead**
+1434,instinct,본능,high,고등영어,,,1,instinct
+1435,institute,"기관, 협회",high,고등영어,,institution,1,institute (institution)
+1436,instruct,지시하다,middle,중등영어,,,1,instruct**
+1437,instrument,"악기, 도구",middle,중등영어,,,1,instrument**
+1438,insult,모욕하다,high,고등영어,,,1,insult
+1439,insure,보험에 들다,middle,중등영어,,insurance,1,insure** (insurance)
+1440,integrate,통합하다,high,고등영어,,,1,integrate
+1441,intellect,지성,high,고등영어,,intellectual,1,intellect (intellectual)
+1442,intelligent,"지적인, 총명한",high,고등영어,,,1,intelligent
+1443,intend,의도하다,middle,중등영어,,,1,intend**
+1444,intense,강렬한,middle,중등영어,,,1,intense**
+1445,intent,의도,middle,중등영어,,intention,1,intent** (intention)
+1446,interest,"관심, 흥미",middle,중등영어,,,1,interest**
+1447,interfere,간섭하다,high,고등영어,,,1,interfere
+1448,interior,"내부의, 실내",high,고등영어,,,1,interior
+1449,intermediate,중급의,high,고등영어,,,1,intermediate
+1450,internal,내부의,middle,중등영어,,,1,internal**
+1451,internet,인터넷,elem,초등영어,,,1,internet*
+1452,interpret,해석하다,high,고등영어,,,1,interpret
+1453,interrupt,"방해하다, 끼어들다",middle,중등영어,,,1,interrupt**
+1454,interval,간격,high,고등영어,,,1,interval
+1455,intervene,개입하다,high,고등영어,,,1,intervene
+1456,intimate,친밀한,high,고등영어,,,1,intimate
+1457,into,~ 안으로,elem,초등영어,,,1,into*
+1458,intrigue,흥미를 불러일으키다,high,고등영어,,,1,intrigue
+1459,introduce,소개하다,elem,초등영어,,,1,introduce*
+1460,invade,침략하다,high,고등영어,,,1,invade
+1461,invent,발명하다,middle,중등영어,,inventor,1,invent** (inventor)
+1462,invest,투자하다,middle,중등영어,,,1,invest**
+1463,investigate,조사하다,middle,중등영어,,,1,investigate**
+1464,invite,초대하다,elem,초등영어,,,1,invite*
+1465,involve,"포함하다, 관련시키다",middle,중등영어,,,1,involve**
+1466,iron,"철, 다리미",middle,중등영어,,,1,iron**
+1467,irony,"역설, 아이러니",high,고등영어,,,1,irony
+1468,irritate,짜증 나게 하다 (자극하다),high,고등영어,,,1,irritate
+1469,island,섬,middle,중등영어,,,1,island**
+1470,isolate,고립시키다,high,고등영어,,,1,isolate
+1471,issue,"문제, 쟁점",elem,초등영어,,,1,issue*
+1472,it,그것,elem,초등영어,,,0,it*
+1473,item,"항목, 물품",middle,중등영어,,,1,item**
+1474,jacket,"재킷, 웃옷",elem,초등영어,,,1,jacket*
+1475,jail,교도소,high,고등영어,,,1,jail
+1476,jam,잼,elem,초등영어,,,1,jam*
+1477,jar,"병, 단지",high,고등영어,,,1,jar
+1478,jaw,턱,middle,중등영어,,,1,jaw**
+1479,jeans,청바지,middle,중등영어,,,1,jeans**
+1480,job,"직업, 일",elem,초등영어,,,1,job*
+1481,jog,조깅하다,high,고등영어,,,1,jog
+1482,join,"가입하다, 함께하다",elem,초등영어,,,1,join*
+1483,joint,"관절, 공동의",high,고등영어,,,1,joint
+1484,joke,농담,middle,중등영어,,,1,joke**
+1485,journal,"일지, 학술지",high,고등영어,,,1,journal
+1486,journey,"여행, 여정",middle,중등영어,,,1,journey**
+1487,joy,기쁨,middle,중등영어,,enjoy,1,joy** (enjoy)
+1488,judge,"판사, 판단하다",middle,중등영어,,,1,judge**
+1489,juice,주스,elem,초등영어,,,1,juice*
+1490,jump,뛰어오르다,elem,초등영어,,,1,jump*
+1491,junior,"후배, 손아래의",middle,중등영어,,,1,junior**
+1492,jury,배심원단,high,고등영어,,,1,jury
+1493,just,"단지, 막",elem,초등영어,,,1,just*
+1494,justice,정의,middle,중등영어,,,1,justice**
+1495,keen,"열망하는, 예리한",high,고등영어,,,1,keen
+1496,keep,"유지하다, 지키다",elem,초등영어,,,1,keep*
+1497,key,열쇠,elem,초등영어,,,1,key*
+1498,kick,차다,elem,초등영어,,,1,kick*
+1499,kid,아이,elem,초등영어,,,1,kid*
+1500,kill,죽이다,elem,초등영어,,,1,kill*
+1501,kind,친절한,elem,초등영어,,,1,kind*
+1502,king,왕,elem,초등영어,,,1,king*
+1503,kiss,입맞춤,elem,초등영어,,,1,kiss*
+1504,kit,도구 한 벌,high,고등영어,,,1,kit
+1505,kitchen,부엌,elem,초등영어,,,1,kitchen*
+1506,knee,무릎,middle,중등영어,,,1,knee**
+1507,knife,칼,elem,초등영어,,,1,knife*
+1508,knight,기사 (중세),high,고등영어,,,1,knight
+1509,knock,두드리다,middle,중등영어,,,1,knock**
+1510,knot,매듭,high,고등영어,,,1,knot
+1511,know,알다,elem,초등영어,,,1,know*
+1512,knowledge,지식,middle,중등영어,,,1,knowledge**
+1513,label,"상표, 꼬리표",middle,중등영어,,,1,label**
+1514,labor,노동,middle,중등영어,labour,,1,labor** / labour**
+1515,laboratory,실험실,middle,중등영어,lab,,1,laboratory** / lab**
+1516,lack,부족 (결핍),middle,중등영어,,,1,lack**
+1517,ladder,사다리,high,고등영어,,,1,ladder
+1518,lady,숙녀,elem,초등영어,,,1,lady*
+1519,lake,호수,elem,초등영어,,,1,lake*
+1520,lamb,어린 양,middle,중등영어,,,1,lamb**
+1521,lamp,"등, 램프",middle,중등영어,,,1,lamp**
+1522,land,"땅, 육지",elem,초등영어,,,1,land*
+1523,landscape,풍경,high,고등영어,,,1,landscape
+1524,lane,"좁은 길, 차선",middle,중등영어,,,1,lane**
+1525,language,언어,middle,중등영어,,,1,language**
+1526,lap,무릎 (앉은 자세),high,고등영어,,,1,lap
+1527,large,"큰, 넓은",elem,초등영어,,,1,large*
+1528,laser,레이저,elem,초등영어,,,1,laser*
+1529,last,마지막의,elem,초등영어,,,1,last*
+1530,late,늦은,elem,초등영어,,,1,late*
+1531,latter,후자,high,고등영어,,,1,latter
+1532,laugh,웃다,middle,중등영어,,,1,laugh**
+1533,launch,"출시하다, 발사하다",high,고등영어,,,1,launch
+1534,laundry,세탁물,high,고등영어,,,1,laundry
+1535,law,법,middle,중등영어,,,1,law**
+1536,lawn,잔디밭,middle,중등영어,,,1,lawn**
+1537,lawyer,변호사,middle,중등영어,,,1,lawyer**
+1538,lay,"놓다, 낳다",middle,중등영어,,layer,1,lay** (layer)
+1539,lazy,게으른,elem,초등영어,,,1,lazy*
+1540,lead,이끌다,middle,중등영어,,,1,lead**
+1541,leaf,나뭇잎,middle,중등영어,,,1,leaf**
+1542,league,"연맹, 리그",middle,중등영어,,,1,league**
+1543,leak,새다,high,고등영어,,,1,leak
+1544,lean,기대다,middle,중등영어,,,1,lean**
+1545,leap,"뛰다, 도약",middle,중등영어,,,1,leap**
+1546,learn,배우다,elem,초등영어,,,1,learn*
+1547,lease,임대차 계약,high,고등영어,,,1,lease
+1548,leather,가죽,high,고등영어,,,1,leather
+1549,leave,떠나다,middle,중등영어,,,1,leave**
+1550,lecture,강의,high,고등영어,,,1,lecture
+1551,left,왼쪽,elem,초등영어,,,1,left*
+1552,leg,다리 (신체),elem,초등영어,,,1,leg*
+1553,legal,"법률의, 합법적인",middle,중등영어,,,1,legal**
+1554,legend,전설,high,고등영어,,,1,legend
+1555,legislate,법률을 제정하다,high,고등영어,,,1,legislate
+1556,legitimate,"합법적인, 정당한",high,고등영어,,,1,legitimate
+1557,leisure,여가,high,고등영어,,,1,leisure
+1558,lemon,레몬,middle,중등영어,,,1,lemon**
+1559,lend,빌려주다,middle,중등영어,,,1,lend**
+1560,lesson,"수업, 교훈",elem,초등영어,,,1,lesson*
+1561,let,~하게 하다,middle,중등영어,,,1,let**
+1562,letter,"편지, 글자",elem,초등영어,,literal,1,letter* (literal)
+1563,level,"수준, 단계",middle,중등영어,,,1,level**
+1564,liberal,"자유주의의, 관대한",high,고등영어,,,1,liberal
+1565,liberty,자유 (권리),high,고등영어,,,1,liberty
+1566,library,도서관,elem,초등영어,,,1,library*
+1567,license,면허,middle,중등영어,licence,,1,license** / licence**
+1568,lid,뚜껑,middle,중등영어,,,1,lid**
+1569,lie,"눕다, 거짓말하다",elem,초등영어,,,1,lie*
+1570,life,"삶, 생명",elem,초등영어,,,1,life*
+1571,lift,들어 올리다,middle,중등영어,,,1,lift**
+1572,light,"빛, 가벼운",elem,초등영어,,,1,light*
+1573,like,좋아하다,elem,초등영어,,likely,1,like* (likely)
+1574,likewise,마찬가지로,high,고등영어,,,1,likewise
+1575,limit,"한계, 제한하다",middle,중등영어,,,1,limit**
+1576,line,"선, 줄",elem,초등영어,,,1,line*
+1577,linguistic,언어의,high,고등영어,,,1,linguistic
+1578,link,연결,middle,중등영어,,,1,link**
+1579,lion,사자,elem,초등영어,,,1,lion*
+1580,lip,입술,elem,초등영어,,,1,lip*
+1581,liquid,액체,high,고등영어,,,1,liquid
+1582,list,목록,middle,중등영어,,,1,list**
+1583,listen,듣다,elem,초등영어,,,1,listen*
+1584,literature,문학,high,고등영어,,,1,literature
+1585,little,"작은, 조금",elem,초등영어,,,1,little*
+1586,live,살다,elem,초등영어,,,1,live*
+1587,livingroom,거실,middle,중등영어,,,1,livingroom**
+1588,load,"짐, 싣다",middle,중등영어,,,1,load**
+1589,loan,대출,middle,중등영어,,,1,loan**
+1590,local,지역의,middle,중등영어,,,1,local**
+1591,locate,"위치시키다, 찾다",middle,중등영어,,,1,locate**
+1592,lock,잠그다,middle,중등영어,,,1,lock**
+1593,log,"통나무, 기록",middle,중등영어,,,1,log**
+1594,logic,논리,high,고등영어,,,1,logic
+1595,lone,"혼자의, 외로운",high,고등영어,,,1,lone
+1596,long,긴,elem,초등영어,,,1,long*
+1597,look,보다,elem,초등영어,,,1,look*
+1598,loose,느슨한,middle,중등영어,,,1,loose**
+1599,lose,"잃다, 지다",middle,중등영어,,,1,lose**
+1600,loss,손실,middle,중등영어,,,1,loss**
+1601,lot,많음,middle,중등영어,,,1,lot**
+1602,loud,시끄러운,middle,중등영어,,,1,loud**
+1603,love,사랑하다,elem,초등영어,,,1,love*
+1604,low,낮은,elem,초등영어,,,1,low*
+1605,loyal,충성스러운,high,고등영어,,,1,loyal
+1606,luck,행운,elem,초등영어,,,1,luck*
+1607,lump,"덩어리, 혹",high,고등영어,,,1,lump
+1608,lunch,점심 식사,elem,초등영어,,,1,lunch*
+1609,luxury,"사치, 호화",high,고등영어,,,1,luxury
+1610,machine,기계,middle,중등영어,,,1,machine**
+1611,mad,"화난, 미친",elem,초등영어,,,1,mad*
+1612,magazine,잡지,middle,중등영어,,,1,magazine**
+1613,magic,마법,middle,중등영어,,,1,magic**
+1614,magnet,자석,high,고등영어,,,1,magnet
+1615,magnificent,"웅장한, 훌륭한",high,고등영어,,,1,magnificent
+1616,mail,우편,elem,초등영어,,,1,mail*
+1617,main,주된,middle,중등영어,,,1,main**
+1618,maintain,유지하다,middle,중등영어,,,1,maintain**
+1619,major,"주요한, 전공",middle,중등영어,,majority,1,major** (majority)
+1620,make,만들다,elem,초등영어,,,1,make*
+1621,male,남성의,middle,중등영어,,,1,male**
+1622,man,남자,elem,초등영어,,,1,man*
+1623,manage,"관리하다, 해내다",middle,중등영어,,,1,manage**
+1624,manifest,"명백한, 나타내다",high,고등영어,,,1,manifest
+1625,manipulate,조작하다,high,고등영어,,,1,manipulate
+1626,manner,"방식, 예절",middle,중등영어,,,1,manner**
+1627,manufacture,제조하다,middle,중등영어,,,1,manufacture**
+1628,many,많은,elem,초등영어,,,1,many*
+1629,map,지도,elem,초등영어,,,1,map*
+1630,marathon,마라톤,elem,초등영어,,,1,marathon*
+1631,margin,"여백, 차이",high,고등영어,,,1,margin
+1632,marine,"바다의, 해양의",high,고등영어,,,1,marine
+1633,mark,"표시, 점수",middle,중등영어,,,1,mark**
+1634,market,시장,elem,초등영어,,,1,market*
+1635,marry,결혼하다,elem,초등영어,,,1,marry*
+1636,marvel,"놀라다, 경이",middle,중등영어,,,1,marvel**
+1637,mask,가면,middle,중등영어,,,1,mask**
+1638,mass,"덩어리, 대중",middle,중등영어,,,1,mass**
+1639,master,"주인, 숙달하다",middle,중등영어,,,1,master**
+1640,match,"경기, 성냥",middle,중등영어,,,1,match**
+1641,mate,"친구, 짝",middle,중등영어,,,1,mate**
+1642,mathematics,수학,elem,초등영어,maths / math,,1,mathematics* / maths* / math*
+1643,matter,"문제, 중요하다",middle,중등영어,,material,1,matter** (material)
+1644,mature,성숙한,high,고등영어,,,1,mature
+1645,maximum,최대,middle,중등영어,,,1,maximum**
+1646,may,"~해도 된다, ~일지도 모른다",elem,초등영어,,,0,may*
+1647,maybe,아마,middle,중등영어,,,1,maybe**
+1648,mayor,시장 (사람),high,고등영어,,,1,mayor
+1649,meal,식사,middle,중등영어,,,1,meal**
+1650,mean,의미하다,middle,중등영어,,,1,mean**
+1651,meanwhile,그동안에,high,고등영어,,,1,meanwhile
+1652,measure,측정하다,middle,중등영어,,,1,measure**
+1653,meat,고기,elem,초등영어,,,1,meat*
+1654,mechanic,정비사,high,고등영어,,,1,mechanic
+1655,mechanism,"장치, 메커니즘",high,고등영어,,,1,mechanism
+1656,medal,메달,elem,초등영어,,,1,medal*
+1657,mediate,중재하다,high,고등영어,,,1,mediate
+1658,medical,의학의,middle,중등영어,,,1,medical**
+1659,medicine,"약, 의학",middle,중등영어,,,1,medicine**
+1660,medieval,중세의,high,고등영어,,,1,medieval
+1661,medium,"매체, 중간의",high,고등영어,,media,1,medium (media)
+1662,meet,만나다,elem,초등영어,,,1,meet*
+1663,melon,멜론,middle,중등영어,,,1,melon**
+1664,melt,녹다,middle,중등영어,,,1,melt**
+1665,member,"구성원, 회원",elem,초등영어,,membership,1,member* (membership)
+1666,memory,기억,elem,초등영어,,,1,memory*
+1667,mental,정신의,middle,중등영어,,,1,mental**
+1668,mention,언급하다,middle,중등영어,,,1,mention**
+1669,menu,"메뉴, 차림표",middle,중등영어,,,1,menu**
+1670,merchant,상인,high,고등영어,,,1,merchant
+1671,mere,"단순한, 단지 ~에 불과한",high,고등영어,,,1,mere
+1672,merge,합병하다,high,고등영어,,,1,merge
+1673,merit,"장점, 가치",high,고등영어,,,1,merit
+1674,mess,엉망,middle,중등영어,,,1,mess**
+1675,message,"전언, 메시지",middle,중등영어,,,1,message**
+1676,metal,금속,middle,중등영어,,,1,metal**
+1677,method,방법,middle,중등영어,,,1,method**
+1678,metropolitan,대도시의,high,고등영어,,,1,metropolitan
+1679,microphone,마이크,high,고등영어,,,1,microphone
+1680,microwave,전자레인지,middle,중등영어,,,1,microwave**
+1681,middle,가운데,elem,초등영어,,,1,middle*
+1682,might,~일지도 모른다,elem,초등영어,,,0,might*
+1683,migrate,이주하다,high,고등영어,,migrant,1,migrate (migrant)
+1684,mild,"온화한, 순한",high,고등영어,,,1,mild
+1685,military,군사의,middle,중등영어,,,1,military**
+1686,milk,우유,elem,초등영어,,,1,milk*
+1687,mill,"방앗간, 공장",middle,중등영어,,,1,mill**
+1688,million,100만,high,고등영어,,,1,million
+1689,mind,마음,elem,초등영어,,,1,mind*
+1690,mine,"광산, 나의 것",high,고등영어,,miner,1,mine (miner)
+1691,mineral,광물,high,고등영어,,,1,mineral
+1692,minimal,최소의,high,고등영어,,,1,minimal
+1693,minimum,최소한,high,고등영어,,,1,minimum
+1694,ministry,(정부의) 부처,high,고등영어,,,1,ministry
+1695,minor,"작은, 미성년자",middle,중등영어,,,1,minor**
+1696,minute,분 (60초),middle,중등영어,,,1,minute**
+1697,miracle,기적,high,고등영어,,,1,miracle
+1698,mirror,거울,middle,중등영어,,,1,mirror**
+1699,miss,"그리워하다, 놓치다",elem,초등영어,,,1,miss*
+1700,missile,미사일,high,고등영어,,,1,missile
+1701,mission,임무,middle,중등영어,,,1,mission**
+1702,mix,섞다,middle,중등영어,,,1,mix**
+1703,mobile,이동하는,high,고등영어,,,1,mobile
+1704,mock,조롱하다,high,고등영어,,,1,mock
+1705,mode,"방식, 모드",high,고등영어,,,1,mode
+1706,modify,수정하다,high,고등영어,,,1,modify
+1707,model,"모형, 모델",elem,초등영어,,,1,model*
+1708,moderate,"적당한, 온건한",high,고등영어,,,1,moderate
+1709,modern,현대의,middle,중등영어,,,1,modern**
+1710,modest,겸손한,high,고등영어,,,1,modest
+1711,moist,촉촉한,high,고등영어,,moisture,1,moist (moisture)
+1712,molecule,분자,high,고등영어,,,1,molecule
+1713,moment,순간,middle,중등영어,,,1,moment**
+1714,money,돈,elem,초등영어,,,1,money*
+1715,monitor,"감시하다, 화면",middle,중등영어,,,1,monitor**
+1716,monkey,원숭이,elem,초등영어,,,1,monkey*
+1717,monster,괴물,high,고등영어,,,1,monster
+1718,month,"달, 월",elem,초등영어,,,1,month*
+1719,monument,기념물,high,고등영어,,,1,monument
+1720,mood,기분,middle,중등영어,,,1,mood**
+1721,moon,달 (천체),elem,초등영어,,half­moon,1,moon* (half­moon)
+1722,moral,도덕적인,middle,중등영어,,,1,moral**
+1723,moreover,게다가,middle,중등영어,,,1,moreover**
+1724,morning,아침,elem,초등영어,,,1,morning*
+1725,mortal,죽을 운명의,high,고등영어,,,1,mortal
+1726,mother,어머니,elem,초등영어,,"mom, mommy",1,"mother* (mom, mommy)"
+1727,motion,움직임,middle,중등영어,,,1,motion**
+1728,motive,동기,high,고등영어,,,1,motive
+1729,motor,모터,middle,중등영어,,,1,motor**
+1730,mount,"오르다, 산",middle,중등영어,,,1,mount**
+1731,mountain,산,elem,초등영어,,,1,mountain*
+1732,mouse,쥐,elem,초등영어,,,1,mouse*
+1733,mouth,입,elem,초등영어,,,1,mouth*
+1734,move,움직이다,elem,초등영어,,,1,move*
+1735,movie,영화,elem,초등영어,,,1,movie*
+1736,much,많은 (양),elem,초등영어,,,1,much*
+1737,mud,진흙,middle,중등영어,,,1,mud**
+1738,multiple,다수의,high,고등영어,,,1,multiple
+1739,murder,살인,high,고등영어,,,1,murder
+1740,muscle,근육,middle,중등영어,,,1,muscle**
+1741,museum,박물관,middle,중등영어,,,1,museum**
+1742,mushroom,버섯,middle,중등영어,,,1,mushroom**
+1743,music,음악,elem,초등영어,,,1,music*
+1744,must,~해야 한다,elem,초등영어,,,0,must*
+1745,mutual,상호의,high,고등영어,,,1,mutual
+1746,mystery,수수께끼,middle,중등영어,,,1,mystery**
+1747,myth,신화,high,고등영어,,,1,myth
+1748,nail,"손톱, 못",middle,중등영어,,,1,nail**
+1749,naive,순진한,high,고등영어,,,1,naive
+1750,naked,벌거벗은,high,고등영어,,,1,naked
+1751,name,이름,elem,초등영어,,,1,name*
+1752,narrate,"이야기하다, 서술하다",high,고등영어,,,1,narrate
+1753,narrow,좁은,middle,중등영어,,,1,narrow**
+1754,nasty,"불쾌한, 고약한",high,고등영어,,,1,nasty
+1755,nation,국가,elem,초등영어,,international,1,nation* (international)
+1756,native,"원주민의, 태생의",middle,중등영어,,,1,native**
+1757,nature,자연,elem,초등영어,,,1,nature*
+1758,navy,해군,middle,중등영어,,,1,navy**
+1759,near,가까운,elem,초등영어,,,1,near*
+1760,neat,깔끔한,middle,중등영어,,,1,neat**
+1761,necessary,필요한,middle,중등영어,,,1,necessary**
+1762,neck,목,elem,초등영어,,,1,neck*
+1763,need,필요하다,elem,초등영어,,,1,need*
+1764,needle,바늘,high,고등영어,,,1,needle
+1765,negate,부정하다,high,고등영어,,negative,1,negate (negative)
+1766,neglect,소홀히 하다,high,고등영어,,,1,neglect
+1767,negotiate,협상하다,high,고등영어,,,1,negotiate
+1768,neighbor,이웃,middle,중등영어,neighbour,,1,neighbor** / neighbour**
+1769,neither,둘 다 아닌,middle,중등영어,,,1,neither**
+1770,nephew,조카 (남자),high,고등영어,,,1,nephew
+1771,nerve,신경,middle,중등영어,,nervous,1,nerve** (nervous)
+1772,nest,둥지,middle,중등영어,,,1,nest**
+1773,net,그물,middle,중등영어,,,1,net**
+1774,network,"망, 네트워크",high,고등영어,,,1,network
+1775,neutral,중립적인,high,고등영어,,,1,neutral
+1776,never,결코 ~ 않다,elem,초등영어,,,1,never*
+1777,nevertheless,그럼에도 불구하고,high,고등영어,,,1,nevertheless
+1778,new,새로운,elem,초등영어,,,1,new*
+1779,news,"뉴스, 소식",elem,초등영어,,,1,news*
+1780,newspaper,신문,elem,초등영어,,,1,newspaper*
+1781,next,다음의,elem,초등영어,,,1,next*
+1782,nice,"좋은, 멋진",elem,초등영어,,,1,nice*
+1783,night,밤,elem,초등영어,,,1,night*
+1784,nightmare,악몽,high,고등영어,,,1,nightmare
+1785,nine,"9, 아홉",elem,초등영어,,,1,nine*
+1786,no,"아니요, 없는",elem,초등영어,nope / nay,,1,no* / nope* / nay*
+1787,noble,"고귀한, 귀족",high,고등영어,,,1,noble
+1788,nod,고개를 끄덕이다,high,고등영어,,,1,nod
+1789,noise,소음,middle,중등영어,,,1,noise**
+1790,nominate,지명하다,high,고등영어,,,1,nominate
+1791,none,아무도 ~ 않다,middle,중등영어,,,1,none**
+1792,nonetheless,"그렇지만, 그럼에도",high,고등영어,,,1,nonetheless
+1793,noon,정오,middle,중등영어,,,1,noon**
+1794,nor,~도 또한 아니다,middle,중등영어,,,1,nor**
+1795,norm,규범,high,고등영어,,normal,1,norm (normal)
+1796,north,북쪽,elem,초등영어,,,1,north*
+1797,nose,코,elem,초등영어,,,1,nose*
+1798,not,~ 아니다,elem,초등영어,,,1,not*
+1799,note,메모,elem,초등영어,,notion,1,note* (notion)
+1800,notebook,공책,elem,초등영어,,,1,notebook*
+1801,nothing,아무것도 ~ 아니다,elem,초등영어,,,1,nothing*
+1802,notice,"알아차리다, 공지",middle,중등영어,,,1,notice**
+1803,novel,"소설, 새로운",high,고등영어,,,1,novel
+1804,now,지금,elem,초등영어,,,1,now*
+1805,nowadays,요즘,middle,중등영어,,,1,nowadays**
+1806,nowhere,아무 데도 ~ 없다,middle,중등영어,,,1,nowhere**
+1807,nuclear,핵의,high,고등영어,,,1,nuclear
+1808,number,"숫자, 번호",elem,초등영어,,,1,number*
+1809,numerous,수많은,high,고등영어,,,1,numerous
+1810,nurse,간호사,elem,초등영어,,,1,nurse*
+1811,nut,견과,middle,중등영어,,,1,nut**
+1812,oak,떡갈나무,middle,중등영어,,,1,oak**
+1813,obey,복종하다,high,고등영어,,,1,obey
+1814,object,"물체, 반대하다",middle,중등영어,,objective,1,object** (objective)
+1815,oblige,의무를 지우다,high,고등영어,,,1,oblige
+1816,observe,관찰하다,middle,중등영어,,,1,observe**
+1817,obsess,"사로잡다, 집착하게 하다",high,고등영어,,,1,obsess
+1818,obtain,얻다,high,고등영어,,,1,obtain
+1819,obvious,명백한,middle,중등영어,,,1,obvious**
+1820,occasion,"경우, 행사",middle,중등영어,,,1,occasion**
+1821,occupy,차지하다,high,고등영어,,occupation,1,occupy (occupation)
+1822,occur,발생하다,middle,중등영어,,occurrence,1,occur** (occurrence)
+1823,ocean,대양,middle,중등영어,,,1,ocean**
+1824,odd,"이상한, 홀수의",middle,중등영어,,,1,odd**
+1825,of,~의,elem,초등영어,,,0,of*
+1826,off,"떨어져, 꺼진",elem,초등영어,,,1,off*
+1827,offend,기분 상하게 하다,high,고등영어,,,1,offend
+1828,offer,제안하다,middle,중등영어,,,1,offer**
+1829,office,사무실,elem,초등영어,,official,1,office* (official)
+1830,officer,"장교, 경찰관",middle,중등영어,,,1,officer**
+1831,often,자주,elem,초등영어,,,1,often*
+1832,oil,기름,elem,초등영어,,,1,oil*
+1833,okay,"좋아, 괜찮은",elem,초등영어,okey / OK,,1,okay* / okey* / OK*
+1834,old,"늙은, 오래된",elem,초등영어,,,1,old*
+1835,on,~ 위에,elem,초등영어,,,0,on*
+1836,once,"한 번, 한때",middle,중등영어,,,1,once**
+1837,one,"1, 하나",elem,초등영어,,,1,one*
+1838,only,"오직, 유일한",elem,초등영어,,,1,only*
+1839,open,열다,elem,초등영어,,,1,open*
+1840,opera,오페라,middle,중등영어,,,1,opera**
+1841,operate,"작동하다, 수술하다",middle,중등영어,,,1,operate**
+1842,opinion,의견,middle,중등영어,,,1,opinion**
+1843,opportune,시기적절한,high,고등영어,,opportunity,1,opportune (opportunity)
+1844,oppose,반대하다,middle,중등영어,,,1,oppose**
+1845,opt,선택하다 (opt for),high,고등영어,,option,1,opt (option)
+1846,optimist,낙천주의자,high,고등영어,,,1,optimist
+1847,or,또는,elem,초등영어,,,0,or*
+1848,oral,"구두의, 입의",high,고등영어,,,1,oral
+1849,orange,오렌지,elem,초등영어,,,1,orange*
+1850,orbit,궤도,high,고등영어,,,1,orbit
+1851,orchestra,관현악단,high,고등영어,,,1,orchestra
+1852,order,"주문, 명령, 순서",middle,중등영어,,disorder,1,order** (disorder)
+1853,ordinary,평범한,middle,중등영어,,,1,ordinary**
+1854,organ,"장기, 오르간",high,고등영어,,"organic, organize / organise",1,"organ (organic, organize / organise)"
+1855,orient,"~로 향하게 하다, 동양",high,고등영어,,orientation,1,orient (orientation)
+1856,origin,기원,high,고등영어,,original,1,origin (original)
+1857,other,다른,middle,중등영어,,,1,other**
+1858,otherwise,그렇지 않으면,middle,중등영어,,,1,otherwise**
+1859,ought,~해야 한다 (ought to),middle,중등영어,,,0,ought**
+1860,out,밖으로,elem,초등영어,,,1,out*
+1861,outcome,결과,high,고등영어,,,1,outcome
+1862,outline,"개요, 윤곽",high,고등영어,,,1,outline
+1863,output,"산출, 출력",high,고등영어,,,1,output
+1864,outrage,격분,high,고등영어,,,1,outrage
+1865,outstanding,뛰어난,high,고등영어,,,1,outstanding
+1866,oven,오븐,middle,중등영어,,,1,oven**
+1867,over,"~ 위에, ~ 넘어",elem,초등영어,,,1,over*
+1868,overall,전반적인,middle,중등영어,,,1,overall**
+1869,overcome,극복하다,high,고등영어,,,1,overcome
+1870,overhead,"머리 위의, 간접비",high,고등영어,,,1,overhead
+1871,overlap,겹치다,high,고등영어,,,1,overlap
+1872,overlook,간과하다,high,고등영어,,,1,overlook
+1873,overnight,하룻밤 사이에,high,고등영어,,,1,overnight
+1874,oversea,해외의,high,고등영어,overseas,,1,oversea / overseas
+1875,overwhelm,압도하다,high,고등영어,,,1,overwhelm
+1876,owe,빚지다,high,고등영어,,,1,owe
+1877,own,"자신의, 소유하다",middle,중등영어,,,1,own**
+1878,pace,속도,high,고등영어,,,1,pace
+1879,pack,"싸다, 꾸러미",middle,중등영어,,,1,pack**
+1880,pad,"패드, 받침",high,고등영어,,,1,pad
+1881,page,"쪽, 페이지",elem,초등영어,,,1,page*
+1882,pain,고통,middle,중등영어,,,1,pain**
+1883,paint,"페인트, 칠하다",elem,초등영어,,,1,paint*
+1884,pair,한 쌍,middle,중등영어,,,1,pair**
+1885,palace,궁전,middle,중등영어,,,1,palace**
+1886,pale,창백한,high,고등영어,,,1,pale
+1887,palm,"손바닥, 야자수",high,고등영어,,,1,palm
+1888,pan,"냄비, 프라이팬",middle,중등영어,,,1,pan**
+1889,panel,"판, 위원단",high,고등영어,,,1,panel
+1890,panic,"공황, 당황",middle,중등영어,,,1,panic**
+1891,pants,바지,elem,초등영어,,,1,pants*
+1892,paper,종이,elem,초등영어,,,1,paper*
+1893,parade,행진,middle,중등영어,,,1,parade**
+1894,paragraph,단락,middle,중등영어,,,1,paragraph**
+1895,parallel,평행한,high,고등영어,,,1,parallel
+1896,pardon,용서,middle,중등영어,,,1,pardon**
+1897,parent,부모,elem,초등영어,,,1,parent*
+1898,park,공원,elem,초등영어,,,1,park*
+1899,parliament,의회 (영국식),high,고등영어,,,1,parliament
+1900,part,부분,elem,초등영어,,,1,part*
+1901,participate,참가하다,high,고등영어,,,1,participate
+1902,particle,입자,high,고등영어,,,1,particle
+1903,particular,특정한,middle,중등영어,,particularly,1,particular** (particularly)
+1904,partner,"짝, 동반자",elem,초등영어,,,1,partner*
+1905,party,파티,elem,초등영어,,,1,party*
+1906,pass,"지나가다, 통과하다",elem,초등영어,,,1,pass*
+1907,passage,"통로, 구절",high,고등영어,,,1,passage
+1908,passenger,승객,high,고등영어,,,1,passenger
+1909,passion,열정,high,고등영어,,,1,passion
+1910,passport,여권,high,고등영어,,,1,passport
+1911,past,과거,middle,중등영어,,,1,past**
+1912,pat,토닥거리다,high,고등영어,,,1,pat
+1913,patch,"조각, 부분",high,고등영어,,,1,patch
+1914,patent,특허,high,고등영어,,,1,patent
+1915,path,길,middle,중등영어,,,1,path**
+1916,patient,"환자, 참을성 있는",middle,중등영어,,,1,patient**
+1917,pattern,"양식, 무늬",middle,중등영어,,,1,pattern**
+1918,pause,잠시 멈추다,middle,중등영어,,,1,pause**
+1919,pave,포장하다 (길을),high,고등영어,,,1,pave
+1920,pay,지불하다,elem,초등영어,,,1,pay*
+1921,peace,평화,middle,중등영어,,peaceful,1,peace** (peaceful)
+1922,peak,"정상, 최고점",high,고등영어,,,1,peak
+1923,pear,배 (과일),middle,중등영어,,,1,pear**
+1924,peasant,"농부, 소작농",high,고등영어,,,1,peasant
+1925,peel,껍질을 벗기다,high,고등영어,,,1,peel
+1926,peer,"또래, 동료",high,고등영어,,,1,peer
+1927,pen,펜,elem,초등영어,,,1,pen*
+1928,penalty,벌칙,high,고등영어,,,1,penalty
+1929,pencil,연필,elem,초등영어,,,1,pencil*
+1930,people,사람들,elem,초등영어,,,1,people*
+1931,pepper,후추,middle,중등영어,,,1,pepper**
+1932,per,"~당, ~마다",middle,중등영어,,,0,per**
+1933,perceive,인지하다,high,고등영어,,perception,1,perceive (perception)
+1934,perfect,완벽한,middle,중등영어,,,1,perfect**
+1935,perform,"공연하다, 수행하다",middle,중등영어,,,1,perform**
+1936,perhaps,아마도,middle,중등영어,,,1,perhaps**
+1937,period,"기간, 시기",middle,중등영어,,,1,period**
+1938,permanent,영구적인,high,고등영어,,,1,permanent
+1939,permit,허가하다,high,고등영어,,,1,permit
+1940,persist,"지속되다, 고집하다",high,고등영어,,,1,persist
+1941,person,사람,middle,중등영어,,personality,1,person** (personality)
+1942,perspective,관점,high,고등영어,,,1,perspective
+1943,persuade,설득하다,high,고등영어,,,1,persuade
+1944,pet,애완동물,middle,중등영어,,,1,pet**
+1945,phase,단계,high,고등영어,,,1,phase
+1946,phenomenon,현상,high,고등영어,,,1,phenomenon
+1947,philosophy,철학,high,고등영어,,,1,philosophy
+1948,photograph,사진,middle,중등영어,photo,,1,photograph** / photo**
+1949,phrase,"구, 구절",high,고등영어,,,1,phrase
+1950,physical,"신체의, 물리적인",middle,중등영어,,,1,physical**
+1951,physics,물리학,high,고등영어,,,1,physics
+1952,piano,피아노,elem,초등영어,,,1,piano*
+1953,pick,"고르다, 줍다",elem,초등영어,,,1,pick*
+1954,picnic,소풍,middle,중등영어,,,1,picnic**
+1955,picture,"그림, 사진",elem,초등영어,,,1,picture*
+1956,pie,파이,middle,중등영어,,,1,pie**
+1957,piece,조각,middle,중등영어,,,1,piece**
+1958,pig,돼지,elem,초등영어,,,1,pig*
+1959,pile,"더미, 쌓다",middle,중등영어,,,1,pile**
+1960,pill,알약,high,고등영어,,,1,pill
+1961,pilot,조종사,elem,초등영어,,,1,pilot*
+1962,pin,핀,middle,중등영어,,,1,pin**
+1963,pinch,꼬집다,high,고등영어,,,1,pinch
+1964,pine,소나무,middle,중등영어,,,1,pine**
+1965,pink,분홍색,elem,초등영어,,,1,pink*
+1966,pioneer,개척자,high,고등영어,,,1,pioneer
+1967,pipe,"관, 파이프",middle,중등영어,,,1,pipe**
+1968,pitch,"던지다, 음높이",middle,중등영어,,,1,pitch**
+1969,pity,"동정, 유감",middle,중등영어,,,1,pity**
+1970,pizza,피자,elem,초등영어,,,1,pizza*
+1971,place,장소,elem,초등영어,,displace,1,place* (displace)
+1972,plain,"평범한, 평원",middle,중등영어,,,1,plain**
+1973,plan,계획,elem,초등영어,,,1,plan*
+1974,plane,"비행기, 평면",middle,중등영어,,,1,plane**
+1975,planet,행성,middle,중등영어,,,1,planet**
+1976,plant,"식물, 심다",middle,중등영어,,,1,plant**
+1977,plastic,플라스틱,elem,초등영어,,,1,plastic*
+1978,plate,접시,middle,중등영어,,,1,plate**
+1979,platform,"승강장, 플랫폼",high,고등영어,,,1,platform
+1980,play,"놀다, 경기하다",elem,초등영어,,,1,play*
+1981,please,"부디, 제발",elem,초등영어,,"pleasant, pleasure",1,"please* (pleasant, pleasure)"
+1982,plenty,풍부함,middle,중등영어,,,1,plenty**
+1983,plot,"줄거리, 음모",high,고등영어,,,1,plot
+1984,plus,더하기,middle,중등영어,,,1,plus**
+1985,pocket,주머니,middle,중등영어,,,1,pocket**
+1986,poem,시,middle,중등영어,,,1,poem**
+1987,poet,시인,middle,중등영어,,,1,poet**
+1988,point,"점, 요점",elem,초등영어,,,1,point*
+1989,poison,독,middle,중등영어,,,1,poison**
+1990,pole,"막대기, 극",middle,중등영어,,polar,1,pole** (polar)
+1991,police,경찰,elem,초등영어,,,1,police*
+1992,policy,정책,middle,중등영어,,,1,policy**
+1993,polish,광을 내다,high,고등영어,,,1,polish
+1994,polite,공손한,middle,중등영어,,,1,polite**
+1995,politics,정치,middle,중등영어,,,1,politics**
+1996,poll,여론 조사,high,고등영어,,,1,poll
+1997,pollute,오염시키다,middle,중등영어,,,1,pollute**
+1998,pond,연못,high,고등영어,,,1,pond
+1999,pool,"수영장, 웅덩이",middle,중등영어,,,1,pool**
+2000,poor,가난한,elem,초등영어,,,1,poor*
+2001,pop,"대중음악, 펑 터지다",middle,중등영어,,,1,pop**
+2002,popular,인기 있는,middle,중등영어,,,1,popular**
+2003,populate,거주하다,high,고등영어,,population,1,populate (population)
+2004,pork,돼지고기,middle,중등영어,,,1,pork**
+2005,port,항구,middle,중등영어,,,1,port**
+2006,portion,"부분, 몫",high,고등영어,,,1,portion
+2007,portrait,초상화,high,고등영어,,,1,portrait
+2008,pose,"자세를 취하다, 제기하다",high,고등영어,,dispose,1,pose (dispose)
+2009,posit,"가정하다, 상정하다",high,고등영어,,"position, positive",1,"posit (position, positive)"
+2010,possess,소유하다,middle,중등영어,,,1,possess**
+2011,possible,가능한,middle,중등영어,,,1,possible**
+2012,post,"우편, 게시하다",middle,중등영어,,poster,1,post** (poster)
+2013,pot,"냄비, 화분",middle,중등영어,,,1,pot**
+2014,potato,감자,elem,초등영어,,,1,potato*
+2015,potential,잠재적인,middle,중등영어,,,1,potential**
+2016,pour,"붓다, 따르다",middle,중등영어,,,1,pour**
+2017,powder,가루,middle,중등영어,,,1,powder**
+2018,power,힘,elem,초등영어,,,1,power*
+2019,practical,실용적인,middle,중등영어,,,1,practical**
+2020,practice,연습하다,middle,중등영어,practise,,1,practice** / practise**
+2021,praise,칭찬하다,high,고등영어,,,1,praise
+2022,pray,기도하다,middle,중등영어,,,1,pray**
+2023,preach,설교하다,high,고등영어,,,1,preach
+2024,precede,앞서다,high,고등영어,,unprecedented,1,precede (unprecedented)
+2025,precise,정밀한,high,고등영어,,,1,precise
+2026,predator,포식자,high,고등영어,,,1,predator
+2027,predict,예측하다,high,고등영어,,,1,predict
+2028,prefer,선호하다,middle,중등영어,,,1,prefer**
+2029,pregnant,임신한,middle,중등영어,,,1,pregnant**
+2030,prejudice,편견 (선입견),high,고등영어,,,1,prejudice
+2031,premium,"할증금, 고급의",high,고등영어,,,1,premium
+2032,prepare,준비하다,middle,중등영어,,,1,prepare**
+2033,prescribe,처방하다,high,고등영어,,,1,prescribe
+2034,presence,"존재, 참석",middle,중등영어,,,1,presence**
+2035,present,"선물, 현재의",elem,초등영어,,,1,present*
+2036,preserve,보존하다 (원형대로),high,고등영어,,,1,preserve
+2037,preside,주재하다,high,고등영어,,president,1,preside (president)
+2038,press,"누르다, 언론",middle,중등영어,,,1,press**
+2039,presume,추정하다 (간주하다),high,고등영어,,,1,presume
+2040,pretend,~인 척하다,middle,중등영어,,,1,pretend**
+2041,pretty,예쁜,elem,초등영어,,,1,pretty*
+2042,prevail,"우세하다, 널리 퍼지다",high,고등영어,,,1,prevail
+2043,prevent,"막다, 예방하다",middle,중등영어,,,1,prevent**
+2044,previous,이전의,middle,중등영어,,,1,previous**
+2045,prey,"먹이, 사냥감",high,고등영어,,,1,prey
+2046,price,가격,middle,중등영어,,,1,price**
+2047,pride,자부심,middle,중등영어,,,1,pride**
+2048,priest,"사제, 성직자",high,고등영어,,,1,priest
+2049,prime,"주요한, 최고의",middle,중등영어,,primary,1,prime** (primary)
+2050,primitive,원시적인,high,고등영어,,,1,primitive
+2051,prince,왕자,elem,초등영어,,,1,prince*
+2052,principal,"교장, 주요한",high,고등영어,,,1,principal
+2053,principle,"원리, 원칙",middle,중등영어,,,1,principle**
+2054,print,인쇄하다,elem,초등영어,,,1,print*
+2055,prior,"이전의, 우선하는",high,고등영어,,,1,prior
+2056,prison,감옥,middle,중등영어,,,1,prison**
+2057,privacy,사생활,middle,중등영어,,,1,privacy**
+2058,private,사적인,middle,중등영어,,,1,private**
+2059,privilege,특권,high,고등영어,,,1,privilege
+2060,prize,"상, 상품",middle,중등영어,,,1,prize**
+2061,probable,있을 것 같은,middle,중등영어,,probably,1,probable** (probably)
+2062,problem,문제,elem,초등영어,,,1,problem*
+2063,proceed,진행하다,middle,중등영어,,procedure,1,proceed** (procedure)
+2064,process,과정,middle,중등영어,,,1,process**
+2065,produce,생산하다,middle,중등영어,,,1,produce**
+2066,profession,직업 (전문직),middle,중등영어,,,1,profession**
+2067,professor,교수,high,고등영어,,,1,professor
+2068,profile,"개요, 옆얼굴",high,고등영어,,,1,profile
+2069,profit,이익,middle,중등영어,,,1,profit**
+2070,profound,심오한,high,고등영어,,,1,profound
+2071,program,프로그램,elem,초등영어,programme,programmatic,1,program* / programme* (programmatic)
+2072,progress,"진전, 발전",middle,중등영어,,,1,progress**
+2073,prohibit,금지하다,high,고등영어,,,1,prohibit
+2074,project,"과제, 계획",elem,초등영어,,,1,project*
+2075,prominent,"저명한, 두드러진",high,고등영어,,,1,prominent
+2076,promise,약속하다,middle,중등영어,,,1,promise**
+2077,promote,"촉진하다, 승진시키다",middle,중등영어,,,1,promote**
+2078,prompt,"즉각적인, 촉발하다",high,고등영어,,,1,prompt
+2079,pronounce,발음하다,middle,중등영어,,pronunciation,1,pronounce** (pronunciation)
+2080,proof,"증거, 증명",high,고등영어,,,1,proof
+2081,proper,적절한,middle,중등영어,,,1,proper**
+2082,property,"재산, 특성",middle,중등영어,,,1,property**
+2083,proportion,비율,high,고등영어,,,1,proportion
+2084,propose,제안하다,middle,중등영어,,,1,propose**
+2085,prospect,전망,high,고등영어,,,1,prospect
+2086,prosper,번영하다,high,고등영어,,,1,prosper
+2087,protect,보호하다,middle,중등영어,,,1,protect**
+2088,protein,단백질,high,고등영어,,,1,protein
+2089,protest,항의하다,middle,중등영어,,,1,protest**
+2090,proud,자랑스러운,middle,중등영어,,,1,proud**
+2091,prove,증명하다,middle,중등영어,,,1,prove**
+2092,provide,제공하다,middle,중등영어,,,1,provide**
+2093,province,"도, 지방",high,고등영어,,,1,province
+2094,provoke,"유발하다, 자극하다",high,고등영어,,,1,provoke
+2095,psychology,심리학,high,고등영어,,,1,psychology
+2096,pub,술집,middle,중등영어,,,1,pub**
+2097,public,"대중의, 공공의",middle,중등영어,,,1,public**
+2098,publish,출판하다,high,고등영어,,publisher,1,publish (publisher)
+2099,pull,당기다,middle,중등영어,,,1,pull**
+2100,pump,펌프,middle,중등영어,,,1,pump**
+2101,punch,주먹으로 치다,middle,중등영어,,,1,punch**
+2102,punish,벌주다,middle,중등영어,,,1,punish**
+2103,pupil,"학생, 눈동자",high,고등영어,,,1,pupil
+2104,puppy,강아지,elem,초등영어,,,1,puppy*
+2105,purchase,구입하다,middle,중등영어,,,1,purchase**
+2106,pure,순수한,middle,중등영어,,,1,pure**
+2107,purple,보라색,middle,중등영어,,,1,purple**
+2108,purpose,목적,middle,중등영어,,,1,purpose**
+2109,pursue,추구하다,high,고등영어,,,1,pursue
+2110,push,밀다,elem,초등영어,,,1,push*
+2111,put,"놓다, 두다",elem,초등영어,,,1,put*
+2112,puzzle,"퍼즐, 수수께끼",middle,중등영어,,,1,puzzle**
+2113,quality,"질, 품질",middle,중등영어,,qualify,1,quality** (qualify)
+2114,quantity,양 (수량),high,고등영어,,,1,quantity
+2115,quarter,4분의 1,middle,중등영어,,,1,quarter**
+2116,queen,여왕,elem,초등영어,,,1,queen*
+2117,question,질문,elem,초등영어,,,1,question*
+2118,questionnaire,설문지,high,고등영어,,,1,questionnaire
+2119,quick,빠른,elem,초등영어,,,1,quick*
+2120,quiet,조용한,elem,초등영어,,,1,quiet*
+2121,quit,그만두다,middle,중등영어,,,1,quit**
+2122,quite,"꽤, 상당히",middle,중등영어,,,1,quite**
+2123,quiz,퀴즈,elem,초등영어,,,1,quiz*
+2124,quote,인용하다,middle,중등영어,,,1,quote**
+2125,rabbit,토끼,elem,초등영어,,,1,rabbit*
+2126,race,경주,elem,초등영어,,racial,1,race* (racial)
+2127,radio,라디오,elem,초등영어,,,1,radio*
+2128,rage,"분노, 격노",high,고등영어,,,1,rage
+2129,rail,"철도, 난간",middle,중등영어,,,1,rail**
+2130,rain,비,elem,초등영어,,,1,rain*
+2131,rainbow,무지개,middle,중등영어,,,1,rainbow**
+2132,raise,"올리다, 기르다",middle,중등영어,,,1,raise**
+2133,rally,"집회, 회복하다",high,고등영어,,,1,rally
+2134,random,무작위의,high,고등영어,,,1,random
+2135,range,범위,middle,중등영어,,,1,range**
+2136,rank,"순위, 계급",high,고등영어,,,1,rank
+2137,rapid,"빠른, 급속한",middle,중등영어,,,1,rapid**
+2138,rare,드문,middle,중등영어,,,1,rare**
+2139,rat,쥐 (큰 쥐),middle,중등영어,,,1,rat**
+2140,rate,"비율, 속도",middle,중등영어,,,1,rate**
+2141,rather,"오히려, 다소",middle,중등영어,,,1,rather**
+2142,rational,이성적인,high,고등영어,,,1,rational
+2143,raw,날것의,high,고등영어,,,1,raw
+2144,reach,도달하다,middle,중등영어,,,1,reach**
+2145,react,반응하다,middle,중등영어,,,1,react**
+2146,read,읽다,elem,초등영어,,,1,read*
+2147,ready,준비된,elem,초등영어,,,1,ready*
+2148,real,진짜의,middle,중등영어,,realize / realise,1,real** (realize / realise)
+2149,rear,"뒤쪽, 기르다",high,고등영어,,,1,rear
+2150,reason,이유,middle,중등영어,,reasonable,1,reason** (reasonable)
+2151,rebel,"반역자, 반항하다",high,고등영어,,,1,rebel
+2152,receipt,영수증,high,고등영어,,,1,receipt
+2153,receive,받다,middle,중등영어,,reception,1,receive** (reception)
+2154,recent,최근의,middle,중등영어,,,1,recent**
+2155,recipe,조리법,middle,중등영어,,,1,recipe**
+2156,recognize,알아보다,middle,중등영어,,,1,recognize**
+2157,recommend,추천하다,middle,중등영어,,,1,recommend**
+2158,record,기록하다,middle,중등영어,,,1,record**
+2159,recover,회복하다,middle,중등영어,,,1,recover**
+2160,recreation,"오락, 레크리에이션",elem,초등영어,,,1,recreation*
+2161,recruit,모집하다,high,고등영어,,,1,recruit
+2162,red,빨간색,elem,초등영어,,,1,red*
+2163,reduce,줄이다,middle,중등영어,,,1,reduce**
+2164,refer,"언급하다, 참조하다",middle,중등영어,,,1,refer**
+2165,refine,정제하다,high,고등영어,,,1,refine
+2166,reflect,"반사하다, 반영하다",middle,중등영어,,,1,reflect**
+2167,reform,개혁,high,고등영어,,,1,reform
+2168,refrigerate,냉장하다,high,고등영어,,refrigerator,1,refrigerate (refrigerator)
+2169,refuse,거절하다,middle,중등영어,,,1,refuse**
+2170,regard,"여기다, 간주하다",middle,중등영어,,,1,regard**
+2171,region,지역,middle,중등영어,,,1,region**
+2172,register,등록하다,middle,중등영어,,,1,register**
+2173,regret,후회하다,high,고등영어,,,1,regret
+2174,regular,규칙적인,middle,중등영어,,,1,regular**
+2175,regulate,규제하다,high,고등영어,,,1,regulate
+2176,reinforce,강화하다,high,고등영어,,,1,reinforce
+2177,reject,거부하다,high,고등영어,,,1,reject
+2178,relate,관련시키다,middle,중등영어,,"relative, relation, relationship",1,"relate** (relative, relation, relationship)"
+2179,relax,휴식을 취하다,middle,중등영어,,,1,relax**
+2180,release,"풀어 주다, 발표하다",middle,중등영어,,,1,release**
+2181,relevant,관련 있는,high,고등영어,,,1,relevant
+2182,relief,"안도, 구호",middle,중등영어,,,1,relief**
+2183,relieve,덜어 주다,high,고등영어,,,1,relieve
+2184,religion,종교,high,고등영어,,,1,religion
+2185,reluctant,꺼리는,high,고등영어,,,1,reluctant
+2186,rely,의지하다,middle,중등영어,,,1,rely**
+2187,remain,남다,middle,중등영어,,,1,remain**
+2188,remark,"발언, 말하다",middle,중등영어,,,1,remark**
+2189,remedy,"치료법, 해결책",high,고등영어,,,1,remedy
+2190,remember,기억하다,elem,초등영어,,,1,remember*
+2191,remind,상기시키다,middle,중등영어,,,1,remind**
+2192,remote,"외딴, 원격의",high,고등영어,,,1,remote
+2193,remove,제거하다,middle,중등영어,,,1,remove**
+2194,rent,"임대료, 빌리다",middle,중등영어,,,1,rent**
+2195,repair,수리하다,middle,중등영어,,,1,repair**
+2196,repeat,반복하다,middle,중등영어,,,1,repeat**
+2197,replace,대체하다,middle,중등영어,,,1,replace**
+2198,reply,대답하다,middle,중등영어,,,1,reply**
+2199,report,보고하다,middle,중등영어,,,1,report**
+2200,represent,"대표하다, 나타내다",middle,중등영어,,,1,represent**
+2201,republic,공화국,high,고등영어,,,1,republic
+2202,reputation,평판,high,고등영어,,,1,reputation
+2203,request,요청하다,middle,중등영어,,,1,request**
+2204,require,필요로 하다,middle,중등영어,,,1,require**
+2205,rescue,구조하다,high,고등영어,,,1,rescue
+2206,research,연구,middle,중등영어,,,1,research**
+2207,resemble,닮다,high,고등영어,,,1,resemble
+2208,reserve,예약하다,middle,중등영어,,,1,reserve**
+2209,reside,거주하다 (공식),high,고등영어,,resident,1,reside (resident)
+2210,resign,사임하다,high,고등영어,,,1,resign
+2211,resist,저항하다,middle,중등영어,,,1,resist**
+2212,resolve,해결하다 (결심하다),high,고등영어,,,1,resolve
+2213,resort,"휴양지, 의지하다",high,고등영어,,,1,resort
+2214,resource,자원,middle,중등영어,,,1,resource**
+2215,respect,존경하다,middle,중등영어,,respective,1,respect** (respective)
+2216,respond,응답하다,middle,중등영어,,,1,respond**
+2217,responsible,책임 있는,middle,중등영어,,,1,responsible**
+2218,rest,"휴식, 나머지",middle,중등영어,,,1,rest**
+2219,restaurant,식당,elem,초등영어,,,1,restaurant*
+2220,restore,복원하다,high,고등영어,,,1,restore
+2221,restrain,억제하다 (제지하다),high,고등영어,,,1,restrain
+2222,restrict,제한하다,high,고등영어,,,1,restrict
+2223,restroom,화장실,elem,초등영어,,,1,restroom*
+2224,result,결과,middle,중등영어,,,1,result**
+2225,resume,재개하다,high,고등영어,,,1,resume
+2226,retail,소매,high,고등영어,,,1,retail
+2227,retain,"유지하다, 보유하다",high,고등영어,,,1,retain
+2228,retire,은퇴하다,middle,중등영어,,,1,retire**
+2229,retreat,후퇴하다,high,고등영어,,,1,retreat
+2230,return,돌아오다,elem,초등영어,,,1,return*
+2231,reveal,드러내다,high,고등영어,,,1,reveal
+2232,revenge,복수,high,고등영어,,,1,revenge
+2233,reverse,"뒤바꾸다, 반대의",high,고등영어,,,1,reverse
+2234,revise,"수정하다, 개정하다",high,고등영어,,,1,revise
+2235,revive,되살리다,high,고등영어,,,1,revive
+2236,revolution,혁명,high,고등영어,,,1,revolution
+2237,reward,보상,high,고등영어,,,1,reward
+2238,rhythm,리듬,high,고등영어,,,1,rhythm
+2239,ribbon,리본,elem,초등영어,,,1,ribbon*
+2240,rice,"쌀, 밥",middle,중등영어,,,1,rice**
+2241,rich,부유한,elem,초등영어,,,1,rich*
+2242,rid,없애다 (get rid of),high,고등영어,,,1,rid
+2243,ride,타다,middle,중등영어,,,1,ride**
+2244,ridicule,비웃다,high,고등영어,,ridiculous,1,ridicule (ridiculous)
+2245,right,"오른쪽, 옳은",elem,초등영어,,,1,right*
+2246,ring,반지,elem,초등영어,,,1,ring*
+2247,riot,폭동,high,고등영어,,,1,riot
+2248,rise,오르다,middle,중등영어,,,1,rise**
+2249,risk,위험,middle,중등영어,,,1,risk**
+2250,rival,경쟁자,high,고등영어,,,1,rival
+2251,river,강,elem,초등영어,,,1,river*
+2252,road,"길, 도로",elem,초등영어,,,1,road*
+2253,roar,으르렁거리다,high,고등영어,,,1,roar
+2254,roast,굽다 (오븐에),high,고등영어,,,1,roast
+2255,rob,강탈하다,middle,중등영어,,,1,rob**
+2256,robot,로봇,elem,초등영어,,,1,robot*
+2257,rock,바위,elem,초등영어,,,1,rock*
+2258,rocket,로켓,middle,중등영어,,,1,rocket**
+2259,rod,막대,high,고등영어,,,1,rod
+2260,role,역할,middle,중등영어,,,1,role**
+2261,roll,"구르다, 굴리다",middle,중등영어,,enroll / enrol,1,roll** (enroll / enrol)
+2262,romantic,낭만적인,high,고등영어,,,1,romantic
+2263,roof,지붕,middle,중등영어,,,1,roof**
+2264,room,방,elem,초등영어,,,1,room*
+2265,root,뿌리,middle,중등영어,,,1,root**
+2266,rope,밧줄,middle,중등영어,,,1,rope**
+2267,rose,장미,elem,초등영어,,,1,rose*
+2268,rot,썩다,high,고등영어,,,1,rot
+2269,rough,거친,middle,중등영어,,,1,rough**
+2270,round,둥근,middle,중등영어,,,1,round**
+2271,route,경로,middle,중등영어,,,1,route**
+2272,routine,"일상, 일과",high,고등영어,,,1,routine
+2273,row,"줄, 노를 젓다",middle,중등영어,,,1,row**
+2274,royal,왕의,middle,중등영어,,,1,royal**
+2275,rub,문지르다,middle,중등영어,,rubber,1,rub** (rubber)
+2276,rude,무례한,middle,중등영어,,,1,rude**
+2277,ruin,망치다,middle,중등영어,,,1,ruin**
+2278,rule,규칙,middle,중등영어,,,1,rule**
+2279,rumor,소문,high,고등영어,rumour,,1,rumor / rumour
+2280,run,달리다,elem,초등영어,,,1,run*
+2281,rural,시골의,high,고등영어,,,1,rural
+2282,rush,서두르다,middle,중등영어,,,1,rush**
+2283,sack,"자루, 해고하다",high,고등영어,,,1,sack
+2284,sacred,신성한 (종교적),high,고등영어,,,1,sacred
+2285,sacrifice,희생,high,고등영어,,,1,sacrifice
+2286,sad,슬픈,elem,초등영어,,,1,sad*
+2287,safe,안전한,elem,초등영어,,,1,safe*
+2288,sail,항해하다,middle,중등영어,,,1,sail**
+2289,salad,샐러드,elem,초등영어,,,1,salad*
+2290,salary,월급,middle,중등영어,,,1,salary**
+2291,sale,"판매, 할인",elem,초등영어,,,1,sale*
+2292,salt,소금,elem,초등영어,,,1,salt*
+2293,same,같은,elem,초등영어,,,1,same*
+2294,sample,견본,middle,중등영어,,,1,sample**
+2295,sand,모래,elem,초등영어,,,1,sand*
+2296,sandwich,샌드위치,elem,초등영어,,,1,sandwich*
+2297,satellite,위성,high,고등영어,,,1,satellite
+2298,satisfy,만족시키다,middle,중등영어,,,1,satisfy**
+2299,sauce,소스,middle,중등영어,,,1,sauce**
+2300,save,"구하다, 저축하다",elem,초등영어,,,1,save*
+2301,say,말하다,elem,초등영어,,,1,say*
+2302,scale,"규모, 저울",middle,중등영어,,,1,scale**
+2303,scan,"훑어보다, 스캔하다",high,고등영어,,,1,scan
+2304,scandal,추문,high,고등영어,,,1,scandal
+2305,scarce,"부족한, 드문",high,고등영어,,,1,scarce
+2306,scare,겁주다,middle,중등영어,,,1,scare**
+2307,scarf,목도리,middle,중등영어,,,1,scarf**
+2308,scatter,흩뿌리다,high,고등영어,,,1,scatter
+2309,scene,장면,middle,중등영어,,,1,scene**
+2310,schedule,일정,middle,중등영어,,,1,schedule**
+2311,scheme,"계획, 책략",high,고등영어,,,1,scheme
+2312,scholar,학자,high,고등영어,,,1,scholar
+2313,school,학교,elem,초등영어,,,1,school*
+2314,science,과학,elem,초등영어,,,1,science*
+2315,scissors,가위,elem,초등영어,,,1,scissors*
+2316,scope,범위 (영역),high,고등영어,,,1,scope
+2317,score,점수,elem,초등영어,,,1,score*
+2318,scramble,"기어오르다, 뒤섞다",high,고등영어,,,1,scramble
+2319,scratch,긁다,middle,중등영어,,,1,scratch**
+2320,scream,비명을 지르다,middle,중등영어,,,1,scream**
+2321,screen,화면,middle,중등영어,,,1,screen**
+2322,screw,나사,high,고등영어,,,1,screw
+2323,sculpt,조각하다 (조형),high,고등영어,,sculpture,1,sculpt (sculpture)
+2324,sea,바다,elem,초등영어,,,1,sea*
+2325,seal,"봉인하다, 물개",middle,중등영어,,,1,seal**
+2326,search,"찾다, 검색하다",middle,중등영어,,,1,search**
+2327,season,계절,elem,초등영어,,,1,season*
+2328,seat,좌석,middle,중등영어,,,1,seat**
+2329,second,"두 번째의, 초",elem,초등영어,,secondary,1,second* (secondary)
+2330,secret,비밀,middle,중등영어,,,1,secret**
+2331,secretary,비서,middle,중등영어,,,1,secretary**
+2332,section,"부분, 구역",middle,중등영어,,,1,section**
+2333,sector,부문,high,고등영어,,,1,sector
+2334,secure,안전한,middle,중등영어,,,1,secure**
+2335,see,보다,elem,초등영어,,,1,see*
+2336,seed,씨앗,middle,중등영어,,,1,seed**
+2337,seek,"찾다, 구하다",middle,중등영어,,,1,seek**
+2338,seem,~처럼 보이다,middle,중등영어,,,1,seem**
+2339,seize,붙잡다,high,고등영어,,,1,seize
+2340,select,선택하다,middle,중등영어,,,1,select**
+2341,self,자기 자신,middle,중등영어,,,1,self**
+2342,sell,팔다,elem,초등영어,,,1,sell*
+2343,send,보내다,elem,초등영어,,,1,send*
+2344,senior,"선배, 손위의",middle,중등영어,,,1,senior**
+2345,sense,감각,middle,중등영어,,sensation,1,sense** (sensation)
+2346,sensible,분별 있는,high,고등영어,,,1,sensible
+2347,sentence,"문장, 형벌",middle,중등영어,,,1,sentence**
+2348,sentiment,"감정, 정서",high,고등영어,,,1,sentiment
+2349,separate,분리하다,middle,중등영어,,,1,separate**
+2350,sequence,"순서, 연속",high,고등영어,,,1,sequence
+2351,series,"연속, 시리즈",middle,중등영어,,,1,series**
+2352,serious,심각한,middle,중등영어,,,1,serious**
+2353,serve,"제공하다, 봉사하다",middle,중등영어,,,1,serve**
+2354,service,"서비스, 봉사",elem,초등영어,,,1,service*
+2355,session,"기간, 회의",middle,중등영어,,,1,session**
+2356,set,"놓다, 세트",elem,초등영어,,,1,set*
+2357,settle,"정착하다, 해결하다",middle,중등영어,,,1,settle**
+2358,seven,"7, 일곱",elem,초등영어,,,1,seven*
+2359,several,몇몇의,middle,중등영어,,,1,several**
+2360,severe,심한,high,고등영어,,,1,severe
+2361,sew,바느질하다,middle,중등영어,,,1,sew**
+2362,sex,"성, 성별",middle,중등영어,,,1,sex**
+2363,shade,그늘,middle,중등영어,,,1,shade**
+2364,shadow,그림자,middle,중등영어,,,1,shadow**
+2365,shake,흔들다,middle,중등영어,,,1,shake**
+2366,shall,~할 것이다,middle,중등영어,,,0,shall**
+2367,shallow,얕은,high,고등영어,,,1,shallow
+2368,shame,수치심,middle,중등영어,,,1,shame**
+2369,shape,모양,middle,중등영어,,,1,shape**
+2370,share,"나누다, 공유하다",middle,중등영어,,,1,share**
+2371,sharp,날카로운,middle,중등영어,,,1,sharp**
+2372,shave,면도하다,middle,중등영어,,,1,shave**
+2373,she,그녀,elem,초등영어,,,1,she*
+2374,sheep,양 (동물),middle,중등영어,,,1,sheep**
+2375,sheet,"시트, 한 장",middle,중등영어,,,1,sheet**
+2376,shelf,선반,middle,중등영어,,,1,shelf**
+2377,shell,"껍질, 조개껍데기",middle,중등영어,,,1,shell**
+2378,shelter,피난처,middle,중등영어,,,1,shelter**
+2379,shift,"바꾸다, 교대",middle,중등영어,,,1,shift**
+2380,shine,빛나다,middle,중등영어,,,1,shine**
+2381,ship,배 (큰 배),elem,초등영어,,,1,ship*
+2382,shirt,셔츠,elem,초등영어,,,1,shirt*
+2383,shock,충격,middle,중등영어,,,1,shock**
+2384,shoe,신발,elem,초등영어,,,1,shoe*
+2385,shoot,쏘다,middle,중등영어,,,1,shoot**
+2386,shop,가게,elem,초등영어,,,1,shop*
+2387,shore,"해안, 물가",middle,중등영어,,,1,shore**
+2388,short,짧은,elem,초등영어,,,1,short*
+2389,should,~해야 한다,elem,초등영어,,,0,should*
+2390,shoulder,어깨,middle,중등영어,,,1,shoulder**
+2391,shout,외치다,middle,중등영어,,,1,shout**
+2392,show,보여 주다,elem,초등영어,,,1,show*
+2393,shower,"샤워, 소나기",middle,중등영어,,,1,shower**
+2394,shut,닫다,middle,중등영어,,,1,shut**
+2395,shy,수줍은,elem,초등영어,,,1,shy*
+2396,sick,아픈,elem,초등영어,,,1,sick*
+2397,side,"옆, 측면",elem,초등영어,,,1,side*
+2398,sigh,한숨 쉬다,high,고등영어,,,1,sigh
+2399,sight,"시력, 광경",middle,중등영어,,,1,sight**
+2400,sign,"표지판, 서명하다",middle,중등영어,,significant,1,sign** (significant)
+2401,silent,"조용한, 침묵하는",high,고등영어,,,1,silent
+2402,silly,어리석은,middle,중등영어,,,1,silly**
+2403,silver,은,middle,중등영어,,,1,silver**
+2404,similar,비슷한,middle,중등영어,,,1,similar**
+2405,simple,간단한,middle,중등영어,,,1,simple**
+2406,simulate,모의 실험하다,high,고등영어,,,1,simulate
+2407,simultaneous,동시의,high,고등영어,,,1,simultaneous
+2408,sin,죄 (종교적),high,고등영어,,,1,sin
+2409,since,~ 이후로,middle,중등영어,,,1,since**
+2410,sing,노래하다,elem,초등영어,,,1,sing*
+2411,single,"단 하나의, 독신의",middle,중등영어,,,1,single**
+2412,sink,"가라앉다, 싱크대",middle,중등영어,,,1,sink**
+2413,sister,여자 형제,elem,초등영어,,,1,sister*
+2414,sit,앉다,elem,초등영어,,,1,sit*
+2415,site,"장소, 현장",middle,중등영어,,,1,site**
+2416,situate,위치시키다,middle,중등영어,,situation,1,situate** (situation)
+2417,six,"6, 여섯",elem,초등영어,,,1,six*
+2418,size,크기,elem,초등영어,,,1,size*
+2419,skate,스케이트를 타다,elem,초등영어,,,1,skate*
+2420,ski,스키를 타다,elem,초등영어,,,1,ski*
+2421,skill,"기술, 솜씨",middle,중등영어,,,1,skill**
+2422,skin,피부,elem,초등영어,,,1,skin*
+2423,skip,건너뛰다,high,고등영어,,,1,skip
+2424,skirt,치마,elem,초등영어,,,1,skirt*
+2425,sky,하늘,elem,초등영어,,,1,sky*
+2426,slave,노예,middle,중등영어,,,1,slave**
+2427,sleep,자다,elem,초등영어,,,1,sleep*
+2428,slice,"얇게 썰다, 조각",high,고등영어,,,1,slice
+2429,slide,미끄러지다,middle,중등영어,,,1,slide**
+2430,slight,약간의,middle,중등영어,,,1,slight**
+2431,slim,날씬한,high,고등영어,,,1,slim
+2432,slip,미끄러지다,middle,중등영어,,,1,slip**
+2433,slope,경사,high,고등영어,,,1,slope
+2434,slow,느린,elem,초등영어,,,1,slow*
+2435,small,작은,elem,초등영어,,,1,small*
+2436,smart,똑똑한,middle,중등영어,,,1,smart**
+2437,smash,박살 내다,middle,중등영어,,,1,smash**
+2438,smell,냄새,elem,초등영어,,,1,smell*
+2439,smile,미소 짓다,elem,초등영어,,,1,smile*
+2440,smoke,"연기, 담배를 피우다",middle,중등영어,,,1,smoke**
+2441,smooth,매끄러운,middle,중등영어,,,1,smooth**
+2442,snack,간식,middle,중등영어,,,1,snack**
+2443,snake,뱀,middle,중등영어,,,1,snake**
+2444,snap,딱 부러지다,middle,중등영어,,,1,snap**
+2445,sneak,살금살금 가다,high,고등영어,,,1,sneak
+2446,snow,눈 (날씨),elem,초등영어,,,1,snow*
+2447,so,"그래서, 매우",elem,초등영어,,,0,so*
+2448,soak,"담그다, 흠뻑 적시다",high,고등영어,,,1,soak
+2449,soap,비누,high,고등영어,,,1,soap
+2450,soccer,축구,elem,초등영어,,,1,soccer*
+2451,social,사회의,middle,중등영어,,,1,social**
+2452,society,사회,middle,중등영어,,,1,society**
+2453,sociology,사회학,high,고등영어,,,1,sociology
+2454,sock,양말,elem,초등영어,,,1,sock*
+2455,soft,부드러운,elem,초등영어,,,1,soft*
+2456,software,소프트웨어,elem,초등영어,,,1,software*
+2457,soil,"흙, 토양",middle,중등영어,,,1,soil**
+2458,soldier,군인,middle,중등영어,,,1,soldier**
+2459,sole,유일한,high,고등영어,,,1,sole
+2460,solid,"고체의, 단단한",middle,중등영어,,,1,solid**
+2461,solve,해결하다,middle,중등영어,,,1,solve**
+2462,some,"약간의, 몇몇",elem,초등영어,,,1,some*
+2463,somewhat,다소,middle,중등영어,,,1,somewhat**
+2464,son,아들,elem,초등영어,,,1,son*
+2465,song,노래,elem,초등영어,,,1,song*
+2466,soon,곧,middle,중등영어,,,1,soon**
+2467,sophisticate,세련되게 하다,high,고등영어,,,1,sophisticate
+2468,sore,"아픈, 쑤시는",middle,중등영어,,,1,sore**
+2469,sorry,미안한,elem,초등영어,,,1,sorry*
+2470,sort,"종류, 분류하다",middle,중등영어,,,1,sort**
+2471,soul,영혼,middle,중등영어,,,1,soul**
+2472,sound,소리,elem,초등영어,,,1,sound*
+2473,soup,수프,elem,초등영어,,,1,soup*
+2474,sour,"신, 시큼한",middle,중등영어,,,1,sour**
+2475,source,"원천, 출처",middle,중등영어,,,1,source**
+2476,south,남쪽,elem,초등영어,,,1,south*
+2477,space,"우주, 공간",elem,초등영어,,,1,space*
+2478,spaghetti,스파게티,elem,초등영어,,,1,spaghetti*
+2479,span,"기간, 범위",high,고등영어,,,1,span
+2480,spare,"여분의, 할애하다",middle,중등영어,,,1,spare**
+2481,spark,"불꽃, 촉발하다",high,고등영어,,,1,spark
+2482,speak,말하다,elem,초등영어,,,1,speak*
+2483,species,종 (생물),middle,중등영어,,special,1,species** (special)
+2484,specific,구체적인,middle,중등영어,,,1,specific**
+2485,spectacle,"구경거리, 장관",high,고등영어,,,1,spectacle
+2486,spectrum,"범위, 스펙트럼",high,고등영어,,,1,spectrum
+2487,speech,연설,middle,중등영어,,,1,speech**
+2488,speed,속도,elem,초등영어,,,1,speed*
+2489,spell,철자를 말하다,middle,중등영어,,,1,spell**
+2490,spend,(돈·시간을) 쓰다,middle,중등영어,,,1,spend**
+2491,sphere,"구, 영역",high,고등영어,,,1,sphere
+2492,spill,엎지르다,high,고등영어,,,1,spill
+2493,spin,"돌다, 회전하다",middle,중등영어,,,1,spin**
+2494,spirit,정신,middle,중등영어,,,1,spirit**
+2495,spit,침을 뱉다,high,고등영어,,,1,spit
+2496,splash,튀기다,high,고등영어,,,1,splash
+2497,split,쪼개다,high,고등영어,,,1,split
+2498,spoil,망치다,middle,중등영어,,,1,spoil**
+2499,sponsor,후원자,middle,중등영어,,,1,sponsor**
+2500,spoon,숟가락,elem,초등영어,,,1,spoon*
+2501,sport,"운동, 스포츠",elem,초등영어,,,1,sport*
+2502,spot,"장소, 점",middle,중등영어,,,1,spot**
+2503,spouse,배우자,high,고등영어,,,1,spouse
+2504,spray,뿌리다,middle,중등영어,,,1,spray**
+2505,spread,"펼치다, 퍼지다",middle,중등영어,,,1,spread**
+2506,spring,봄,elem,초등영어,,,1,spring*
+2507,spy,"스파이, 간첩",middle,중등영어,,,1,spy**
+2508,square,"정사각형, 광장",middle,중등영어,,,1,square**
+2509,squeeze,짜다,high,고등영어,,,1,squeeze
+2510,stable,안정된,middle,중등영어,,,1,stable**
+2511,stack,"쌓다, 더미",high,고등영어,,,1,stack
+2512,staff,직원,elem,초등영어,,,1,staff*
+2513,stage,"무대, 단계",middle,중등영어,,,1,stage**
+2514,stain,얼룩,high,고등영어,,,1,stain
+2515,stairs,계단,middle,중등영어,,,1,stairs**
+2516,stamp,"우표, 도장",middle,중등영어,,,1,stamp**
+2517,stand,서다,elem,초등영어,,,1,stand*
+2518,standard,"기준, 표준",middle,중등영어,,,1,standard**
+2519,star,별,elem,초등영어,,,1,star*
+2520,stare,응시하다,middle,중등영어,,,1,stare**
+2521,start,시작하다,elem,초등영어,,,1,start*
+2522,starve,굶주리다,high,고등영어,,,1,starve
+2523,state,"상태, 주, 진술하다",middle,중등영어,,,1,state**
+2524,station,역,middle,중등영어,,,1,station**
+2525,statistic,통계,high,고등영어,,,1,statistic
+2526,statue,조각상,high,고등영어,,,1,statue
+2527,status,"지위, 상태",high,고등영어,,,1,status
+2528,stay,머무르다,elem,초등영어,,,1,stay*
+2529,steady,꾸준한,middle,중등영어,,,1,steady**
+2530,steak,스테이크,elem,초등영어,,,1,steak*
+2531,steal,훔치다,middle,중등영어,,,1,steal**
+2532,steam,증기,middle,중등영어,,,1,steam**
+2533,steel,강철,middle,중등영어,,,1,steel**
+2534,steep,가파른,high,고등영어,,,1,steep
+2535,stem,줄기,high,고등영어,,,1,stem
+2536,step,"걸음, 단계",middle,중등영어,,,1,step**
+2537,stick,"막대기, 붙이다",middle,중등영어,,,1,stick**
+2538,stiff,뻣뻣한,high,고등영어,,,1,stiff
+2539,still,"아직, 여전히",middle,중등영어,,,1,still**
+2540,stimulate,자극하다,high,고등영어,,,1,stimulate
+2541,stir,젓다,middle,중등영어,,,1,stir**
+2542,stitch,"바늘땀, 꿰매다",high,고등영어,,,1,stitch
+2543,stock,"재고, 주식",middle,중등영어,,,1,stock**
+2544,stomach,"배, 위",middle,중등영어,,,1,stomach**
+2545,stone,돌,elem,초등영어,,,1,stone*
+2546,stop,멈추다,elem,초등영어,,,1,stop*
+2547,store,"가게, 상점",elem,초등영어,,,1,store*
+2548,storm,폭풍,middle,중등영어,,,1,storm**
+2549,story,이야기,elem,초등영어,,,1,story*
+2550,stove,난로,high,고등영어,,,1,stove
+2551,straight,"곧은, 똑바로",middle,중등영어,,,1,straight**
+2552,strain,"부담, 긴장",high,고등영어,,,1,strain
+2553,strange,이상한,middle,중등영어,,,1,strange**
+2554,strategy,전략,middle,중등영어,,,1,strategy**
+2555,strawberry,딸기,middle,중등영어,,,1,strawberry**
+2556,stream,"개울, 흐름",middle,중등영어,,,1,stream**
+2557,street,거리,elem,초등영어,,,1,street*
+2558,stress,"스트레스, 강조",middle,중등영어,,,1,stress**
+2559,stretch,"늘이다, 뻗다",middle,중등영어,,,1,stretch**
+2560,strict,엄격한,high,고등영어,,,1,strict
+2561,strike,"치다, 파업",middle,중등영어,,,1,strike**
+2562,string,"줄, 끈",middle,중등영어,,,1,string**
+2563,strip,"벗기다, 가느다란 조각",high,고등영어,,,1,strip
+2564,stripe,줄무늬,high,고등영어,,,1,stripe
+2565,stroke,"뇌졸중, 쓰다듬다",high,고등영어,,,1,stroke
+2566,strong,강한,elem,초등영어,,,1,strong*
+2567,structure,구조,middle,중등영어,,,1,structure**
+2568,struggle,"애쓰다, 투쟁",middle,중등영어,,,1,struggle**
+2569,studio,"작업실, 스튜디오",middle,중등영어,,,1,studio**
+2570,study,공부하다,elem,초등영어,,student,1,study* (student)
+2571,stuff,"물건, 것",middle,중등영어,,,1,stuff**
+2572,style,"방식, 스타일",elem,초등영어,,,1,style*
+2573,subject,"과목, 주제",middle,중등영어,,subjective,1,subject** (subjective)
+2574,submarine,잠수함,high,고등영어,,,1,submarine
+2575,submit,제출하다,high,고등영어,,submission,1,submit (submission)
+2576,subscribe,구독하다,high,고등영어,,,1,subscribe
+2577,substance,물질,high,고등영어,,substantial,1,substance (substantial)
+2578,substitute,"대신하다, 대체물",high,고등영어,,,1,substitute
+2579,subtle,미묘한,high,고등영어,,,1,subtle
+2580,suburb,교외,high,고등영어,,,1,suburb
+2581,subway,지하철,elem,초등영어,,,1,subway*
+2582,succeed,성공하다,middle,중등영어,,,1,succeed**
+2583,success,성공,middle,중등영어,,,1,success**
+2584,such,그러한,middle,중등영어,,,1,such**
+2585,suck,빨다,high,고등영어,,,1,suck
+2586,sudden,갑작스러운,middle,중등영어,,,1,sudden**
+2587,suffer,고통받다,middle,중등영어,,,1,suffer**
+2588,suffice,충분하다,high,고등영어,,sufficient,1,suffice (sufficient)
+2589,sugar,설탕,elem,초등영어,,,1,sugar*
+2590,suggest,제안하다,middle,중등영어,,,1,suggest**
+2591,suicide,자살,high,고등영어,,,1,suicide
+2592,suit,"정장, 어울리다",middle,중등영어,,,1,suit**
+2593,suite,"스위트룸, 한 벌",high,고등영어,,,1,suite
+2594,sum,합계,middle,중등영어,,summary,1,sum** (summary)
+2595,summer,여름,elem,초등영어,,,1,summer*
+2596,summit,"정상, 정상 회담",high,고등영어,,,1,summit
+2597,sun,태양,elem,초등영어,,,1,sun*
+2598,super,"최고의, 굉장한",middle,중등영어,,,1,super**
+2599,superb,"최고의, 훌륭한",high,고등영어,,,1,superb
+2600,superior,우월한,high,고등영어,,,1,superior
+2601,supervise,감독하다,high,고등영어,,,1,supervise
+2602,supper,저녁 식사 (가벼운),middle,중등영어,,,1,supper**
+2603,supplement,보충,high,고등영어,,,1,supplement
+2604,supply,공급하다,middle,중등영어,,,1,supply**
+2605,support,지지하다,middle,중등영어,,,1,support**
+2606,suppose,"가정하다, 생각하다",middle,중등영어,,,1,suppose**
+2607,sure,확실한,elem,초등영어,,ensure,1,sure* (ensure)
+2608,surface,표면,middle,중등영어,,,1,surface**
+2609,surgery,수술,high,고등영어,,,1,surgery
+2610,surprise,놀라게 하다,middle,중등영어,,,1,surprise**
+2611,surrender,항복하다,high,고등영어,,,1,surrender
+2612,surround,둘러싸다,middle,중등영어,,,1,surround**
+2613,survey,설문 조사,middle,중등영어,,,1,survey**
+2614,survive,살아남다,middle,중등영어,,,1,survive**
+2615,suspect,"의심하다, 용의자",middle,중등영어,,,1,suspect**
+2616,suspend,"중단하다, 매달다",high,고등영어,,,1,suspend
+2617,sustain,지속시키다,high,고등영어,,,1,sustain
+2618,swallow,"삼키다, 제비",middle,중등영어,,,1,swallow**
+2619,swear,맹세하다,high,고등영어,,,1,swear
+2620,sweat,땀,high,고등영어,,,1,sweat
+2621,sweater,스웨터,middle,중등영어,,,1,sweater**
+2622,sweep,쓸다,middle,중등영어,,,1,sweep**
+2623,sweet,달콤한,middle,중등영어,,,1,sweet**
+2624,swell,"붓다, 부풀다",high,고등영어,,,1,swell
+2625,swift,신속한,high,고등영어,,,1,swift
+2626,swim,수영하다,elem,초등영어,,,1,swim*
+2627,swing,"흔들다, 그네",middle,중등영어,,,1,swing**
+2628,switch,"스위치, 바꾸다",middle,중등영어,,,1,switch**
+2629,symbol,상징,high,고등영어,,,1,symbol
+2630,sympathy,"동정, 공감",high,고등영어,,,1,sympathy
+2631,symphony,교향곡,high,고등영어,,,1,symphony
+2632,symptom,증상,high,고등영어,,,1,symptom
+2633,system,"체계, 시스템",middle,중등영어,,,1,system**
+2634,table,탁자,elem,초등영어,,,1,table*
+2635,tackle,"다루다, 태클하다",high,고등영어,,,1,tackle
+2636,tag,꼬리표,high,고등영어,,,1,tag
+2637,tail,꼬리,elem,초등영어,,,1,tail*
+2638,take,"가져가다, 잡다",elem,초등영어,,mistake,1,take* (mistake)
+2639,tale,"이야기, 설화",middle,중등영어,,,1,tale**
+2640,talent,재능,high,고등영어,,,1,talent
+2641,talk,이야기하다,elem,초등영어,,,1,talk*
+2642,tall,키가 큰,elem,초등영어,,,1,tall*
+2643,tank,"탱크, 통",middle,중등영어,,,1,tank**
+2644,tap,"가볍게 두드리다, 수도꼭지",middle,중등영어,,,1,tap**
+2645,tape,테이프,elem,초등영어,,,1,tape*
+2646,target,"목표, 과녁",middle,중등영어,,,1,target**
+2647,task,"과제, 일",high,고등영어,,,1,task
+2648,taste,맛,elem,초등영어,,,1,taste*
+2649,tax,세금,middle,중등영어,,,1,tax**
+2650,taxi,택시,elem,초등영어,,,1,taxi*
+2651,tea,차 (마시는 차),middle,중등영어,,,1,tea**
+2652,teach,가르치다,elem,초등영어,,,1,teach*
+2653,team,팀,elem,초등영어,,,1,team*
+2654,tear,"눈물, 찢다",middle,중등영어,,,1,tear**
+2655,tease,놀리다,high,고등영어,,,1,tease
+2656,technique,기법,middle,중등영어,technic,,1,technique** / technic**
+2657,technology,기술 (과학 기술),middle,중등영어,,,1,technology**
+2658,teenage,십 대의,middle,중등영어,,,1,teenage**
+2659,telegraph,전보,high,고등영어,,,1,telegraph
+2660,telephone,전화기,elem,초등영어,phone,,1,telephone* / phone*
+2661,television,텔레비전,elem,초등영어,,,1,television*
+2662,tell,"말하다, 알려 주다",elem,초등영어,,,1,tell*
+2663,temperature,온도,middle,중등영어,,,1,temperature**
+2664,temple,"사원, 절",high,고등영어,,,1,temple
+2665,temporary,일시적인,high,고등영어,,,1,temporary
+2666,tempt,유혹하다,high,고등영어,,,1,tempt
+2667,ten,"10, 열",elem,초등영어,,,1,ten*
+2668,tenant,세입자,high,고등영어,,,1,tenant
+2669,tend,~하는 경향이 있다,middle,중등영어,,,1,tend**
+2670,tender,"부드러운, 연한",high,고등영어,,,1,tender
+2671,tennis,테니스,elem,초등영어,,,1,tennis*
+2672,tense,긴장한,middle,중등영어,,,1,tense**
+2673,tent,텐트,elem,초등영어,,,1,tent*
+2674,term,"용어, 기간",middle,중등영어,,,1,term**
+2675,terminal,"종점, 터미널",high,고등영어,,,1,terminal
+2676,terminate,종료하다,high,고등영어,,,1,terminate
+2677,terrace,테라스,high,고등영어,,,1,terrace
+2678,terrible,끔찍한,middle,중등영어,,,1,terrible**
+2679,terrific,아주 좋은,high,고등영어,,,1,terrific
+2680,territory,영토,high,고등영어,,,1,territory
+2681,terror,"공포, 테러",high,고등영어,,terrorist,1,terror (terrorist)
+2682,test,시험,elem,초등영어,,,1,test*
+2683,text,"글, 본문",middle,중등영어,,,1,text**
+2684,textbook,교과서,elem,초등영어,,,1,textbook*
+2685,than,~보다,elem,초등영어,,,0,than*
+2686,thank,감사하다,elem,초등영어,,,1,thank*
+2687,that,"저것, 그것",elem,초등영어,,,0,that*
+2688,the,그 (정관사),elem,초등영어,,,0,the*
+2689,theater,극장,middle,중등영어,theatre,,1,theater** / theatre**
+2690,theme,주제 (테마),high,고등영어,,,1,theme
+2691,then,"그때, 그러고 나서",middle,중등영어,,,1,then**
+2692,theory,이론,middle,중등영어,,,1,theory**
+2693,therapy,치료,high,고등영어,,,1,therapy
+2694,there,거기에,elem,초등영어,,,0,there*
+2695,therefore,그러므로,middle,중등영어,,,1,therefore**
+2696,they,그들,elem,초등영어,,,1,they*
+2697,thick,두꺼운,middle,중등영어,,,1,thick**
+2698,thief,도둑,middle,중등영어,,,1,thief**
+2699,thin,"얇은, 마른",middle,중등영어,,,1,thin**
+2700,thing,"것, 물건",elem,초등영어,,,1,thing*
+2701,think,생각하다,elem,초등영어,,,1,think*
+2702,third,세 번째의,elem,초등영어,,,1,third*
+2703,thirst,"목마름, 갈증",elem,초등영어,,,1,thirst*
+2704,thirteen,"13, 열셋",elem,초등영어,,,1,thirteen*
+2705,thirty,"30, 서른",elem,초등영어,,,1,thirty*
+2706,this,이것,elem,초등영어,,,1,this*
+2707,thorough,철저한,high,고등영어,,,1,thorough
+2708,though,~이지만,middle,중등영어,,,1,though**
+2709,thousand,"1000, 천",middle,중등영어,,,1,thousand**
+2710,thread,실,high,고등영어,,,1,thread
+2711,threat,위협,middle,중등영어,,,1,threat**
+2712,three,"3, 셋",elem,초등영어,,,1,three*
+2713,thrill,"전율, 스릴",high,고등영어,,,1,thrill
+2714,throat,목구멍,middle,중등영어,,,1,throat**
+2715,through,~을 통해,middle,중등영어,,,1,through**
+2716,throw,던지다,middle,중등영어,,,1,throw**
+2717,thumb,엄지손가락,high,고등영어,,,1,thumb
+2718,thus,따라서,middle,중등영어,,,1,thus**
+2719,tick,"째깍거리다, 체크 표시",high,고등영어,,,1,tick
+2720,ticket,"표, 입장권",elem,초등영어,,,1,ticket*
+2721,tide,"조수, 밀물과 썰물",middle,중등영어,,tidy,1,tide** (tidy)
+2722,tie,"묶다, 넥타이",middle,중등영어,,,1,tie**
+2723,tiger,호랑이,elem,초등영어,,,1,tiger*
+2724,tight,꽉 끼는,middle,중등영어,,,1,tight**
+2725,till,~까지,middle,중등영어,,,1,till**
+2726,timber,목재,high,고등영어,,,1,timber
+2727,time,시간,elem,초등영어,,,1,time*
+2728,tin,"주석, 깡통",middle,중등영어,,,1,tin**
+2729,tiny,아주 작은,middle,중등영어,,,1,tiny**
+2730,tip,"끝, 팁, 조언",middle,중등영어,,,1,tip**
+2731,tire,"피곤하게 하다, 타이어",elem,초등영어,,tired,1,tire* (tired)
+2732,tissue,"조직, 화장지",high,고등영어,,,1,tissue
+2733,title,제목,middle,중등영어,,entitle,1,title** (entitle)
+2734,to,"~에게, ~로",elem,초등영어,,,0,to*
+2735,toast,"토스트, 건배",middle,중등영어,,,1,toast**
+2736,today,오늘,elem,초등영어,,,1,today*
+2737,toe,발가락,middle,중등영어,,,1,toe**
+2738,together,함께,elem,초등영어,,,1,together*
+2739,toilet,"변기, 화장실",middle,중등영어,,,1,toilet**
+2740,tomato,토마토,elem,초등영어,,,1,tomato*
+2741,tomorrow,내일,elem,초등영어,,,1,tomorrow*
+2742,tone,"어조, 음색",middle,중등영어,,,1,tone**
+2743,tongue,혀,middle,중등영어,,,1,tongue**
+2744,tonight,오늘 밤,elem,초등영어,,,1,tonight*
+2745,too,"너무, ~도 또한",elem,초등영어,,,1,too*
+2746,tool,도구,middle,중등영어,,,1,tool**
+2747,tooth,"이, 치아",elem,초등영어,,,1,tooth*
+2748,top,꼭대기,elem,초등영어,,,1,top*
+2749,topic,주제,middle,중등영어,,,1,topic**
+2750,torture,고문,high,고등영어,,,1,torture
+2751,toss,던지다 (가볍게),high,고등영어,,,1,toss
+2752,total,"전체의, 합계",middle,중등영어,,,1,total**
+2753,touch,만지다,elem,초등영어,,,1,touch*
+2754,tough,"힘든, 질긴",middle,중등영어,,,1,tough**
+2755,tour,"관광, 여행",middle,중등영어,,,1,tour**
+2756,toward,~ 쪽으로,middle,중등영어,towards,,1,toward** / towards**
+2757,towel,수건,middle,중등영어,,,1,towel**
+2758,tower,탑,middle,중등영어,,,1,tower**
+2759,town,"마을, 소도시",elem,초등영어,,,1,town*
+2760,toxic,유독한,high,고등영어,,,1,toxic
+2761,toy,장난감,elem,초등영어,,,1,toy*
+2762,trace,"흔적, 추적하다",middle,중등영어,,,1,trace**
+2763,track,"길, 트랙",elem,초등영어,,,1,track*
+2764,trade,"무역, 거래",middle,중등영어,,,1,trade**
+2765,tradition,전통,middle,중등영어,,,1,tradition**
+2766,traffic,교통,middle,중등영어,,,1,traffic**
+2767,tragic,비극적인,high,고등영어,,,1,tragic
+2768,trail,"자국, 오솔길",high,고등영어,,,1,trail
+2769,train,기차,elem,초등영어,,,1,train*
+2770,transact,거래하다,high,고등영어,,,1,transact
+2771,transfer,"옮기다, 갈아타다",middle,중등영어,,,1,transfer**
+2772,transform,변형시키다,high,고등영어,,,1,transform
+2773,transition,"전환, 변화",high,고등영어,,,1,transition
+2774,translate,번역하다,high,고등영어,,,1,translate
+2775,transmit,전송하다,high,고등영어,,,1,transmit
+2776,transport,수송하다,middle,중등영어,,transportation,1,transport** (transportation)
+2777,trap,덫,middle,중등영어,,,1,trap**
+2778,travel,여행하다,elem,초등영어,,,1,travel*
+2779,tray,쟁반,middle,중등영어,,,1,tray**
+2780,treasure,보물,high,고등영어,,,1,treasure
+2781,treat,"대하다, 치료하다",middle,중등영어,,,1,treat**
+2782,treaty,조약,high,고등영어,,,1,treaty
+2783,tree,나무,elem,초등영어,,,1,tree*
+2784,tremendous,엄청난,high,고등영어,,,1,tremendous
+2785,trend,"경향, 추세",high,고등영어,,,1,trend
+2786,triangle,삼각형,middle,중등영어,,,1,triangle**
+2787,tribe,부족 (종족),high,고등영어,,,1,tribe
+2788,trick,속임수,middle,중등영어,,,1,trick**
+2789,trigger,"촉발하다, 방아쇠",high,고등영어,,,1,trigger
+2790,trim,다듬다,high,고등영어,,,1,trim
+2791,trip,여행,elem,초등영어,,,1,trip*
+2792,triumph,"승리, 업적",high,고등영어,,,1,triumph
+2793,troop,"군대, 병력",high,고등영어,,,1,troop
+2794,trouble,"문제, 곤란",middle,중등영어,,,1,trouble**
+2795,truck,트럭,elem,초등영어,,,1,truck*
+2796,true,"사실인, 진짜의",elem,초등영어,,,1,true*
+2797,trunk,"나무 줄기, 트렁크",middle,중등영어,,,1,trunk**
+2798,trust,믿다,middle,중등영어,,,1,trust**
+2799,truth,진실,middle,중등영어,,,1,truth**
+2800,try,"노력하다, 시도하다",elem,초등영어,,trial,1,try* (trial)
+2801,tube,"관, 튜브",high,고등영어,,,1,tube
+2802,tune,곡조,middle,중등영어,,,1,tune**
+2803,tunnel,터널,high,고등영어,,,1,tunnel
+2804,turn,"돌다, 차례",elem,초등영어,,,1,turn*
+2805,turnover,"매출액, 이직률",high,고등영어,,,1,turnover
+2806,twelve,"12, 열둘",elem,초등영어,,,1,twelve*
+2807,twenty,"20, 스물",elem,초등영어,,,1,twenty*
+2808,twenty-first,21번째의,elem,초등영어,,,1,twenty-first*
+2809,twenty-second,22번째의,elem,초등영어,,,1,twenty-second*
+2810,twenty-third,23번째의,elem,초등영어,,,1,twenty-third*
+2811,twice,두 번,elem,초등영어,,,1,twice*
+2812,twin,쌍둥이,middle,중등영어,,,1,twin**
+2813,twist,비틀다,middle,중등영어,,,1,twist**
+2814,two,"2, 둘",elem,초등영어,,,1,two*
+2815,type,"유형, 종류",elem,초등영어,,,1,type*
+2816,ugly,못생긴,elem,초등영어,,,1,ugly*
+2817,ultimate,궁극적인,high,고등영어,,,1,ultimate
+2818,umbrella,우산,elem,초등영어,,,1,umbrella*
+2819,uncle,삼촌,elem,초등영어,,,1,uncle*
+2820,under,~ 아래에,elem,초등영어,,,1,under*
+2821,undergo,겪다,high,고등영어,,,1,undergo
+2822,underlie,~의 기저를 이루다,high,고등영어,,,1,underlie
+2823,undermine,약화시키다,high,고등영어,,,1,undermine
+2824,understand,이해하다,elem,초등영어,,,1,understand*
+2825,undertake,착수하다,high,고등영어,,,1,undertake
+2826,uniform,"제복, 교복",middle,중등영어,,,1,uniform**
+2827,unify,통일하다,high,고등영어,,,1,unify
+2828,unique,독특한,high,고등영어,,,1,unique
+2829,unit,단위,middle,중등영어,,,1,unit**
+2830,unite,통합하다,middle,중등영어,,union,1,unite** (union)
+2831,universe,우주 (전체),high,고등영어,,,1,universe
+2832,university,대학교,middle,중등영어,,,1,university**
+2833,unless,~하지 않는 한,middle,중등영어,,,1,unless**
+2834,until,~까지,middle,중등영어,,,1,until**
+2835,up,위로,elem,초등영어,,,1,up*
+2836,update,갱신하다,high,고등영어,,,1,update
+2837,upon,~ 위에,middle,중등영어,,,1,upon**
+2838,upper,위쪽의,middle,중등영어,,,1,upper**
+2839,upset,"속상한, 화난",middle,중등영어,,,1,upset**
+2840,upward,위쪽으로,high,고등영어,upwards,,1,upward / upwards
+2841,urban,도시의,high,고등영어,,,1,urban
+2842,urge,촉구하다,high,고등영어,,urgent,1,urge (urgent)
+2843,use,사용하다,elem,초등영어,,usual,1,use* (usual)
+2844,utilize,활용하다,high,고등영어,utilise,,1,utilize / utilise
+2845,utter,"말하다, 완전한",high,고등영어,,,1,utter
+2846,vacate,비우다,high,고등영어,,vacation,1,vacate (vacation)
+2847,vaccine,백신,high,고등영어,,,1,vaccine
+2848,vacuum,진공,high,고등영어,,,1,vacuum
+2849,vague,모호한,high,고등영어,,,1,vague
+2850,valid,유효한,high,고등영어,,,1,valid
+2851,valley,계곡,middle,중등영어,,,1,valley**
+2852,value,가치,middle,중등영어,,,1,value**
+2853,van,승합차,middle,중등영어,,,1,van**
+2854,vanish,사라지다 (갑자기),high,고등영어,,,1,vanish
+2855,various,다양한,middle,중등영어,,,1,various**
+2856,vary,"다르다, 변하다",middle,중등영어,,,1,vary**
+2857,vast,광대한,high,고등영어,,,1,vast
+2858,vegetable,채소,elem,초등영어,,,1,vegetable*
+2859,vehicle,"차량, 탈것",middle,중등영어,,,1,vehicle**
+2860,venture,"모험, 벤처",high,고등영어,,,1,venture
+2861,verb,동사,high,고등영어,,verbal,1,verb (verbal)
+2862,verse,"운문, 절",high,고등영어,,,1,verse
+2863,version,"판, 버전",middle,중등영어,,,1,version**
+2864,versus,~ 대,high,고등영어,,,1,versus
+2865,vertical,수직의,high,고등영어,,,1,vertical
+2866,very,매우,elem,초등영어,,,1,very*
+2867,vessel,"선박, 그릇",high,고등영어,,,1,vessel
+2868,veterinarian,수의사,high,고등영어,,,1,veterinarian
+2869,via,~을 경유하여,high,고등영어,,,0,via
+2870,vice,"악덕, 부-",high,고등영어,,,1,vice
+2871,victim,"희생자, 피해자",middle,중등영어,,,1,victim**
+2872,victory,승리,high,고등영어,,,1,victory
+2873,video,"비디오, 영상",elem,초등영어,,,1,video*
+2874,view,"견해, 경치",middle,중등영어,,"interview, review",1,"view** (interview, review)"
+2875,vigor,활력,high,고등영어,,vigorous,1,vigor (vigorous)
+2876,villa,별장,middle,중등영어,,,1,villa**
+2877,village,마을,middle,중등영어,,,1,village**
+2878,violent,폭력적인,middle,중등영어,,,1,violent**
+2879,violin,바이올린,elem,초등영어,,,1,violin*
+2880,virgin,"처녀, 처음의",high,고등영어,,,1,virgin
+2881,virtue,미덕,high,고등영어,,virtual,1,virtue (virtual)
+2882,virus,바이러스,high,고등영어,,,1,virus
+2883,visible,눈에 보이는,high,고등영어,,,1,visible
+2884,vision,"시력, 비전",middle,중등영어,,,1,vision**
+2885,visit,방문하다,elem,초등영어,,,1,visit*
+2886,visual,시각의,high,고등영어,,,1,visual
+2887,vital,"필수적인, 생명의",high,고등영어,,,1,vital
+2888,vivid,생생한,high,고등영어,,,1,vivid
+2889,vocabulary,어휘,high,고등영어,,,1,vocabulary
+2890,vocation,"천직, 직업",high,고등영어,,,1,vocation
+2891,voice,목소리,elem,초등영어,,,1,voice*
+2892,volume,"음량, 부피",middle,중등영어,,,1,volume**
+2893,volunteer,자원봉사자,middle,중등영어,,,1,volunteer**
+2894,vote,투표하다,middle,중등영어,,,1,vote**
+2895,wage,임금,middle,중등영어,,,1,wage**
+2896,wait,기다리다,elem,초등영어,,,1,wait*
+2897,wake,"깨다, 깨우다",elem,초등영어,,,1,wake*
+2898,walk,걷다,elem,초등영어,,,1,walk*
+2899,wall,벽,elem,초등영어,,,1,wall*
+2900,wander,돌아다니다,high,고등영어,,,1,wander
+2901,want,원하다,elem,초등영어,,,1,want*
+2902,war,전쟁,elem,초등영어,,,1,war*
+2903,warehouse,창고,high,고등영어,,,1,warehouse
+2904,warm,따뜻한,elem,초등영어,,,1,warm*
+2905,warn,경고하다,middle,중등영어,,,1,warn**
+2906,warrant,"보증하다, 영장",high,고등영어,,,1,warrant
+2907,wash,씻다,elem,초등영어,,,1,wash*
+2908,waste,"낭비하다, 쓰레기",middle,중등영어,,,1,waste**
+2909,watch,"보다, 손목시계",elem,초등영어,,,1,watch*
+2910,water,물,elem,초등영어,,,1,water*
+2911,watermelon,수박,elem,초등영어,,,1,watermelon*
+2912,wave,"파도, 흔들다",middle,중등영어,,,1,wave**
+2913,way,"길, 방법",elem,초등영어,,,1,way*
+2914,we,우리,elem,초등영어,,,1,we*
+2915,weak,약한,middle,중등영어,,,1,weak**
+2916,wealth,"부, 재산",high,고등영어,,,1,wealth
+2917,weapon,무기,middle,중등영어,,,1,weapon**
+2918,wear,입다,elem,초등영어,,,1,wear*
+2919,weather,날씨,elem,초등영어,,,1,weather*
+2920,weave,"짜다, 엮다",high,고등영어,,,1,weave
+2921,website,웹사이트,elem,초등영어,,,1,website*
+2922,wedding,결혼식,elem,초등영어,,,1,wedding*
+2923,weed,잡초,high,고등영어,,,1,weed
+2924,week,"주, 일주일",elem,초등영어,,,1,week*
+2925,weekend,주말,elem,초등영어,,,1,weekend*
+2926,weigh,무게를 재다,middle,중등영어,,,1,weigh**
+2927,weight,무게,elem,초등영어,,,1,weight*
+2928,weird,기이한,high,고등영어,,,1,weird
+2929,welcome,환영하다,elem,초등영어,,,1,welcome*
+2930,welfare,복지,high,고등영어,,,1,welfare
+2931,well,"잘, 우물",elem,초등영어,,,1,well*
+2932,west,서쪽,elem,초등영어,,,1,west*
+2933,wet,젖은,elem,초등영어,,,1,wet*
+2934,whale,고래,middle,중등영어,,,1,whale**
+2935,what,무엇,elem,초등영어,,,1,what*
+2936,wheat,밀,high,고등영어,,,1,wheat
+2937,wheel,바퀴,middle,중등영어,,,1,wheel**
+2938,when,언제,elem,초등영어,,,1,when*
+2939,where,어디에,elem,초등영어,,,1,where*
+2940,whereas,반면에,high,고등영어,,,1,whereas
+2941,whether,~인지 아닌지,middle,중등영어,,,1,whether**
+2942,which,어느 것,middle,중등영어,,,1,which**
+2943,while,~하는 동안,middle,중등영어,,,1,while**
+2944,whip,채찍,high,고등영어,,,1,whip
+2945,whisper,속삭이다,middle,중등영어,,,1,whisper**
+2946,whistle,"휘파람, 호루라기",middle,중등영어,,,1,whistle**
+2947,white,흰색,elem,초등영어,,,1,white*
+2948,who,누구,elem,초등영어,,,1,who*
+2949,whole,전체의,middle,중등영어,,,1,whole**
+2950,why,왜,elem,초등영어,,,1,why*
+2951,wicked,사악한 (못된),high,고등영어,,,1,wicked
+2952,wide,넓은,middle,중등영어,,,1,wide**
+2953,wife,아내,elem,초등영어,,,1,wife*
+2954,wild,야생의,middle,중등영어,,,1,wild**
+2955,will,~할 것이다,elem,초등영어,,,0,will*
+2956,win,이기다,elem,초등영어,,,1,win*
+2957,wind,바람,elem,초등영어,,,1,wind*
+2958,window,창문,elem,초등영어,,,1,window*
+2959,wine,포도주,elem,초등영어,,,1,wine*
+2960,wing,날개,middle,중등영어,,,1,wing**
+2961,winter,겨울,elem,초등영어,,,1,winter*
+2962,wipe,닦다,middle,중등영어,,,1,wipe**
+2963,wire,"철사, 전선",middle,중등영어,,,1,wire**
+2964,wise,현명한,middle,중등영어,,,1,wise**
+2965,wish,바라다,elem,초등영어,,,1,wish*
+2966,wit,재치,high,고등영어,,,1,wit
+2967,with,~와 함께,elem,초등영어,,,0,with*
+2968,withdraw,"철회하다, 인출하다",high,고등영어,,,1,withdraw
+2969,within,~ 이내에,middle,중등영어,,,1,within**
+2970,without,~ 없이,middle,중등영어,,,1,without**
+2971,witness,목격자,high,고등영어,,,1,witness
+2972,woman,여자,elem,초등영어,,,1,woman*
+2973,wonder,궁금해하다,middle,중등영어,,,1,wonder**
+2974,wood,"나무 (목재), 숲",elem,초등영어,,,1,wood*
+2975,wool,양털,middle,중등영어,,,1,wool**
+2976,word,단어,elem,초등영어,,,1,word*
+2977,work,일하다,elem,초등영어,,,1,work*
+2978,world,세계,elem,초등영어,,,1,world*
+2979,worry,걱정하다,elem,초등영어,,,1,worry*
+2980,worship,숭배하다,high,고등영어,,,1,worship
+2981,worth,~의 가치가 있는,middle,중등영어,,,1,worth**
+2982,would,~할 것이다 (will의 과거),middle,중등영어,,,0,would**
+2983,wound,상처,middle,중등영어,,,1,wound**
+2984,wrap,"싸다, 포장하다",middle,중등영어,,,1,wrap**
+2985,wreck,"난파선, 망가뜨리다",high,고등영어,,,1,wreck
+2986,write,쓰다,elem,초등영어,,,1,write*
+2987,wrong,틀린,elem,초등영어,,,1,wrong*
+2988,year,"해, 년",elem,초등영어,,,1,year*
+2989,yell,소리치다,middle,중등영어,,,1,yell**
+2990,yellow,노란색,elem,초등영어,,,1,yellow*
+2991,yes,"예, 네",elem,초등영어,yeah / yep,,1,yes* / yeah* / yep*
+2992,yesterday,어제,elem,초등영어,,,1,yesterday*
+2993,yet,아직,middle,중등영어,,,1,yet**
+2994,yield,"산출하다, 양보하다",high,고등영어,,,1,yield
+2995,you,"너, 당신",elem,초등영어,,,1,you*
+2996,young,"어린, 젊은",elem,초등영어,,,1,young*
+2997,zebra,얼룩말,middle,중등영어,,,1,zebra**
+2998,zero,"0, 영",middle,중등영어,,,1,zero**
+2999,zone,구역,high,고등영어,,,1,zone
+3000,zoo,동물원,elem,초등영어,,,1,zoo*

@@ -11,7 +11,9 @@
     "quiz:fill-meanings": "node scripts/word-meaning-quiz-fill-meanings.js",
     "quiz:refresh-meanings": "node scripts/word-meaning-quiz-refresh-meanings.js",
     "quiz:export-review": "node scripts/word-meaning-quiz-export-review.js",
-    "quiz:import-review": "node scripts/word-meaning-quiz-import-review.js"
+    "quiz:import-review": "node scripts/word-meaning-quiz-import-review.js",
+    "exam:import": "node scripts/import_words.js --file=db/seeds/basic_vocab_2022_3000.csv",
+    "exam:import:dry": "node scripts/import_words.js --file=db/seeds/basic_vocab_2022_3000.csv --dry-run"
   },
   "author": "",
   "license": "ISC",
