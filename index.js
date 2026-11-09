@@ -19,6 +19,30 @@ async function safeBcryptCompare(plain, hash) {
   return bcrypt.compare(plain, hash);
 }
 
+/**
+ * UX-031 — API JSON 응답에서 password/passwordHash 제거.
+ * DB·문서 인스턴스에는 그대로 두어 bcrypt 비교는 가능. res.json 직렬화 시에만 제거.
+ */
+function stripAuthSecretsFromJson(_doc, ret) {
+  if (!ret || typeof ret !== 'object') return ret;
+  delete ret.password;
+  delete ret.passwordHash;
+  delete ret.likedFingerprints;
+  return ret;
+}
+
+mongoose.plugin((schema) => {
+  const prev = schema.get('toJSON') || {};
+  const prevTransform = typeof prev.transform === 'function' ? prev.transform : null;
+  schema.set('toJSON', {
+    ...prev,
+    transform(doc, ret, options) {
+      const next = prevTransform ? prevTransform(doc, ret, options) : ret;
+      return stripAuthSecretsFromJson(doc, next);
+    },
+  });
+});
+
 /** 타이밍 안전 문자열 비교 (관리자 비밀번호) */
 function safeEqualString(a, b) {
   const left = Buffer.from(String(a == null ? '' : a), 'utf8');
@@ -1156,7 +1180,10 @@ async function findEntryBySlug(req, res, Model, label) {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.' });
     }
-    const entry = await Model.findOne({ slug: req.params.slug });
+    /* password 필드는 조회에서 제외 (UX-031) */
+    const entry = await Model.findOne({ slug: req.params.slug }).select(
+      '-password -passwordHash -likedFingerprints'
+    );
     if (!entry) return res.status(404).json({ error: 'Post not found' });
     res.status(200).json({ entry });
   } catch (error) {
@@ -1173,7 +1200,7 @@ function registerSimpleNewsBoard(app, { key, label, viewPrefix, Model }) {
       if (mongoose.connection.readyState !== 1) {
         return res.status(503).json({ error: 'MongoDB 연결이 되지 않았습니다.', entries: [] });
       }
-      const entries = await Model.find();
+      const entries = await Model.find().select('-password -passwordHash -likedFingerprints');
       res.status(200).json({ entries });
     } catch (error) {
       console.error(`${label} entries 오류:`, error);
@@ -2403,7 +2430,7 @@ app.get('/guestbook', async (req, res) => {
         entries: []
       });
     }
-    const entries = await GuestbookEntry.find();
+    const entries = await GuestbookEntry.find().select('-password -passwordHash -likedFingerprints');
     res.status(200).json({ entries });
   } catch (error) {
     console.error('Guestbook entries 오류:', error);
